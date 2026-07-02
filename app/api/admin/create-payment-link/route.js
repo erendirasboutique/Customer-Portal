@@ -5,21 +5,6 @@ import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const supabase = getSupabaseAdmin();
-
-await supabase.from('payment_links').upsert({
-  stripe_payment_link_id: paymentLink.id,
-  url: paymentLink.url,
-  customer_name: customerName || '',
-  customer_email: customerEmail || '',
-  customer_phone: customerPhone || '',
-  title: title || '',
-  description: description || '',
-  amount: amountNumber,
-  quantity: Number(quantity || 1),
-  status: 'pending',
-}, { onConflict: 'stripe_payment_link_id' });
-
 export async function POST(req) {
   try {
     if (!process.env.STRIPE_SECRET_KEY) {
@@ -143,6 +128,36 @@ export async function POST(req) {
     }
 
     const paymentLink = await stripe.paymentLinks.create(payload);
+
+    const supabase = getSupabaseAdmin();
+
+    const { error: saveError } = await supabase.from('payment_links').upsert(
+      {
+        stripe_payment_link_id: paymentLink.id,
+        url: paymentLink.url,
+        customer_name: customerName || '',
+        customer_email: customerEmail || '',
+        customer_phone: customerPhone || '',
+        title: String(title).trim(),
+        description: description || '',
+        amount: amountNumber,
+        quantity: Math.max(1, Number(quantity || 1)),
+        status: 'pending',
+      },
+      { onConflict: 'stripe_payment_link_id' }
+    );
+
+    if (saveError) {
+      return NextResponse.json(
+        {
+          error: 'Stripe link was created, but it could not be saved in Supabase.',
+          details: saveError.message,
+          url: paymentLink.url,
+          id: paymentLink.id,
+        },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       success: true,
