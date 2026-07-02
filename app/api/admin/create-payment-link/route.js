@@ -7,7 +7,10 @@ export const runtime = 'nodejs';
 export async function POST(req) {
   try {
     if (!process.env.STRIPE_SECRET_KEY) {
-      return NextResponse.json({ error: 'Missing STRIPE_SECRET_KEY.' }, { status: 500 });
+      return NextResponse.json(
+        { error: 'Missing STRIPE_SECRET_KEY.' },
+        { status: 500 }
+      );
     }
 
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -15,12 +18,14 @@ export async function POST(req) {
     const {
       customerName = '',
       customerEmail = '',
+      customerPhone = '',
       title,
       description = '',
       amount,
       quantity = 1,
       collectName = true,
-      collectAddress = true,
+      collectShipping = true,
+      collectBilling = true,
       requirePhone = true,
       allowPromotionCodes = true,
       redirectAfterPayment = true,
@@ -28,18 +33,24 @@ export async function POST(req) {
     } = await req.json();
 
     if (!title || !String(title).trim()) {
-      return NextResponse.json({ error: 'Product/payment title is required.' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Product/payment title is required.' },
+        { status: 400 }
+      );
     }
 
     const amountNumber = Number(amount);
 
     if (!amountNumber || amountNumber < 0.5) {
-      return NextResponse.json({ error: 'Amount must be at least $0.50.' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Amount must be at least $0.50.' },
+        { status: 400 }
+      );
     }
 
     const cleanRedirectUrl = String(redirectUrl || '').trim();
 
-    const paymentLinkPayload = {
+    const payload = {
       line_items: [
         {
           quantity: Math.max(1, Number(quantity || 1)),
@@ -54,18 +65,21 @@ export async function POST(req) {
         },
       ],
       allow_promotion_codes: Boolean(allowPromotionCodes),
-      billing_address_collection: collectAddress ? 'required' : 'auto',
+      billing_address_collection: collectBilling ? 'required' : 'auto',
       customer_creation: 'always',
       metadata: {
         created_from: 'erendiras_billing_portal',
         customer_name: customerName || '',
         customer_email: customerEmail || '',
+        customer_phone: customerPhone || '',
+        description: description || '',
       },
       payment_intent_data: {
         metadata: {
           created_from: 'erendiras_billing_portal',
           customer_name: customerName || '',
           customer_email: customerEmail || '',
+          customer_phone: customerPhone || '',
           description: description || '',
         },
       },
@@ -78,31 +92,41 @@ export async function POST(req) {
         redirectAfterPayment && cleanRedirectUrl
           ? {
               type: 'redirect',
-              redirect: { url: cleanRedirectUrl },
+              redirect: {
+                url: cleanRedirectUrl,
+              },
             }
           : {
               type: 'hosted_confirmation',
               hosted_confirmation: {
-                custom_message: 'Thank you for your payment! Erendira’s Boutique has received your order.',
+                custom_message:
+                  'Thank you for your payment! Erendira’s Boutique has received your order.',
               },
             },
     };
 
-    if (collectAddress) {
-      paymentLinkPayload.shipping_address_collection = { allowed_countries: ['US'] };
-    }
-
-    if (requirePhone) {
-      paymentLinkPayload.phone_number_collection = { enabled: true };
-    }
-
-    if (collectName) {
-      paymentLinkPayload.name_collection = {
-        individual: { enabled: true, optional: false },
+    if (collectShipping) {
+      payload.shipping_address_collection = {
+        allowed_countries: ['US'],
       };
     }
 
-    const paymentLink = await stripe.paymentLinks.create(paymentLinkPayload);
+    if (requirePhone) {
+      payload.phone_number_collection = {
+        enabled: true,
+      };
+    }
+
+    if (collectName) {
+      payload.name_collection = {
+        individual: {
+          enabled: true,
+          optional: false,
+        },
+      };
+    }
+
+    const paymentLink = await stripe.paymentLinks.create(payload);
 
     return NextResponse.json({
       success: true,
