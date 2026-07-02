@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseServer } from '@/lib/supabaseServer';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 
 const ALLOWED_ADMINS = [
@@ -13,33 +13,23 @@ export async function GET(req) {
 
   if (!code) {
     return NextResponse.redirect(
-      new URL(`/admin/login?error=missing_code&next=${encodeURIComponent(next)}`, url.origin)
+      new URL(next.startsWith('/admin') ? '/admin/login?error=missing_code' : '/', url.origin)
     );
   }
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    {
-      auth: {
-        flowType: 'pkce',
-        detectSessionInUrl: false,
-        persistSession: false,
-      },
-    }
-  );
-
+  const supabase = await getSupabaseServer();
   const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
-  if (error || !data.session || !data.user?.email) {
+  if (error || !data?.user?.email) {
+    const message = encodeURIComponent(error?.message || 'No user returned.');
     return NextResponse.redirect(
-      new URL(`/admin/login?error=session_exchange_failed&details=${encodeURIComponent(error?.message || 'no session')}`, url.origin)
+      new URL(next.startsWith('/admin') ? `/admin/login?error=session_failed&details=${message}` : '/', url.origin)
     );
   }
 
-  const email = data.user.email.toLowerCase();
-
   if (next.startsWith('/admin')) {
+    const email = data.user.email.toLowerCase();
+
     if (!ALLOWED_ADMINS.includes(email)) {
       return NextResponse.redirect(
         new URL(`/admin/login?error=unauthorized&email=${encodeURIComponent(email)}`, url.origin)
@@ -66,15 +56,5 @@ export async function GET(req) {
     }
   }
 
-  const res = NextResponse.redirect(new URL(next, url.origin));
-
-  res.cookies.set(next.startsWith('/admin') ? 'eb_admin_access_token' : 'sb-access-token', data.session.access_token, {
-    httpOnly: true,
-    sameSite: 'lax',
-    secure: true,
-    path: '/',
-    maxAge: data.session.expires_in || 3600,
-  });
-
-  return res;
+  return NextResponse.redirect(new URL(next, url.origin));
 }

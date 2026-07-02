@@ -176,24 +176,19 @@ button,.button,.miniButton,input,select,textarea{
   .orderCard{break-inside:avoid}.orderCard:before{display:none!important}
   a{color:black!important}
 }
+
 .googleButton {
-  background: #ffffff;
-  color: #444;
-  border: 2px solid #e5e5e5;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
+  background: #ffffff !important;
+  color: #444 !important;
+  border: 2px solid #e5e5e5 !important;
   width: 100%;
-  font-family: MDNichrome, Arial, sans-serif !important;
-  transition: all .2s ease;
+  box-shadow: none !important;
+  margin-bottom: 12px;
 }
-
 .googleButton:hover {
-  background: #f8f8f8;
-  border-color: #d0d0d0;
+  background: #f8f8f8 !important;
+  border-color: #d0d0d0 !important;
 }
-
 .googleButton svg {
   flex-shrink: 0;
 }

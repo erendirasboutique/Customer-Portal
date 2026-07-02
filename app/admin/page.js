@@ -1,20 +1,20 @@
-import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { getSupabaseServer } from '@/lib/supabaseServer';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import AdminDashboard from '@/components/AdminDashboard';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminPage() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('eb_admin_access_token')?.value;
-  if (!token) redirect('/admin/login');
+  const supabaseAuth = await getSupabaseServer();
 
-  const supabase = getSupabaseAdmin();
-  const { data: userData, error: userError } = await supabase.auth.getUser(token);
+  const { data: userData, error: userError } = await supabaseAuth.auth.getUser();
+
   if (userError || !userData?.user?.email) redirect('/admin/login');
 
   const email = userData.user.email.toLowerCase();
+  const supabase = getSupabaseAdmin();
+
   const { data: adminUser, error: adminError } = await supabase
     .from('admins')
     .select('id,email,role,language,active')

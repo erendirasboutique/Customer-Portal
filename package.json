@@ -9,7 +9,8 @@
     "next": "latest",
     "react": "latest",
     "react-dom": "latest",
-    "stripe": "latest"
+    "stripe": "latest",
+    "@supabase/ssr": "latest"
   },
   "devDependencies": {}
 }

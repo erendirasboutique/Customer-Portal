@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import LanguageToggle from '@/components/LanguageToggle';
 import { getSupabaseBrowser } from '@/lib/supabaseBrowser';
 
@@ -12,56 +12,17 @@ export default function AdminLoginPage() {
 
   const supabase = getSupabaseBrowser();
 
-  useEffect(() => {
-    async function finishGoogleLogin() {
-      const url = new URL(window.location.href);
-      const code = url.searchParams.get('code');
-
-      if (!code) return;
-
-      setMessage('Finishing Google sign in...');
-
-      const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-
-      if (error || !data?.session?.access_token) {
-        setMessage(error?.message || 'Google login failed.');
-        return;
-      }
-
-      const res = await fetch('/api/auth/admin-google-session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ access_token: data.session.access_token }),
-      });
-
-      const result = await res.json();
-
-      if (!res.ok) {
-        setMessage(result.error || 'Google admin login failed.');
-        return;
-      }
-
-      window.history.replaceState(null, '', '/admin/login');
-      window.location.href = '/admin';
-    }
-
-    finishGoogleLogin();
-  }, []);
-
   async function login(e) {
     e.preventDefault();
     setMessage('Signing in...');
 
-    const res = await fetch('/api/auth/admin-login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
     });
 
-    const data = await res.json();
-
-    if (!res.ok) {
-      setMessage(data.error || 'Could not sign in.');
+    if (error) {
+      setMessage(error.message || 'Could not sign in.');
       return;
     }
 
@@ -76,14 +37,15 @@ export default function AdminLoginPage() {
     ).replace(/\/$/, '');
 
     const { error } = await supabase.auth.signInWithOAuth({
-  provider: 'google',
-  options: {
-    redirectTo: `${siteUrl}/admin/login`,
-    queryParams: {
-      prompt: 'select_account',
-    },
-  },
-});
+      provider: 'google',
+      options: {
+        redirectTo: `${siteUrl}/auth/callback?next=/admin`,
+        queryParams: {
+          prompt: 'select_account',
+        },
+      },
+    });
+
     if (error) {
       setMessage(error.message || 'Could not continue with Google.');
     }
@@ -114,7 +76,13 @@ export default function AdminLoginPage() {
             </p>
 
             <button className="button googleButton" type="button" onClick={signInWithGoogle}>
-              Continue with Google
+              <svg width="20" height="20" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303C33.654 32.657 29.195 36 24 36c-6.627 0-12-5.373-12-12S17.373 12 24 12c3.059 0 5.842 1.154 7.959 3.041l5.657-5.657C34.053 6.053 29.277 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/>
+                <path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 16.108 18.961 12 24 12c3.059 0 5.842 1.154 7.959 3.041l5.657-5.657C34.053 6.053 29.277 4 24 4c-7.682 0-14.347 4.337-17.694 10.691z"/>
+                <path fill="#4CAF50" d="M24 44c5.176 0 9.86-1.977 13.409-5.192l-6.191-5.238C29.153 35.091 26.685 36 24 36c-5.176 0-9.621-3.326-11.276-7.946l-6.522 5.025C9.512 39.556 16.227 44 24 44z"/>
+                <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-.792 2.237-2.223 4.166-4.085 5.57l.003-.002 6.191 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/>
+              </svg>
+              <span>Continue with Google</span>
             </button>
 
             <div className="notice" style={{ marginTop: 16 }}>

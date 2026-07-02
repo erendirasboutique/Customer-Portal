@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
+import { getSupabaseServer } from '@/lib/supabaseServer';
 
 export async function POST() {
-  const res = NextResponse.json({ success: true });
-  res.cookies.delete('eb_admin_access_token');
-  res.cookies.delete('sb-access-token');
-  return res;
+  const supabase = await getSupabaseServer();
+  await supabase.auth.signOut();
+  return NextResponse.json({ success: true });
 }
