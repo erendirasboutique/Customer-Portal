@@ -5,6 +5,21 @@ import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
+const supabase = getSupabaseAdmin();
+
+await supabase.from('payment_links').upsert({
+  stripe_payment_link_id: paymentLink.id,
+  url: paymentLink.url,
+  customer_name: customerName || '',
+  customer_email: customerEmail || '',
+  customer_phone: customerPhone || '',
+  title: title || '',
+  description: description || '',
+  amount: amountNumber,
+  quantity: Number(quantity || 1),
+  status: 'pending',
+}, { onConflict: 'stripe_payment_link_id' });
+
 export async function POST(req) {
   try {
     if (!process.env.STRIPE_SECRET_KEY) {
