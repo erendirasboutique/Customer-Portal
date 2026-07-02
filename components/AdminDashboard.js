@@ -118,6 +118,19 @@ export default function AdminDashboard({ payments, admin }) {
     window.location.href = '/admin/login';
   }
 
+  await fetch('/api/admin/create-payment-link', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    name: 'Custom Boutique Payment',
+    description: 'Order payment',
+    amount: 25,
+    quantity: 1,
+    customerEmail: 'customer@email.com',
+  }),
+});
+  
+
   return (
     <main className="page adminPage">
       <span className="flower one no-print">✿</span><span className="flower two no-print">❀</span>
