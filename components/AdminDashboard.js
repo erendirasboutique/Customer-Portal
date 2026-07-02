@@ -34,6 +34,23 @@ export default function AdminDashboard({ payments, admin }) {
   const [expandedId, setExpandedId] = useState(null);
   const [notes, setNotes] = useState({});
   const [notice, setNotice] = useState('');
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [createdPaymentLink, setCreatedPaymentLink] = useState('');
+  const [paymentLinkCopied, setPaymentLinkCopied] = useState(false);
+  const [paymentLinkForm, setPaymentLinkForm] = useState({
+    customerName: '',
+    customerEmail: '',
+    title: 'Custom Boutique Payment',
+    description: 'Order payment',
+    amount: '',
+    quantity: 1,
+    collectName: true,
+    collectAddress: true,
+    requirePhone: true,
+    allowPromotionCodes: true,
+    redirectAfterPayment: true,
+    redirectUrl: 'https://ebtq.io/cc',
+  });
 
   const enriched = useMemo(() => payments.map(p => ({ ...p, _status: orderStatus(p) })), [payments]);
 
@@ -101,32 +118,62 @@ export default function AdminDashboard({ payments, admin }) {
     setNotice(`Clover synced: ${data.imported || 0} payment(s).`);
     setTimeout(() => window.location.reload(), 1000);
   }
-async function createPaymentLink() {
-  setNotice('Creating payment link...');
-
-  const res = await fetch('/api/admin/create-payment-link', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      name: 'Custom Boutique Payment',
-      description: 'Order payment',
-      amount: 25,
-      quantity: 1,
-      customerEmail: '',
-    }),
-  });
-
-  const data = await res.json();
-
-  if (!res.ok) {
-    setNotice(data.error || 'Could not create payment link.');
-    return;
+function updatePaymentLinkForm(field, value) {
+    setPaymentLinkForm((current) => ({
+      ...current,
+      [field]: value,
+    }));
   }
 
-  setNotice(`Payment link created: ${data.url}`);
-  window.open(data.url, '_blank');
-}
-  
+  function openPaymentLinkModal() {
+    setCreatedPaymentLink('');
+    setPaymentLinkCopied(false);
+    setPaymentModalOpen(true);
+  }
+
+  async function createPaymentLink(e) {
+    e.preventDefault();
+    setNotice('');
+    setCreatedPaymentLink('');
+    setPaymentLinkCopied(false);
+
+    if (!paymentLinkForm.title.trim()) {
+      setNotice('Enter a product/payment title.');
+      return;
+    }
+
+    if (!paymentLinkForm.amount || Number(paymentLinkForm.amount) <= 0) {
+      setNotice('Enter a valid amount.');
+      return;
+    }
+
+    setNotice('Creating payment link...');
+
+    const res = await fetch('/api/admin/create-payment-link', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(paymentLinkForm),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      setNotice(data.error || 'Could not create payment link.');
+      return;
+    }
+
+    setCreatedPaymentLink(data.url);
+    setNotice('Payment link created.');
+  }
+
+  async function copyPaymentLink() {
+    if (!createdPaymentLink) return;
+
+    await navigator.clipboard.writeText(createdPaymentLink);
+    setPaymentLinkCopied(true);
+    setTimeout(() => setPaymentLinkCopied(false), 1800);
+  }
+
   async function saveNote(id) {
     setNotice('Saving note...');
     const res = await fetch('/api/admin/payment-notes', {
@@ -197,12 +244,203 @@ async function createPaymentLink() {
                 <option value="clover">Clover</option>
               </select>
               <button className="button secondary" onClick={syncCloverPayments}>Sync Clover</button>
-  <button className="button secondary" onClick={createPaymentLink}>
-  Create Payment Link
-</button>
+              <button className="button secondary" onClick={openPaymentLinkModal}>
+                Create Payment Link
+              </button>
               <button className="button secondary" onClick={exportCsv}>Export CSV</button>
               <button className="button ghost" onClick={() => window.print()}>Print</button>
             </div>
+
+            {paymentModalOpen && (
+              <div className="modalBackdrop no-print" role="dialog" aria-modal="true">
+                <div className="paymentLinkModal">
+                  <div className="modalHeader">
+                    <div>
+                      <p className="eyebrow">Stripe Payment Link</p>
+                      <h2>Create Payment Link</h2>
+                      <p className="mutedText">
+                        Build a custom Stripe payment page, copy the link, and send it to your customer.
+                      </p>
+                    </div>
+                    <button
+                      className="button ghost mini"
+                      type="button"
+                      onClick={() => setPaymentModalOpen(false)}
+                    >
+                      Close
+                    </button>
+                  </div>
+
+                  <form className="paymentLinkForm" onSubmit={createPaymentLink}>
+                    <div className="formGrid">
+                      <label className="field">
+                        Customer name
+                        <input
+                          className="input"
+                          value={paymentLinkForm.customerName}
+                          onChange={(e) => updatePaymentLinkForm('customerName', e.target.value)}
+                          placeholder="Sylvia C"
+                        />
+                      </label>
+
+                      <label className="field">
+                        Customer email
+                        <input
+                          className="input"
+                          type="email"
+                          value={paymentLinkForm.customerEmail}
+                          onChange={(e) => updatePaymentLinkForm('customerEmail', e.target.value)}
+                          placeholder="customer@email.com"
+                        />
+                      </label>
+
+                      <label className="field">
+                        Product/payment title
+                        <input
+                          className="input"
+                          value={paymentLinkForm.title}
+                          onChange={(e) => updatePaymentLinkForm('title', e.target.value)}
+                          placeholder="Custom Boutique Payment"
+                          required
+                        />
+                      </label>
+
+                      <label className="field">
+                        Description
+                        <input
+                          className="input"
+                          value={paymentLinkForm.description}
+                          onChange={(e) => updatePaymentLinkForm('description', e.target.value)}
+                          placeholder="Order payment"
+                        />
+                      </label>
+
+                      <label className="field">
+                        Amount
+                        <input
+                          className="input"
+                          type="number"
+                          min="0.50"
+                          step="0.01"
+                          value={paymentLinkForm.amount}
+                          onChange={(e) => updatePaymentLinkForm('amount', e.target.value)}
+                          placeholder="118.00"
+                          required
+                        />
+                      </label>
+
+                      <label className="field">
+                        Quantity
+                        <input
+                          className="input"
+                          type="number"
+                          min="1"
+                          step="1"
+                          value={paymentLinkForm.quantity}
+                          onChange={(e) => updatePaymentLinkForm('quantity', e.target.value)}
+                          required
+                        />
+                      </label>
+                    </div>
+
+                    <div className="optionPanel">
+                      <h3>Payment page options</h3>
+
+                      <label className="checkRow">
+                        <input
+                          type="checkbox"
+                          checked={paymentLinkForm.collectName}
+                          onChange={(e) => updatePaymentLinkForm('collectName', e.target.checked)}
+                        />
+                        <span>Collect customer names</span>
+                      </label>
+
+                      <label className="checkRow">
+                        <input
+                          type="checkbox"
+                          checked={paymentLinkForm.collectAddress}
+                          onChange={(e) => updatePaymentLinkForm('collectAddress', e.target.checked)}
+                        />
+                        <span>Collect customer addresses / shipping address</span>
+                      </label>
+
+                      <label className="checkRow">
+                        <input
+                          type="checkbox"
+                          checked={paymentLinkForm.requirePhone}
+                          onChange={(e) => updatePaymentLinkForm('requirePhone', e.target.checked)}
+                        />
+                        <span>Require customers to provide a phone number</span>
+                      </label>
+
+                      <label className="checkRow">
+                        <input
+                          type="checkbox"
+                          checked={paymentLinkForm.allowPromotionCodes}
+                          onChange={(e) => updatePaymentLinkForm('allowPromotionCodes', e.target.checked)}
+                        />
+                        <span>Allow promotion codes</span>
+                      </label>
+                    </div>
+
+                    <div className="optionPanel">
+                      <h3>After payment</h3>
+
+                      <label className="checkRow">
+                        <input
+                          type="checkbox"
+                          checked={paymentLinkForm.redirectAfterPayment}
+                          onChange={(e) => updatePaymentLinkForm('redirectAfterPayment', e.target.checked)}
+                        />
+                        <span>Redirect customers to your website after payment</span>
+                      </label>
+
+                      {paymentLinkForm.redirectAfterPayment && (
+                        <label className="field">
+                          Redirect URL
+                          <input
+                            className="input"
+                            value={paymentLinkForm.redirectUrl}
+                            onChange={(e) => updatePaymentLinkForm('redirectUrl', e.target.value)}
+                            placeholder="https://ebtq.io/cc"
+                          />
+                        </label>
+                      )}
+                    </div>
+
+                    <div className="paymentLinkActions">
+                      <button className="button secondary" type="submit">
+                        Generate Stripe Link
+                      </button>
+
+                      {createdPaymentLink && (
+                        <>
+                          <button className="button ghost" type="button" onClick={copyPaymentLink}>
+                            {paymentLinkCopied ? 'Copied!' : 'Copy Link'}
+                          </button>
+
+                          <a
+                            className="button ghost"
+                            href={createdPaymentLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Open Link
+                          </a>
+                        </>
+                      )}
+                    </div>
+
+                    {createdPaymentLink && (
+                      <div className="createdLinkBox">
+                        <b>Payment link ready:</b>
+                        <p>{createdPaymentLink}</p>
+                      </div>
+                    )}
+                  </form>
+                </div>
+              </div>
+            )}
 
             {notice && <div className="notice no-print">{notice}</div>}
 
