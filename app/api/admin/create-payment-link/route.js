@@ -45,28 +45,48 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Minimum amount must be at least $0.50.' }, { status: 400 });
     }
 
-    const priceData = {
-      currency: 'usd',
-      product_data: {
-        name: String(title).trim(),
-        description: description ? String(description).trim() : undefined,
-      },
-    };
-
-    if (customerChoosesAmount) {
-      priceData.custom_unit_amount = {
-        enabled: true,
-        minimum: Math.round(minimumAmountNumber * 100),
-        ...(maximumAmountNumber ? { maximum: Math.round(maximumAmountNumber * 100) } : {}),
-      };
-    } else {
-      priceData.unit_amount = Math.round(amountNumber * 100);
-    }
-
     const cleanRedirectUrl = String(redirectUrl || '').trim();
 
+    let lineItem;
+
+    if (customerChoosesAmount) {
+      const product = await stripe.products.create({
+        name: String(title).trim(),
+        description: description ? String(description).trim() : undefined,
+      });
+
+      const price = await stripe.prices.create({
+        currency: 'usd',
+        product: product.id,
+        custom_unit_amount: {
+          enabled: true,
+          minimum: Math.round(minimumAmountNumber * 100),
+          ...(maximumAmountNumber
+            ? { maximum: Math.round(maximumAmountNumber * 100) }
+            : {}),
+        },
+      });
+
+      lineItem = {
+        price: price.id,
+        quantity: 1,
+      };
+    } else {
+      lineItem = {
+        quantity: 1,
+        price_data: {
+          currency: 'usd',
+          unit_amount: Math.round(amountNumber * 100),
+          product_data: {
+            name: String(title).trim(),
+            description: description ? String(description).trim() : undefined,
+          },
+        },
+      };
+    }
+
     const payload = {
-      line_items: [{ quantity: 1, price_data: priceData }],
+      line_items: [lineItem],
       allow_promotion_codes: Boolean(allowPromotionCodes),
       billing_address_collection: collectBilling ? 'required' : 'auto',
       customer_creation: 'always',
@@ -83,14 +103,19 @@ export async function POST(req) {
         },
       },
       custom_text: {
-        submit: { message: 'Erendira’s Boutique will receive your payment securely through Stripe.' },
+        submit: {
+          message: 'Erendira’s Boutique will receive your payment securely through Stripe.',
+        },
       },
       after_completion:
         redirectAfterPayment && cleanRedirectUrl
           ? { type: 'redirect', redirect: { url: cleanRedirectUrl } }
           : {
               type: 'hosted_confirmation',
-              hosted_confirmation: { custom_message: 'Thank you for your payment! Erendira’s Boutique has received your order.' },
+              hosted_confirmation: {
+                custom_message:
+                  'Thank you for your payment! Erendira’s Boutique has received your order.',
+              },
             },
     };
 
@@ -101,6 +126,7 @@ export async function POST(req) {
     const paymentLink = await stripe.paymentLinks.create(payload);
 
     const supabase = getSupabaseAdmin();
+
     const { error: saveError } = await supabase.from('payment_links').upsert(
       {
         stripe_payment_link_id: paymentLink.id,
@@ -127,13 +153,25 @@ export async function POST(req) {
 
     if (saveError) {
       return NextResponse.json(
-        { error: 'Stripe link was created, but it could not be saved in Supabase.', details: saveError.message, url: paymentLink.url, id: paymentLink.id },
+        {
+          error: 'Stripe link was created, but it could not be saved in Supabase.',
+          details: saveError.message,
+          url: paymentLink.url,
+          id: paymentLink.id,
+        },
         { status: 500 }
       );
     }
 
-    return NextResponse.json({ success: true, id: paymentLink.id, url: paymentLink.url });
+    return NextResponse.json({
+      success: true,
+      id: paymentLink.id,
+      url: paymentLink.url,
+    });
   } catch (error) {
-    return NextResponse.json({ error: error.message || 'Could not create payment link.' }, { status: 500 });
+    return NextResponse.json(
+      { error: error.message || 'Could not create payment link.' },
+      { status: 500 }
+    );
   }
 }
