@@ -70,6 +70,33 @@ export async function POST(req) {
       console.error('Supabase insert error:', error.message);
       return new Response('Supabase insert failed', { status: 500 });
     }
+
+    if (session.payment_link) {
+      const paymentLinkId = typeof session.payment_link === 'string'
+        ? session.payment_link
+        : session.payment_link?.id;
+
+      if (paymentLinkId) {
+        const paidAmount = (session.amount_total || 0) / 100;
+
+        const { data: existingLink } = await supabase
+          .from('payment_links')
+          .select('paid_count,total_paid')
+          .eq('stripe_payment_link_id', paymentLinkId)
+          .maybeSingle();
+
+        await supabase
+          .from('payment_links')
+          .update({
+            status: 'paid',
+            paid_count: Number(existingLink?.paid_count || 0) + 1,
+            total_paid: Number(existingLink?.total_paid || 0) + paidAmount,
+            last_paid_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .eq('stripe_payment_link_id', paymentLinkId);
+      }
+    }
   }
 
   return new Response('Success', { status: 200 });

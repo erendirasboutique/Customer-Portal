@@ -341,78 +341,24 @@ body {
 .createdLinkBox {
   background: #fbf6ff !important;
 }
-.savedPaymentLinksCard {
-  margin-top: 18px;
-}
 
-.savedLinksHeader {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 18px;
-  margin-bottom: 16px;
-}
 
-.savedLinksActions {
-  display: flex;
-  gap: 10px;
-  min-width: min(420px, 100%);
-}
-
-.savedPaymentLinksList {
-  display: grid;
-  gap: 12px;
-}
-
-.savedPaymentLinkCard {
-  display: grid;
-  grid-template-columns: 1fr auto auto;
-  gap: 16px;
-  align-items: center;
-  border: 1px solid var(--border);
-  background: #fff;
-  border-radius: 22px;
-  padding: 16px;
-}
-
-.savedPaymentLinkCard h3 {
-  margin-bottom: 4px;
-}
-
-.savedLinkMeta {
-  text-align: right;
-}
-
-.savedLinkMeta b {
-  display: block;
-  color: var(--purple-dark);
-  font-size: 1.15rem;
-  margin-bottom: 8px;
-}
-
-.savedLinkButtons {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
-
+/* V7 Payment Link saved links + analytics */
+.paymentLinkAnalytics { margin-bottom: 18px; }
+.savedPaymentLinksCard { margin-top: 18px; }
+.savedLinksHeader { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin-bottom: 16px; }
+.savedLinksActions { display: flex; gap: 10px; min-width: min(420px, 100%); }
+.savedPaymentLinksList { display: grid; gap: 12px; }
+.savedPaymentLinkCard { display: grid; grid-template-columns: 1fr auto auto; gap: 16px; align-items: center; border: 1px solid var(--border); background: #fff; border-radius: 22px; padding: 16px; }
+.savedPaymentLinkCard.archivedLink { opacity: .72; }
+.savedPaymentLinkCard h3 { margin-bottom: 4px; }
+.savedLinkMeta { text-align: right; }
+.savedLinkMeta b { display: block; color: var(--purple-dark); font-size: 1.15rem; margin-bottom: 8px; }
+.savedLinkMeta p { margin: 4px 0; color: var(--muted); font-size: .9rem; }
+.savedLinkButtons { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
 @media (max-width: 860px) {
-  .savedLinksHeader,
-  .savedLinksActions {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .savedPaymentLinkCard {
-    grid-template-columns: 1fr;
-  }
-
-  .savedLinkMeta {
-    text-align: left;
-  }
-
-  .savedLinkButtons {
-    justify-content: flex-start;
-  }
+  .savedLinksHeader, .savedLinksActions { flex-direction: column; align-items: stretch; }
+  .savedPaymentLinkCard { grid-template-columns: 1fr; }
+  .savedLinkMeta { text-align: left; }
+  .savedLinkButtons { justify-content: flex-start; }
 }

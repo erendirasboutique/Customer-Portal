@@ -13,20 +13,11 @@ export async function GET() {
       .order('created_at', { ascending: false });
 
     if (error) {
-      return NextResponse.json(
-        { error: error.message || 'Could not load payment links.' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: error.message || 'Could not load payment links.' }, { status: 500 });
     }
 
-    return NextResponse.json({
-      success: true,
-      paymentLinks: data || [],
-    });
+    return NextResponse.json({ success: true, paymentLinks: data || [] });
   } catch (error) {
-    return NextResponse.json(
-      { error: error.message || 'Could not load payment links.' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: error.message || 'Could not load payment links.' }, { status: 500 });
   }
 }
