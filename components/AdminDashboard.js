@@ -197,6 +197,9 @@ async function createPaymentLink() {
                 <option value="clover">Clover</option>
               </select>
               <button className="button secondary" onClick={syncCloverPayments}>Sync Clover</button>
+  <button className="button secondary" onClick={createPaymentLink}>
+  Create Payment Link
+</button>
               <button className="button secondary" onClick={exportCsv}>Export CSV</button>
               <button className="button ghost" onClick={() => window.print()}>Print</button>
             </div>
