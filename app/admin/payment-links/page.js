@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import LanguageToggle from '@/components/LanguageToggle';
 
 export default function PaymentLinksPage() {
@@ -8,6 +8,10 @@ export default function PaymentLinksPage() {
   const [message, setMessage] = useState('');
   const [createdLink, setCreatedLink] = useState('');
   const [copied, setCopied] = useState(false);
+  const [savedLinks, setSavedLinks] = useState([]);
+  const [linksLoading, setLinksLoading] = useState(true);
+  const [linkSearch, setLinkSearch] = useState('');
+  const [copiedSavedLinkId, setCopiedSavedLinkId] = useState('');
   const [form, setForm] = useState({
     customerName: '',
     customerEmail: '',
@@ -23,6 +27,56 @@ export default function PaymentLinksPage() {
     allowPromotionCodes: true,
     redirectAfterPayment: true,
     redirectUrl: 'https://ebtq.io/cc',
+  });
+
+  async function loadSavedPaymentLinks() {
+    setLinksLoading(true);
+
+    try {
+      const res = await fetch('/api/admin/payment-links', {
+        method: 'GET',
+        cache: 'no-store',
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setMessage(data.error || 'Could not load saved payment links.');
+        setSavedLinks([]);
+        return;
+      }
+
+      setSavedLinks(data.paymentLinks || []);
+    } catch (error) {
+      setMessage(error.message || 'Could not load saved payment links.');
+      setSavedLinks([]);
+    } finally {
+      setLinksLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadSavedPaymentLinks();
+  }, []);
+
+  const filteredSavedLinks = savedLinks.filter((link) => {
+    const query = linkSearch.trim().toLowerCase();
+
+    if (!query) return true;
+
+    return [
+      link.customer_name,
+      link.customer_email,
+      link.customer_phone,
+      link.title,
+      link.description,
+      link.status,
+      link.url,
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase()
+      .includes(query);
   });
 
   function updateForm(field, value) {
@@ -65,6 +119,7 @@ export default function PaymentLinksPage() {
 
     setCreatedLink(data.url);
     setMessage('Payment link created.');
+    await loadSavedPaymentLinks();
   }
 
   async function copyLink() {
@@ -72,6 +127,18 @@ export default function PaymentLinksPage() {
     await navigator.clipboard.writeText(createdLink);
     setCopied(true);
     setTimeout(() => setCopied(false), 1800);
+  }
+
+  async function copySavedLink(link) {
+    if (!link?.url) return;
+
+    await navigator.clipboard.writeText(link.url);
+    setCopiedSavedLinkId(link.id);
+    setTimeout(() => setCopiedSavedLinkId(''), 1800);
+  }
+
+  function formatSavedLinkAmount(link) {
+    return `$${Number(link.amount || 0).toFixed(2)}`;
   }
 
   async function logout() {
@@ -328,6 +395,72 @@ export default function PaymentLinksPage() {
               )}
             </aside>
           </div>
+
+          <section className="card savedPaymentLinksCard">
+            <div className="savedLinksHeader">
+              <div>
+                <p className="eyebrow">Saved Links</p>
+                <h2>Generated payment links</h2>
+                <p className="mutedText">
+                  View, copy, and reopen payment links created from this admin portal.
+                </p>
+              </div>
+
+              <div className="savedLinksActions">
+                <input
+                  className="input"
+                  value={linkSearch}
+                  onChange={(e) => setLinkSearch(e.target.value)}
+                />
+
+                <button className="button ghost" type="button" onClick={loadSavedPaymentLinks}>
+                  Refresh
+                </button>
+              </div>
+            </div>
+
+            {linksLoading ? (
+              <div className="emptyState">Loading saved payment links...</div>
+            ) : filteredSavedLinks.length === 0 ? (
+              <div className="emptyState">No saved payment links yet.</div>
+            ) : (
+              <div className="savedPaymentLinksList">
+                {filteredSavedLinks.map((link) => (
+                  <article className="savedPaymentLinkCard" key={link.id || link.stripe_payment_link_id}>
+                    <div>
+                      <p className="eyebrow">{new Date(link.created_at).toLocaleString()}</p>
+                      <h3>{link.title || 'Payment Link'}</h3>
+                      <p className="mutedText">
+                        {link.customer_name || 'No customer name'} {link.customer_email ? `• ${link.customer_email}` : ''}
+                      </p>
+                      <p>{link.description || '—'}</p>
+                    </div>
+
+                    <div className="savedLinkMeta">
+                      <b>{formatSavedLinkAmount(link)}</b>
+                      <span className="pill">{link.status || 'pending'}</span>
+                      <p>Qty: {link.quantity || 1}</p>
+                    </div>
+
+                    <div className="savedLinkButtons">
+                      <button className="button secondary mini" type="button" onClick={() => copySavedLink(link)}>
+                        {copiedSavedLinkId === link.id ? 'Copied!' : 'Copy'}
+                      </button>
+
+                      <a
+                        className="button ghost mini"
+                        href={link.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Open
+                      </a>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
         </section>
       </div>
     </main>
