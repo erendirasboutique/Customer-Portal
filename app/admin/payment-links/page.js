@@ -133,7 +133,6 @@ export default function PaymentLinksPage() {
                     className="input"
                     value={form.customerName}
                     onChange={(e) => updateForm('customerName', e.target.value)}
-                    placeholder="Name
                   />
                 </label>
 
@@ -144,7 +143,6 @@ export default function PaymentLinksPage() {
                     type="email"
                     value={form.customerEmail}
                     onChange={(e) => updateForm('customerEmail', e.target.value)}
-                    placeholder="customer@email.com"
                   />
                 </label>
 
@@ -154,7 +152,6 @@ export default function PaymentLinksPage() {
                     className="input"
                     value={form.customerPhone}
                     onChange={(e) => updateForm('customerPhone', e.target.value)}
-                    placeholder="9091234567"
                   />
                 </label>
 
@@ -164,7 +161,6 @@ export default function PaymentLinksPage() {
                     className="input"
                     value={form.title}
                     onChange={(e) => updateForm('title', e.target.value)}
-                    placeholder=""
                     required
                   />
                 </label>
@@ -176,7 +172,6 @@ export default function PaymentLinksPage() {
                     rows="3"
                     value={form.description}
                     onChange={(e) => updateForm('description', e.target.value)}
-                    placeholder=""
                   />
                 </label>
 
@@ -189,7 +184,6 @@ export default function PaymentLinksPage() {
                     step="0.01"
                     value={form.amount}
                     onChange={(e) => updateForm('amount', e.target.value)}
-                    placeholder="$0.00"
                     required
                   />
                 </label>
@@ -278,7 +272,6 @@ export default function PaymentLinksPage() {
                       className="input"
                       value={form.redirectUrl}
                       onChange={(e) => updateForm('redirectUrl', e.target.value)}
-                      placeholder="https://ebtq.io/cc"
                     />
                   </label>
                 )}

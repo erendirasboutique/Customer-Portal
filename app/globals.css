@@ -60,14 +60,14 @@ button,.button,.miniButton,input,select,textarea{
 }
 .button{
   border:0;border-radius:999px;padding:12px 18px;
-  background:linear-gradient(135deg,var(--purple),var(--purple-dark));
+  background:var(--purple-dark);
   color:white;cursor:pointer;text-decoration:none;
   display:inline-flex;align-items:center;justify-content:center;gap:8px;
   box-shadow:0 10px 25px rgba(75,37,120,.22);
   transition:.18s ease;font-size:.95rem
 }
 .button:hover{transform:translateY(-1px);box-shadow:0 14px 30px rgba(75,37,120,.24)}
-.button.secondary{background:linear-gradient(135deg,var(--green),var(--green-dark))}
+.button.secondary{background:var(--green-dark)}
 .button.ghost{background:white;color:var(--purple-dark);border:2px solid var(--border);box-shadow:none}
 .button.mini,.miniButton{font-size:.82rem;padding:7px 14px;border-radius:999px}
 .input{
@@ -91,7 +91,7 @@ button,.button,.miniButton,input,select,textarea{
 .hero .card{min-height:440px}
 .hero p{font-size:18px;color:var(--muted)}
 .loginCard{display:flex;flex-direction:column;justify-content:center}
-.brandShowcase{position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;background:linear-gradient(160deg,#fff,#fbf5ff,#edf6dd)}
+.brandShowcase{position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#fff}
 .brandShowcase:before{content:"✿";position:absolute;top:20px;left:24px;font-size:96px;color:rgba(125,75,179,.14)}
 .brandShowcase:after{content:"❀";position:absolute;right:28px;bottom:18px;font-size:120px;color:rgba(95,127,50,.16)}
 .brandShowcase img{width:100%;max-height:350px;object-fit:contain;position:relative;z-index:1}
@@ -105,7 +105,7 @@ button,.button,.miniButton,input,select,textarea{
 
 .adminHero,.customerHero{
   border-radius:36px;padding:28px;margin-bottom:18px;
-  background:linear-gradient(135deg,#fff,#f7edff 58%,#edf6dd);
+  background:#fff;
   border:1px solid var(--border);box-shadow:var(--soft-shadow)
 }
 .adminHero p,.customerHero p{max-width:760px;color:var(--muted)}
@@ -115,14 +115,14 @@ button,.button,.miniButton,input,select,textarea{
 .stat{padding:18px;border-radius:24px;background:white;border:1px solid var(--border);box-shadow:0 10px 30px rgba(75,37,120,.06);text-align:left}
 .stat span{display:block;color:var(--muted);font-size:13px}
 .stat b{display:block;font-size:23px;color:var(--purple-dark);margin-top:6px}
-.stat.highlight{background:linear-gradient(135deg,#fff,#f8eaff);border-color:#dbc0f1}
+.stat.highlight{background:#fff;border-color:#dbc0f1}
 
 .dashboardCard{margin-top:18px}
 .filters{display:grid;grid-template-columns:minmax(220px,2fr) 1fr 1fr 1fr auto auto auto;gap:12px;margin-bottom:18px;align-items:center}
 
 .paymentList{display:grid;gap:14px}
-.orderCard{border:1px solid var(--border);background:linear-gradient(135deg,#fff,#fffbff);border-radius:28px;padding:18px;box-shadow:0 10px 26px rgba(75,37,120,.07);position:relative;overflow:hidden}
-.orderCard:before{content:"";position:absolute;left:0;top:0;bottom:0;width:7px;background:linear-gradient(var(--purple),var(--green))}
+.orderCard{border:1px solid var(--border);background:#fff;border-radius:28px;padding:18px;box-shadow:0 10px 26px rgba(75,37,120,.07);position:relative;overflow:hidden}
+.orderCard:before{content:"";position:absolute;left:0;top:0;bottom:0;width:7px;background:var(--purple)}
 .orderTop{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:start;padding-left:8px}
 .customerBlock h3{font-size:26px;margin-bottom:4px}
 .customerBlock p{margin:0;color:var(--muted)}
@@ -138,7 +138,7 @@ button,.button,.miniButton,input,select,textarea{
 .actionTile p{margin:0;color:var(--muted);font-size:.9rem}
 .detailsPanel{margin-top:10px;border-radius:24px;background:#fff;border:1px solid var(--border);padding:16px}
 .detailsGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
-.notesCard{grid-column:1/-1;background:linear-gradient(135deg,rgba(248,241,255,.95),rgba(240,249,235,.95));border:2px solid rgba(128,91,166,.22);border-radius:22px;padding:18px}
+.notesCard{grid-column:1/-1;background:#fff;border:2px solid rgba(128,91,166,.22);border-radius:22px;padding:18px}
 .notesArea{margin-top:12px;margin-bottom:14px;min-height:130px;resize:vertical;width:100%}
 .stripeButtons,.linkList{display:flex;gap:9px;flex-wrap:wrap}
 .miniButton{display:inline-flex;background:#edf6e8;color:#4b6943;text-decoration:none;font-weight:700;transition:.2s ease}
@@ -149,7 +149,7 @@ button,.button,.miniButton,input,select,textarea{
 
 .customerDashboard{display:grid;gap:18px}
 .customerStats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
-.customerPaymentCard{background:linear-gradient(135deg,#fff,#fff9fd)}
+.customerPaymentCard{background:#fff}
 .orderTimeline{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
 .step{padding:7px 11px;border-radius:999px;background:#f3edf8;color:var(--muted);font-size:.82rem}
 .step.done{background:#edf5dc;color:var(--green-dark)}
@@ -259,7 +259,7 @@ button,.button,.miniButton,input,select,textarea{
 
 .previewCard {
   border: 1px solid var(--border);
-  background: linear-gradient(135deg, #fff, #fff8fd);
+  background:#fff;
   border-radius: 24px;
   padding: 18px;
   margin: 16px 0;
@@ -292,4 +292,52 @@ button,.button,.miniButton,input,select,textarea{
   .formGrid {
     grid-template-columns: 1fr;
   }
+}
+
+
+/* Cleaner V6 visual polish: fewer gradients, calmer cards */
+body {
+  background: #fff9f1 !important;
+}
+
+.card,
+.adminHero,
+.customerHero,
+.orderCard,
+.paymentLinkBuilder,
+.paymentLinkPreview,
+.previewCard {
+  background: rgba(255, 255, 255, 0.92) !important;
+}
+
+.button {
+  background: var(--purple-dark) !important;
+}
+
+.button.secondary {
+  background: var(--green-dark) !important;
+}
+
+.button.ghost {
+  background: #ffffff !important;
+}
+
+.stat.highlight {
+  background: #ffffff !important;
+}
+
+.orderCard:before {
+  background: var(--purple) !important;
+}
+
+.brandShowcase {
+  background: #ffffff !important;
+}
+
+.optionPanel {
+  background: rgba(255, 255, 255, 0.94) !important;
+}
+
+.createdLinkBox {
+  background: #fbf6ff !important;
 }
