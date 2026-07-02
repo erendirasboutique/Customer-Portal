@@ -133,7 +133,7 @@ export default function PaymentLinksPage() {
                     className="input"
                     value={form.customerName}
                     onChange={(e) => updateForm('customerName', e.target.value)}
-                    placeholder="Sylvia C"
+                    placeholder="Name
                   />
                 </label>
 
@@ -164,7 +164,7 @@ export default function PaymentLinksPage() {
                     className="input"
                     value={form.title}
                     onChange={(e) => updateForm('title', e.target.value)}
-                    placeholder="Custom Boutique Payment"
+                    placeholder=""
                     required
                   />
                 </label>
@@ -176,7 +176,7 @@ export default function PaymentLinksPage() {
                     rows="3"
                     value={form.description}
                     onChange={(e) => updateForm('description', e.target.value)}
-                    placeholder="Order payment, live sale invoice, balance due..."
+                    placeholder=""
                   />
                 </label>
 
@@ -189,7 +189,7 @@ export default function PaymentLinksPage() {
                     step="0.01"
                     value={form.amount}
                     onChange={(e) => updateForm('amount', e.target.value)}
-                    placeholder="118.00"
+                    placeholder="$0.00"
                     required
                   />
                 </label>
