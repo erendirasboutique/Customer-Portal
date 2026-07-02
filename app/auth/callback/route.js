@@ -2,9 +2,6 @@ import { NextResponse } from 'next/server';
 import { getSupabaseServer } from '@/lib/supabaseServer';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 
-const ALLOWED_ADMINS = [
-  'hello@shoperendirasboutique.com',
-];
 
 export async function GET(req) {
   const url = new URL(req.url);
@@ -30,11 +27,7 @@ export async function GET(req) {
   if (next.startsWith('/admin')) {
     const email = data.user.email.toLowerCase();
 
-    if (!ALLOWED_ADMINS.includes(email)) {
-      return NextResponse.redirect(
-        new URL(`/admin/login?error=unauthorized&email=${encodeURIComponent(email)}`, url.origin)
-      );
-    }
+  
 
     const adminSupabase = getSupabaseAdmin();
 
