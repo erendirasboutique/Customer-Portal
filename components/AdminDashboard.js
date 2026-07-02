@@ -101,7 +101,32 @@ export default function AdminDashboard({ payments, admin }) {
     setNotice(`Clover synced: ${data.imported || 0} payment(s).`);
     setTimeout(() => window.location.reload(), 1000);
   }
+async function createPaymentLink() {
+  setNotice('Creating payment link...');
 
+  const res = await fetch('/api/admin/create-payment-link', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      name: 'Custom Boutique Payment',
+      description: 'Order payment',
+      amount: 25,
+      quantity: 1,
+      customerEmail: '',
+    }),
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    setNotice(data.error || 'Could not create payment link.');
+    return;
+  }
+
+  setNotice(`Payment link created: ${data.url}`);
+  window.open(data.url, '_blank');
+}
+  
   async function saveNote(id) {
     setNotice('Saving note...');
     const res = await fetch('/api/admin/payment-notes', {
@@ -117,18 +142,6 @@ export default function AdminDashboard({ payments, admin }) {
     await fetch('/api/auth/logout', { method:'POST' });
     window.location.href = '/admin/login';
   }
-
-  await fetch('/api/admin/create-payment-link', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    name: 'Custom Boutique Payment',
-    description: 'Order payment',
-    amount: 25,
-    quantity: 1,
-    customerEmail: 'customer@email.com',
-  }),
-});
   
 
   return (
