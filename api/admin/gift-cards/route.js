@@ -88,16 +88,19 @@ export async function POST(req) {
     });
 
     const promotionCode = await stripe.promotionCodes.create({
-      coupon: coupon.id,
-      code,
-      active: true,
-      max_redemptions: 1,
-      metadata: {
-        created_from: 'erendiras_billing_portal',
-        gift_card_code: code,
-        recipient_name: finalName,
-      },
-    });
+  promotion: {
+    type: 'coupon',
+    coupon: coupon.id,
+  },
+  code,
+  active: true,
+  max_redemptions: 1,
+  metadata: {
+    created_from: 'erendiras_billing_portal',
+    gift_card_code: code,
+    recipient_name: finalName,
+  },
+});
 
     const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || '').replace(/\/$/, '');
     const giftCardUrl = `${siteUrl}/gift-card/${encodeURIComponent(code)}`;
