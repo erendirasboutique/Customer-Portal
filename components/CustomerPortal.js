@@ -68,7 +68,7 @@ export default function CustomerPortal({ initialUser, initialPayments }) {
               <img src="/logo2.png" alt="Erendira's Boutique" />
             </div>
           </section>
-          <div className="footer">Erendira&apos;s Boutique LLC</div>
+          <div className="footer"> © Erendira&apos;s Boutique</div>
         </div>
       </main>
     );
@@ -91,9 +91,9 @@ export default function CustomerPortal({ initialUser, initialPayments }) {
 
         <section className="customerHero">
           <div>
-            <p className="eyebrow">{lang === 'es' ? 'Bienvenida de nuevo' : 'Welcome back'}</p>
+            <p className="eyebrow">{lang === 'es' ? 'Bienvenida de nuevo' : 'Welcome Back'}</p>
             <h1>{name} 🌸</h1>
-            <p>{lang === 'es' ? 'Aquí puedes ver tus pagos, recibos y estado de pedido.' : 'Here is your Erendira’s Boutique payment history, receipts, and order status.'}</p>
+            <p>{lang === 'es' ? 'Aquí puedes ver tus pagos y recibos' : 'You can view your Erendira’s Boutique payment history, receipts, and order status.'}</p>
           </div>
         </section>
 
