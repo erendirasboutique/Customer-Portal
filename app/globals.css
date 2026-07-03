@@ -362,3 +362,284 @@ body {
   .savedLinkMeta { text-align: left; }
   .savedLinkButtons { justify-content: flex-start; }
 }
+
+
+
+/* =========================================================
+   Erendira's Boutique Rebrand V8
+   Palette: #f6f4f1, #957f67, #cfbda9
+   ========================================================= */
+
+@font-face {
+  font-family: 'LaLuxesSerif';
+  src: url('/fonts/la_luxes_serif.otf') format('opentype');
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Recoleta';
+  src: url('/fonts/recoleta-regular.otf') format('opentype');
+  font-display: swap;
+}
+
+:root {
+  --bg: #f6f4f1;
+  --primary: #957f67;
+  --primary-dark: #806b55;
+  --accent: #cfbda9;
+  --accent-soft: #e6dbcf;
+  --ink: #62513f;
+  --muted: #8d7c69;
+  --card: #fffdf9;
+  --border: #cfbda9;
+  --purple: #957f67;
+  --purple-dark: #806b55;
+  --green: #cfbda9;
+  --green-dark: #957f67;
+  --cream: #f6f4f1;
+  --pink: #e6dbcf;
+  --shadow: 0 18px 42px rgba(75, 57, 40, 0.08);
+  --soft-shadow: 0 12px 28px rgba(75, 57, 40, 0.06);
+}
+
+html,
+body {
+  background: #f6f4f1 !important;
+  color: #62513f !important;
+  font-family: 'Recoleta', Georgia, serif !important;
+}
+
+body:before,
+.flower,
+.brandShowcase:before,
+.brandShowcase:after {
+  display: none !important;
+}
+
+h1,
+h2,
+h3,
+.brand-title {
+  font-family: 'LaLuxesSerif', Georgia, serif !important;
+  color: #957f67 !important;
+  letter-spacing: .01em;
+}
+
+p,
+span,
+label,
+input,
+select,
+textarea,
+button,
+a,
+div,
+small,
+td,
+th {
+  font-family: 'Recoleta', Georgia, serif;
+}
+
+.page {
+  background: #f6f4f1 !important;
+}
+
+.card,
+.loginCard,
+.dashboardCard,
+.sidebar,
+.adminHero,
+.customerHero,
+.orderCard,
+.detailsPanel,
+.notesCard,
+.paymentLinkBuilder,
+.paymentLinkPreview,
+.previewCard,
+.savedPaymentLinksCard,
+.savedPaymentLinkCard,
+.optionPanel,
+.actionTile,
+.quickDetails div,
+.detailCard,
+.createdLinkBox {
+  background: #fffdf9 !important;
+  border: 1px solid rgba(207, 189, 169, .85) !important;
+  box-shadow: 0 18px 42px rgba(75, 57, 40, 0.08) !important;
+  border-radius: 26px !important;
+}
+
+.logo {
+  width: 116px !important;
+  height: auto !important;
+  max-height: 86px !important;
+  object-fit: contain !important;
+}
+
+.sidebar .logo {
+  width: 92px !important;
+  max-height: 92px !important;
+  border-radius: 50%;
+  background: #f6f4f1;
+  padding: 4px;
+}
+
+.brand-title {
+  font-size: 34px !important;
+}
+
+.eyebrow {
+  color: #957f67 !important;
+  letter-spacing: .16em !important;
+}
+
+.mutedText,
+.customerBlock p,
+.quickDetails p,
+.detailCard p,
+.previewCard p,
+.savedLinkMeta p,
+.sidebar p {
+  color: #8d7c69 !important;
+}
+
+.button,
+button.button,
+a.button {
+  background: #957f67 !important;
+  color: #f6f4f1 !important;
+  border: 1px solid #957f67 !important;
+  box-shadow: none !important;
+  border-radius: 999px !important;
+  font-family: 'Recoleta', Georgia, serif !important;
+}
+
+.button:hover,
+button.button:hover,
+a.button:hover {
+  background: #806b55 !important;
+  border-color: #806b55 !important;
+  transform: translateY(-1px);
+}
+
+.button.secondary {
+  background: #957f67 !important;
+  border-color: #957f67 !important;
+  color: #f6f4f1 !important;
+}
+
+.button.ghost {
+  background: transparent !important;
+  border: 1px solid #cfbda9 !important;
+  color: #957f67 !important;
+}
+
+.button.ghost:hover {
+  background: #efe8df !important;
+  color: #806b55 !important;
+}
+
+.googleButton {
+  background: #fffdf9 !important;
+  color: #62513f !important;
+  border: 1px solid #cfbda9 !important;
+}
+
+.input,
+input,
+select,
+textarea {
+  background: #fffdf9 !important;
+  color: #62513f !important;
+  border: 1px solid #cfbda9 !important;
+  border-radius: 16px !important;
+  box-shadow: none !important;
+  font-family: 'Recoleta', Georgia, serif !important;
+}
+
+.input:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none !important;
+  border-color: #957f67 !important;
+  box-shadow: 0 0 0 4px rgba(149, 127, 103, .12) !important;
+}
+
+.notice {
+  background: #efe8df !important;
+  color: #62513f !important;
+  border: 1px solid #cfbda9 !important;
+}
+
+.pill {
+  background: #efe8df !important;
+  color: #957f67 !important;
+  border: 1px solid #cfbda9 !important;
+}
+
+.stat,
+.stat.highlight {
+  background: #fffdf9 !important;
+  border: 1px solid #cfbda9 !important;
+  box-shadow: 0 12px 28px rgba(75, 57, 40, 0.06) !important;
+}
+
+.stat b,
+.amountBlock b,
+.savedLinkMeta b,
+.previewCard h3 {
+  color: #957f67 !important;
+}
+
+.orderCard:before {
+  background: #cfbda9 !important;
+}
+
+.brandShowcase {
+  background: #fffdf9 !important;
+}
+
+.brandShowcase img {
+  max-width: 90% !important;
+}
+
+.checkRow input {
+  accent-color: #957f67;
+}
+
+.side-links a,
+.side-links button {
+  justify-content: center !important;
+}
+
+.footer {
+  color: #8d7c69 !important;
+}
+
+a {
+  color: #957f67 !important;
+}
+
+.tablewrap,
+table {
+  background: #fffdf9 !important;
+}
+
+th {
+  color: #957f67 !important;
+}
+
+td {
+  color: #62513f !important;
+}
+
+.savedPaymentLinkCard.archivedLink {
+  opacity: .65;
+}
+
+@media print {
+  body {
+    background: white !important;
+  }
+}

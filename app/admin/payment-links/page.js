@@ -23,8 +23,8 @@ export default function PaymentLinksPage() {
   const [copiedSavedLinkId, setCopiedSavedLinkId] = useState('');
   const [editingLink, setEditingLink] = useState(null);
   const [form, setForm] = useState({
-    title: '',
-    description: '',
+    title: 'Custom Boutique Payment',
+    description: 'Order payment',
     amount: '',
     customerChoosesAmount: false,
     minimumAmount: '',
