@@ -230,7 +230,7 @@ export default function PaymentLinksPage() {
 
       <div className="shell split adminShell">
         <aside className="card sidebar no-print">
-          <img src="/logo.png" className="logo" alt="Erendira's Boutique" />
+          <img src="/logo2.png" className="logo" alt="Erendira's Boutique" />
           <h2>Admin Studio</h2>
           <p>Payment Links</p>
           <div className="side-links">
