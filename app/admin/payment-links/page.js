@@ -269,12 +269,12 @@ export default function PaymentLinksPage() {
 
               <div className="formGrid">
                 <label className="field">
-                  Product/payment title
+                  Payment Title/Customer Name
                   <input className="input" value={form.title} onChange={(e) => updateForm('title', e.target.value)} required />
                 </label>
 
                 <label className="field">
-                  Amount
+                  Amount $
                   <input
                     className="input"
                     type="number"
