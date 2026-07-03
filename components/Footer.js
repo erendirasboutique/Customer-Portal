@@ -1,7 +1,7 @@
 export default function Footer() {
   return (
     <footer className="footer">
-      <img src="/logo.png" alt="Erendira's Boutique" />
+      <img src="/logo2.png" alt="Erendira's Boutique" />
       <h2>Erendira&apos;s Boutique</h2>
       <p>Envios cada Sábado!</p>
       <div className="footerLinks">
