@@ -262,7 +262,7 @@ export default function PaymentLinksPage() {
               <div className="builderHeader">
                 <div>
                   <p className="eyebrow">{editingLink ? 'Edit link' : 'New link'}</p>
-                  <h2>{editingLink ? 'Edit Payment Link' : 'Payment information'}</h2>
+                  <h2>{editingLink ? 'Edit Payment Link' : 'Payment Information'}</h2>
                 </div>
                 {editingLink && <button className="button ghost mini" type="button" onClick={resetForm}>Cancel Edit</button>}
               </div>
@@ -367,7 +367,7 @@ export default function PaymentLinksPage() {
                     <a className="button ghost" href={createdLink} target="_blank" rel="noopener noreferrer">Open Link</a>
                   </div>
                 </div>
-              ) : <div className="emptyState">Your generated Stripe payment link will appear here.</div>}
+              ) : <div className="emptyState">Your Generated Stripe payment link will appear here.</div>}
             </aside>
           </div>
 
@@ -375,7 +375,7 @@ export default function PaymentLinksPage() {
             <div className="savedLinksHeader">
               <div>
                 <p className="eyebrow">Saved Links</p>
-                <h2>Generated payment links</h2>
+                <h2>Payment Links</h2>
                 <p className="mutedText">View created time, payment status, paid count, revenue, and quick actions.</p>
               </div>
               <div className="savedLinksActions">
