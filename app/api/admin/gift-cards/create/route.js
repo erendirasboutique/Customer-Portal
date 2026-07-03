@@ -50,11 +50,34 @@ export async function POST(req) {
     //
     // CREATE PROMOTION CODE
     //
-    const promotionCode = await stripe.promotionCodes.create({
-      coupon: coupon.id,
-      code,
-      active: true,
-    });
+  const promoParams = new URLSearchParams();
+
+promoParams.append('promotion[type]', 'coupon');
+promoParams.append('promotion[coupon]', coupon.id);
+promoParams.append('code', code);
+promoParams.append('active', 'true');
+promoParams.append('max_redemptions', '1');
+promoParams.append('metadata[created_from]', 'erendiras_billing_portal');
+promoParams.append('metadata[gift_card_code]', code);
+promoParams.append('metadata[recipient_name]', finalName);
+
+const promoRes = await fetch('https://api.stripe.com/v1/promotion_codes', {
+  method: 'POST',
+  headers: {
+    Authorization: `Bearer ${process.env.STRIPE_SECRET_KEY}`,
+    'Content-Type': 'application/x-www-form-urlencoded',
+  },
+  body: promoParams.toString(),
+});
+
+const promotionCode = await promoRes.json();
+
+if (!promoRes.ok) {
+  return NextResponse.json(
+    { error: promotionCode.error?.message || 'Could not create Stripe promotion code.' },
+    { status: 500 }
+  );
+}
 
     const site =
       (process.env.NEXT_PUBLIC_SITE_URL || '').replace(/\/$/, '');
