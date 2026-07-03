@@ -1,5 +1,5 @@
 Branding files included:
-- public/logo.png = uploaded Erendira’s Boutique full logo
+- public/logo2.png = uploaded Erendira’s Boutique full logo
 - public/favicon.png = uploaded circular Erendira’s Boutique icon
 - public/apple-touch-icon.png = same circular icon for phone/browser shortcuts
 
