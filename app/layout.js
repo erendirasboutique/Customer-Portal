@@ -1,9 +1,31 @@
 import './globals.css';
 
 export const metadata = {
-  title: "Erendira's Boutique Billing",
-  description: "Customer and admin billing portal",
-  icons: { icon: '/favicon.png' },
+  title: "Erendira's Boutique | Billing Portal",
+  description: "Secure Billing Portal",
+
+  openGraph: {
+    title: "Erendira's Boutique Billing Portal",
+    description: "Secure billing portal for Erendira's Boutique.",
+    url: "https://billing.erendirasboutique.com",
+    siteName: "Erendira's Boutique",
+    images: [
+      {
+        url: "/social-preview.png",
+        width: 1200,
+        height: 630,
+        alt: "Erendira's Boutique",
+      },
+    ],
+    type: "website",
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "Erendira's Boutique Billing Portal",
+    description: "Secure billing portal for Erendira's Boutique.",
+    images: ["/social-preview.png"],
+  },
 };
 
 export default function RootLayout({ children }) {
