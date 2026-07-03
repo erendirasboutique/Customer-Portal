@@ -51,7 +51,7 @@ export async function POST(req) {
     //
     // CREATE PROMOTION CODE
     //
-    const finalName = recipientName || '';
+  
   const finalName = recipientName || customerName || '';
     
   const promoParams = new URLSearchParams();
