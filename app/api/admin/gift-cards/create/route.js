@@ -1,21 +1,22 @@
-
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 
-export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
-function makeCode() {
-  const part = () => Math.random().toString(36).slice(2, 6).toUpperCase();
-  return `EB-${part()}-${part()}-${part()}`;
+function generateCode() {
+  return (
+    'EB-' +
+    Math.random().toString(36).substring(2, 6).toUpperCase() +
+    '-' +
+    Math.random().toString(36).substring(2, 6).toUpperCase()
+  );
 }
 
 export async function POST(req) {
   try {
-    if (!process.env.STRIPE_SECRET_KEY) {
-      return NextResponse.json({ error: 'Missing STRIPE_SECRET_KEY.' }, { status: 500 });
-    }
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
     const {
       amount,
@@ -25,40 +26,43 @@ export async function POST(req) {
       customCode = '',
     } = await req.json();
 
-    const amountNumber = Number(amount);
+    const value = Number(amount);
 
-    if (!amountNumber || amountNumber < 1) {
-      return NextResponse.json({ error: 'Gift card amount must be at least $1.' }, { status: 400 });
+    if (!value || value < 1) {
+      return NextResponse.json(
+        { error: 'Gift card amount must be at least $1.' },
+        { status: 400 }
+      );
     }
 
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-    const supabase = getSupabaseAdmin();
-    const code = (customCode || makeCode()).trim().toUpperCase();
+    const code = (customCode || generateCode()).toUpperCase();
 
+    //
+    // CREATE STRIPE COUPON
+    //
     const coupon = await stripe.coupons.create({
-      amount_off: Math.round(amountNumber * 100),
+      amount_off: Math.round(value * 100),
       currency: 'usd',
       duration: 'once',
       name: `Gift Card ${code}`,
-      metadata: {
-        gift_card_code: code,
-        created_from: 'erendiras_billing_portal',
-      },
     });
 
+    //
+    // CREATE PROMOTION CODE
+    //
     const promotionCode = await stripe.promotionCodes.create({
       coupon: coupon.id,
       code,
       active: true,
-      metadata: {
-        gift_card_code: code,
-        created_from: 'erendiras_billing_portal',
-      },
     });
 
-    const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || '').replace(/\/$/, '');
-    const giftCardUrl = `${siteUrl}/gift-card/${encodeURIComponent(code)}`;
-    const pdfUrl = `${siteUrl}/api/gift-card/pdf?code=${encodeURIComponent(code)}`;
+    const site =
+      (process.env.NEXT_PUBLIC_SITE_URL || '').replace(/\/$/, '');
+
+    const portalUrl = `${site}/gift-card/${code}`;
+    const pdfUrl = `${site}/api/gift-card/pdf?code=${code}`;
+
+    const supabase = getSupabaseAdmin();
 
     const { data, error } = await supabase
       .from('gift_cards')
@@ -66,26 +70,21 @@ export async function POST(req) {
         stripe_coupon_id: coupon.id,
         stripe_promotion_code_id: promotionCode.id,
         code,
-        amount: amountNumber,
-        customer_name: customerName || '',
-        customer_email: customerEmail || '',
-        message: message || '',
+        amount: value,
+        customer_name: customerName,
+        customer_email: customerEmail,
+        message,
         status: 'active',
-        gift_card_url: giftCardUrl,
+        gift_card_url: portalUrl,
         pdf_url: pdfUrl,
-        updated_at: new Date().toISOString(),
       })
-      .select('*')
+      .select()
       .single();
 
     if (error) {
       return NextResponse.json(
         {
-          error: 'Stripe gift card was created, but Supabase did not save it.',
-          details: error.message,
-          code,
-          giftCardUrl,
-          pdfUrl,
+          error: error.message,
         },
         { status: 500 }
       );
@@ -95,12 +94,14 @@ export async function POST(req) {
       success: true,
       giftCard: data,
       code,
-      giftCardUrl,
+      portalUrl,
       pdfUrl,
     });
-  } catch (error) {
+  } catch (err) {
     return NextResponse.json(
-      { error: error.message || 'Could not create gift card.' },
+      {
+        error: err.message,
+      },
       { status: 500 }
     );
   }
