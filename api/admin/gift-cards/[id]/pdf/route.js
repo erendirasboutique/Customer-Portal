@@ -57,7 +57,7 @@ export async function GET(_req, { params }) {
     page.drawRectangle({ x: 46, y: height - 96, width: width - 92, height: 58, color: COLORS.white, borderColor: COLORS.primary, borderWidth: 1, borderOpacity: 0.65 });
 
     try {
-      const logoPath = path.join(process.cwd(), 'public', 'logo.png');
+      const logoPath = path.join(process.cwd(), 'public', 'logo2.png');
       const logoBytes = await fs.readFile(logoPath);
       const logoImage = await pdfDoc.embedPng(logoBytes);
       const logoDims = logoImage.scale(0.13);
