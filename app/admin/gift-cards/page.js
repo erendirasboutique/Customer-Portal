@@ -1,7 +1,7 @@
+
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import LanguageToggle from '@/components/LanguageToggle';
+import { useEffect, useState } from 'react';
 
 function money(value) {
   return `$${Number(value || 0).toFixed(2)}`;
@@ -12,59 +12,33 @@ function formatDate(value) {
   return new Date(value).toLocaleString();
 }
 
-export default function GiftCardsPage() {
-  const [lang, setLang] = useState('en');
-  const [message, setMessage] = useState('');
-  const [giftCards, setGiftCards] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [copiedId, setCopiedId] = useState('');
+export default function GiftCardsAdminPage() {
   const [form, setForm] = useState({
     amount: '',
-    recipientName: '',
-    note: '',
-    neverExpires: true,
+    customerName: '',
+    customerEmail: '',
+    message: '',
+    customCode: '',
   });
-
-  const analytics = useMemo(() => {
-    const active = giftCards.filter((g) => g.status !== 'redeemed' && g.active !== false);
-    const redeemed = giftCards.filter((g) => g.status === 'redeemed');
-    const issued = giftCards.reduce((sum, g) => sum + Number(g.amount || 0), 0);
-    const redeemedAmount = giftCards.reduce((sum, g) => sum + Number(g.redeemed_amount || 0), 0);
-    return { total: giftCards.length, active: active.length, redeemed: redeemed.length, issued, redeemedAmount };
-  }, [giftCards]);
-
-  const filteredGiftCards = giftCards.filter((card) => {
-    const query = search.trim().toLowerCase();
-    if (!query) return true;
-    return [card.code, card.recipient_name, card.status, card.note]
-      .filter(Boolean)
-      .join(' ')
-      .toLowerCase()
-      .includes(query);
-  });
+  const [message, setMessage] = useState('');
+  const [giftCards, setGiftCards] = useState([]);
+  const [createdGiftCard, setCreatedGiftCard] = useState(null);
+  const [copiedId, setCopiedId] = useState('');
 
   function updateForm(field, value) {
     setForm((current) => ({ ...current, [field]: value }));
   }
 
   async function loadGiftCards() {
-    setLoading(true);
-    try {
-      const res = await fetch('/api/admin/gift-cards', { method: 'GET', cache: 'no-store' });
-      const data = await res.json();
-      if (!res.ok) {
-        setMessage(data.error || 'Could not load gift cards.');
-        setGiftCards([]);
-        return;
-      }
-      setGiftCards(data.giftCards || []);
-    } catch (error) {
-      setMessage(error.message || 'Could not load gift cards.');
-      setGiftCards([]);
-    } finally {
-      setLoading(false);
+    const res = await fetch('/api/admin/gift-cards/list', { cache: 'no-store' });
+    const data = await res.json();
+
+    if (!res.ok) {
+      setMessage(data.error || 'Could not load gift cards.');
+      return;
     }
+
+    setGiftCards(data.giftCards || []);
   }
 
   useEffect(() => {
@@ -73,16 +47,10 @@ export default function GiftCardsPage() {
 
   async function createGiftCard(e) {
     e.preventDefault();
-    setMessage('');
-
-    if (!form.amount || Number(form.amount) < 1) {
-      setMessage('Enter a gift card amount of at least $1.');
-      return;
-    }
-
     setMessage('Creating gift card...');
+    setCreatedGiftCard(null);
 
-    const res = await fetch('/api/admin/gift-cards', {
+    const res = await fetch('/api/admin/gift-cards/create', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form),
@@ -95,29 +63,23 @@ export default function GiftCardsPage() {
       return;
     }
 
-    setMessage('Gift card created. PDF is ready.');
-    setForm({ amount: '', recipientName: '', note: '', neverExpires: true });
+    setCreatedGiftCard(data.giftCard);
+    setMessage('Gift card created.');
+    setForm({ amount: '', customerName: '', customerEmail: '', message: '', customCode: '' });
     await loadGiftCards();
-
-    if (data.giftCard?.id) {
-      window.open(`/api/admin/gift-cards/${data.giftCard.id}/pdf`, '_blank');
-    }
   }
 
-  async function copyCode(card) {
-    if (!card?.code) return;
-    await navigator.clipboard.writeText(card.code);
-    setCopiedId(card.id);
-    setTimeout(() => setCopiedId(''), 1800);
-  }
+  async function toggleGiftCard(card) {
+    const nextActive = card.status !== 'active';
 
-  async function setGiftCardActive(card, active) {
-    setMessage(active ? 'Reactivating gift card...' : 'Deactivating gift card...');
-
-    const res = await fetch('/api/admin/gift-cards', {
-      method: 'PATCH',
+    const res = await fetch('/api/admin/gift-cards/deactivate', {
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: card.id, active }),
+      body: JSON.stringify({
+        id: card.id,
+        stripePromotionCodeId: card.stripe_promotion_code_id,
+        active: nextActive,
+      }),
     });
 
     const data = await res.json();
@@ -127,8 +89,14 @@ export default function GiftCardsPage() {
       return;
     }
 
-    setMessage(active ? 'Gift card reactivated.' : 'Gift card deactivated.');
+    setMessage(nextActive ? 'Gift card activated.' : 'Gift card deactivated.');
     await loadGiftCards();
+  }
+
+  async function copyText(text, id) {
+    await navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(''), 1800);
   }
 
   async function logout() {
@@ -143,7 +111,6 @@ export default function GiftCardsPage() {
           <img src="/logo-icon.png" className="logo" alt="Erendira's Boutique" />
           <h2>Admin Studio</h2>
           <p>Gift Cards</p>
-
           <div className="side-links">
             <a className="button ghost" href="/admin">Dashboard</a>
             <a className="button ghost" href="/admin/payment-links">Payment Links</a>
@@ -155,146 +122,117 @@ export default function GiftCardsPage() {
         <section className="adminContent">
           <div className="adminHero no-print">
             <div>
-              <p className="eyebrow">Manual Gift Cards</p>
+              <p className="eyebrow">Erendira&apos;s Boutique</p>
               <h1>Gift Cards</h1>
-              <p>
-                Create Stripe promo-code gift cards, download a branded PDF, and let customers redeem the code on payment links.
-              </p>
+              <p>Create Stripe promo-code gift cards, generate a branded PDF, and give customers a private gift-card portal link.</p>
             </div>
-            <LanguageToggle lang={lang} setLang={setLang} />
           </div>
 
-          <div className="statsGrid giftCardAnalytics">
-            <div className="stat highlight"><span>Total issued</span><b>{analytics.total}</b></div>
-            <div className="stat"><span>Active</span><b>{analytics.active}</b></div>
-            <div className="stat"><span>Redeemed</span><b>{analytics.redeemed}</b></div>
-            <div className="stat"><span>Issued value</span><b>{money(analytics.issued)}</b></div>
-          </div>
-
-          <div className="giftCardPageGrid">
-            <form className="card giftCardBuilder" onSubmit={createGiftCard}>
+          <div className="paymentLinkPageGrid">
+            <form className="card paymentLinkBuilder" onSubmit={createGiftCard}>
               <p className="eyebrow">Create</p>
-              <h2>New Gift Card</h2>
+              <h2>New gift card</h2>
 
               <div className="formGrid">
                 <label className="field">
                   Amount
-                  <input
-                    className="input"
-                    type="number"
-                    min="1"
-                    step="0.01"
-                    value={form.amount}
-                    onChange={(e) => updateForm('amount', e.target.value)}
-                    required
-                  />
+                  <input className="input" type="number" min="1" step="0.01" value={form.amount} onChange={(e) => updateForm('amount', e.target.value)} required />
                 </label>
 
                 <label className="field">
-                  Recipient name
-                  <input
-                    className="input"
-                    value={form.recipientName}
-                    onChange={(e) => updateForm('recipientName', e.target.value)}
-                  />
+                  Custom code optional
+                  <input className="input" value={form.customCode} onChange={(e) => updateForm('customCode', e.target.value)} />
+                </label>
+
+                <label className="field">
+                  Customer name
+                  <input className="input" value={form.customerName} onChange={(e) => updateForm('customerName', e.target.value)} />
+                </label>
+
+                <label className="field">
+                  Customer email
+                  <input className="input" type="email" value={form.customerEmail} onChange={(e) => updateForm('customerEmail', e.target.value)} />
                 </label>
 
                 <label className="field formWide">
-                  Optional message
-                  <textarea
-                    className="input"
-                    rows="3"
-                    value={form.note}
-                    onChange={(e) => updateForm('note', e.target.value)}
-                  />
+                  Message
+                  <textarea className="input" rows="3" value={form.message} onChange={(e) => updateForm('message', e.target.value)} />
                 </label>
               </div>
 
-              <div className="optionPanel">
-                <label className="checkRow">
-                  <input
-                    type="checkbox"
-                    checked={form.neverExpires}
-                    onChange={(e) => updateForm('neverExpires', e.target.checked)}
-                  />
-                  <span>This gift card never expires</span>
-                </label>
+              <div className="notice">
+                Gift cards work as Stripe promotion codes. Your payment links must have “Allow promotion codes” enabled.
               </div>
 
-              <div className="paymentLinkActions">
-                <button className="button secondary" type="submit">Create Gift Card PDF</button>
-                <a className="button ghost" href="/admin">Back to Dashboard</a>
-              </div>
-
+              <button className="button secondary" type="submit">Create Gift Card</button>
               {message && <div className="notice">{message}</div>}
             </form>
 
-            <aside className="card giftCardPreview">
-              <p className="eyebrow">Preview</p>
-              <h2>PDF style</h2>
+            <aside className="card paymentLinkPreview">
+              <p className="eyebrow">Latest</p>
+              <h2>Created gift card</h2>
 
-              <div className="giftPreviewTop"><img src="/logo.png" alt="Erendira's Boutique" /></div>
-              <p className="giftPreviewTitle">Here&apos;s your e-gift card!</p>
-              <div className="giftPreviewCard">
-                <b>Erendira&apos;s Boutique</b>
-                <h3>{form.amount ? money(form.amount) : '$0.00'}</h3>
-                <span>Gift Card</span>
-              </div>
-              <div className="giftPreviewCode">EB-XXXX-XX-XXXX</div>
-              <p className="mutedText">PDF includes a QR code, redemption instructions, and the gift card code.</p>
+              {createdGiftCard ? (
+                <div className="createdLinkBox">
+                  <b>{money(createdGiftCard.amount)}</b>
+                  <p>{createdGiftCard.code}</p>
+                  <div className="paymentLinkActions">
+                    <button className="button secondary" type="button" onClick={() => copyText(createdGiftCard.code, 'created-code')}>
+                      {copiedId === 'created-code' ? 'Copied!' : 'Copy Code'}
+                    </button>
+                    <a className="button ghost" href={createdGiftCard.gift_card_url} target="_blank" rel="noopener noreferrer">Open Portal</a>
+                    <a className="button ghost" href={createdGiftCard.pdf_url} target="_blank" rel="noopener noreferrer">View PDF</a>
+                  </div>
+                </div>
+              ) : (
+                <div className="emptyState">Create a gift card to see links here.</div>
+              )}
             </aside>
           </div>
 
-          <section className="card savedGiftCardsCard">
+          <section className="card savedPaymentLinksCard">
             <div className="savedLinksHeader">
               <div>
-                <p className="eyebrow">Saved Gift Cards</p>
-                <h2>Generated gift cards</h2>
-                <p className="mutedText">Copy codes, download PDFs, deactivate codes, and track redemption status.</p>
+                <p className="eyebrow">Saved</p>
+                <h2>Gift cards</h2>
               </div>
-
-              <div className="savedLinksActions">
-                <input className="input" value={search} onChange={(e) => setSearch(e.target.value)} />
-                <button className="button ghost" type="button" onClick={loadGiftCards}>Refresh</button>
-              </div>
+              <button className="button ghost" type="button" onClick={loadGiftCards}>Refresh</button>
             </div>
 
-            {loading ? (
-              <div className="emptyState">Loading gift cards...</div>
-            ) : filteredGiftCards.length === 0 ? (
-              <div className="emptyState">No gift cards yet.</div>
-            ) : (
-              <div className="savedPaymentLinksList">
-                {filteredGiftCards.map((card) => (
-                  <article className="savedPaymentLinkCard" key={card.id}>
-                    <div>
-                      <p className="eyebrow">Created {formatDate(card.created_at)}</p>
-                      <h3>{card.code}</h3>
-                      <p className="mutedText">{card.recipient_name || 'No recipient name'}</p>
-                      <p className="mutedText">{card.note || '—'}</p>
-                    </div>
+            <div className="savedPaymentLinksList">
+              {giftCards.map((card) => (
+                <article className="savedPaymentLinkCard" key={card.id}>
+                  <div>
+                    <p className="eyebrow">Created {formatDate(card.created_at)}</p>
+                    <h3>{money(card.amount)} Gift Card</h3>
+                    <p className="mutedText">{card.customer_name || 'No customer'} {card.customer_email ? `• ${card.customer_email}` : ''}</p>
+                    <p>{card.code}</p>
+                  </div>
 
-                    <div className="savedLinkMeta">
-                      <b>{money(card.amount)}</b>
-                      <span className="pill">{card.active === false ? 'inactive' : card.status || 'active'}</span>
-                      <p>Redeemed: {card.redeemed_at ? formatDate(card.redeemed_at) : 'Not yet'}</p>
-                    </div>
+                  <div className="savedLinkMeta">
+                    <span className="pill">{card.status || 'active'}</span>
+                    <p>Redeemed: {card.redeemed_count || 0}</p>
+                    <p>Total: {money(card.total_redeemed || 0)}</p>
+                  </div>
 
-                    <div className="savedLinkButtons">
-                      <button className="button secondary mini" type="button" onClick={() => copyCode(card)}>
-                        {copiedId === card.id ? 'Copied!' : 'Copy Code'}
-                      </button>
-                      <a className="button ghost mini" href={`/api/admin/gift-cards/${card.id}/pdf`} target="_blank" rel="noopener noreferrer">
-                        PDF
-                      </a>
-                      <button className="button ghost mini" type="button" onClick={() => setGiftCardActive(card, card.active === false)}>
-                        {card.active === false ? 'Reactivate' : 'Deactivate'}
-                      </button>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            )}
+                  <div className="savedLinkButtons">
+                    <button className="button secondary mini" onClick={() => copyText(card.code, `${card.id}-code`)}>
+                      {copiedId === `${card.id}-code` ? 'Copied!' : 'Code'}
+                    </button>
+                    <button className="button ghost mini" onClick={() => copyText(card.gift_card_url, `${card.id}-url`)}>
+                      {copiedId === `${card.id}-url` ? 'Copied!' : 'Portal'}
+                    </button>
+                    <a className="button ghost mini" href={card.gift_card_url} target="_blank" rel="noopener noreferrer">Open</a>
+                    <a className="button ghost mini" href={card.pdf_url} target="_blank" rel="noopener noreferrer">PDF</a>
+                    <button className="button ghost mini" onClick={() => toggleGiftCard(card)}>
+                      {card.status === 'active' ? 'Deactivate' : 'Activate'}
+                    </button>
+                  </div>
+                </article>
+              ))}
+
+              {giftCards.length === 0 && <div className="emptyState">No gift cards yet.</div>}
+            </div>
           </section>
         </section>
       </div>
