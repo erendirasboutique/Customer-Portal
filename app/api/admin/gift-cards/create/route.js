@@ -36,7 +36,6 @@ export async function POST(req) {
     }
 
     const code = (customCode || generateCode()).toUpperCase();
-    const finalName = recipientName || '';
 
     //
     // CREATE STRIPE COUPON
