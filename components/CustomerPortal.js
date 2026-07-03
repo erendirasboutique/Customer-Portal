@@ -45,7 +45,7 @@ export default function CustomerPortal({ initialUser, initialPayments }) {
         <div className="shell">
           <div className="topbar">
             <div className="brand">
-              <img src="/logo2.png" className="logo" alt="Erendira's Boutique" />
+              <img src="/logo.png" className="logo" alt="Erendira's Boutique" />
               <div className="brand-title">Erendira&apos;s Boutique</div>
             </div>
             <LanguageToggle lang={lang} setLang={setLang} />
@@ -65,10 +65,10 @@ export default function CustomerPortal({ initialUser, initialPayments }) {
               {message && <div className="notice">{message}</div>}
             </div>
             <div className="card brandShowcase">
-              <img src="/logo2.png" alt="Erendira's Boutique" />
+              <img src="/logo.png" alt="Erendira's Boutique" />
             </div>
           </section>
-          <div className="footer"> © Erendira&apos;s Boutique</div>
+          <div className="footer">Erendira&apos;s Boutique LLC</div>
         </div>
       </main>
     );
@@ -80,7 +80,7 @@ export default function CustomerPortal({ initialUser, initialPayments }) {
       <div className="shell customerDashboard">
         <div className="topbar">
           <div className="brand">
-            <img src="/logo2.png" className="logo" alt="Erendira's Boutique" />
+            <img src="/logo.png" className="logo" alt="Erendira's Boutique" />
             <div className="brand-title">Erendira&apos;s Boutique</div>
           </div>
           <div className="lang">
@@ -91,9 +91,9 @@ export default function CustomerPortal({ initialUser, initialPayments }) {
 
         <section className="customerHero">
           <div>
-            <p className="eyebrow">{lang === 'es' ? 'Bienvenida de nuevo' : 'Welcome Back'}</p>
+            <p className="eyebrow">{lang === 'es' ? 'Bienvenida de nuevo' : 'Welcome back'}</p>
             <h1>{name} 🌸</h1>
-            <p>{lang === 'es' ? 'Aquí puedes ver tus pagos y recibos' : 'You can view your Erendira’s Boutique payment history, receipts, and order status.'}</p>
+            <p>{lang === 'es' ? 'Aquí puedes ver tus pagos, recibos y estado de pedido.' : 'Here is your Erendira’s Boutique payment history, receipts, and order status.'}</p>
           </div>
         </section>
 

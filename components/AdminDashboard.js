@@ -123,13 +123,14 @@ export default function AdminDashboard({ payments, admin }) {
       <span className="flower one no-print">✿</span><span className="flower two no-print">❀</span>
       <div className="shell split adminShell">
         <aside className="card sidebar no-print">
-          <img src="/logo2.png" className="logo" alt="Erendira's Boutique" />
+          <img src="/logo.png" className="logo" alt="Erendira's Boutique" />
           <h2>Admin Studio</h2>
           <p>{admin?.email}</p>
           <p><span className="pill">{admin?.role}</span></p>
           <div className="side-links">
             <a className="button secondary" href="/admin">Dashboard</a>
             <a className="button ghost" href="/admin/payment-links">Payment Links</a>
+            <a className="button ghost" href="/admin/gift-cards">Gift Cards</a>
             <button className="button ghost" onClick={logout}>Logout</button>
           </div>
         </aside>

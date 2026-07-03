@@ -71,6 +71,36 @@ export async function POST(req) {
       return new Response('Supabase insert failed', { status: 500 });
     }
 
+
+
+    try {
+      const fullSession = await stripe.checkout.sessions.retrieve(session.id, {
+        expand: ['total_details.breakdown.discounts.discount.promotion_code'],
+      });
+
+      const discounts = fullSession.total_details?.breakdown?.discounts || [];
+
+      for (const item of discounts) {
+        const promoCode = item.discount?.promotion_code;
+        const promoCodeId = typeof promoCode === 'string' ? promoCode : promoCode?.id;
+
+        if (!promoCodeId) continue;
+
+        await supabase
+          .from('gift_cards')
+          .update({
+            status: 'redeemed',
+            active: false,
+            redeemed_at: new Date().toISOString(),
+            redeemed_amount: Number(item.amount || 0) / 100,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('stripe_promotion_code_id', promoCodeId);
+      }
+    } catch (giftCardError) {
+      console.error('Gift card redemption sync skipped:', giftCardError.message);
+    }
+
     if (session.payment_link) {
       const paymentLinkId = typeof session.payment_link === 'string'
         ? session.payment_link

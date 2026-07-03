@@ -643,3 +643,91 @@ td {
     background: white !important;
   }
 }
+
+/* Gift Cards V9 */
+.giftCardAnalytics {
+  margin-bottom: 18px;
+}
+
+.giftCardPageGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(320px, .85fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.giftCardBuilder,
+.giftCardPreview,
+.savedGiftCardsCard {
+  background: #fffdf9 !important;
+}
+
+.giftPreviewTop {
+  border: 1px solid #cfbda9;
+  border-radius: 999px;
+  padding: 18px;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+  background: #f6f4f1;
+}
+
+.giftPreviewTop img {
+  max-width: 220px;
+  height: auto;
+}
+
+.giftPreviewTitle {
+  text-align: center;
+  font-size: 1.3rem;
+  color: #62513f;
+}
+
+.giftPreviewCard {
+  border: 1px solid #cfbda9;
+  border-radius: 24px;
+  background: #f6f4f1;
+  padding: 22px;
+  margin: 20px auto;
+  max-width: 360px;
+  min-height: 160px;
+}
+
+.giftPreviewCard b {
+  color: #62513f;
+}
+
+.giftPreviewCard h3 {
+  color: #957f67 !important;
+  font-size: 2rem;
+  margin: 14px 0;
+}
+
+.giftPreviewCard span {
+  display: block;
+  font-family: 'LaLuxesSerif', Georgia, serif;
+  font-size: 3rem;
+  color: #62513f;
+  text-align: center;
+}
+
+.giftPreviewCode {
+  border: 1px solid #957f67;
+  border-radius: 999px;
+  padding: 12px 18px;
+  text-align: center;
+  color: #62513f;
+  margin: 18px auto;
+  max-width: 360px;
+  background: #fffdf9;
+}
+
+.savedGiftCardsCard {
+  margin-top: 18px;
+}
+
+@media (max-width: 980px) {
+  .giftCardPageGrid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -59,7 +59,7 @@ export default function AdminLoginPage() {
       <div className="shell">
         <div className="topbar">
           <div className="brand">
-            <img src="/logo2.png" className="logo" alt="Erendira's Boutique" />
+            <img src="/logo.png" className="logo" alt="Erendira's Boutique" />
             <div className="brand-title">Admin Studio</div>
           </div>
 
@@ -121,7 +121,7 @@ export default function AdminLoginPage() {
           </div>
 
           <div className="card brandShowcase">
-            <img src="/logo2.png" alt="Erendira's Boutique" />
+            <img src="/logo.png" alt="Erendira's Boutique" />
           </div>
         </section>
       </div>

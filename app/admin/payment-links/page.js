@@ -23,8 +23,8 @@ export default function PaymentLinksPage() {
   const [copiedSavedLinkId, setCopiedSavedLinkId] = useState('');
   const [editingLink, setEditingLink] = useState(null);
   const [form, setForm] = useState({
-    title: '',
-    description: '',
+    title: 'Custom Boutique Payment',
+    description: 'Order payment',
     amount: '',
     customerChoosesAmount: false,
     minimumAmount: '',
@@ -230,12 +230,13 @@ export default function PaymentLinksPage() {
 
       <div className="shell split adminShell">
         <aside className="card sidebar no-print">
-          <img src="/logo2.png" className="logo" alt="Erendira's Boutique" />
+          <img src="/logo.png" className="logo" alt="Erendira's Boutique" />
           <h2>Admin Studio</h2>
           <p>Payment Links</p>
           <div className="side-links">
             <a className="button ghost" href="/admin">Dashboard</a>
             <a className="button secondary" href="/admin/payment-links">Payment Links</a>
+            <a className="button ghost" href="/admin/gift-cards">Gift Cards</a>
             <button className="button ghost" onClick={logout}>Logout</button>
           </div>
         </aside>
@@ -262,19 +263,19 @@ export default function PaymentLinksPage() {
               <div className="builderHeader">
                 <div>
                   <p className="eyebrow">{editingLink ? 'Edit link' : 'New link'}</p>
-                  <h2>{editingLink ? 'Edit Payment Link' : 'Payment Information'}</h2>
+                  <h2>{editingLink ? 'Edit Payment Link' : 'Payment information'}</h2>
                 </div>
                 {editingLink && <button className="button ghost mini" type="button" onClick={resetForm}>Cancel Edit</button>}
               </div>
 
               <div className="formGrid">
                 <label className="field">
-                  Payment Title/Customer Name
+                  Product/payment title
                   <input className="input" value={form.title} onChange={(e) => updateForm('title', e.target.value)} required />
                 </label>
 
                 <label className="field">
-                  Amount $
+                  Amount
                   <input
                     className="input"
                     type="number"
@@ -367,7 +368,7 @@ export default function PaymentLinksPage() {
                     <a className="button ghost" href={createdLink} target="_blank" rel="noopener noreferrer">Open Link</a>
                   </div>
                 </div>
-              ) : <div className="emptyState">Your Generated Stripe payment link will appear here.</div>}
+              ) : <div className="emptyState">Your generated Stripe payment link will appear here.</div>}
             </aside>
           </div>
 
@@ -375,7 +376,7 @@ export default function PaymentLinksPage() {
             <div className="savedLinksHeader">
               <div>
                 <p className="eyebrow">Saved Links</p>
-                <h2>Payment Links</h2>
+                <h2>Generated payment links</h2>
                 <p className="mutedText">View created time, payment status, paid count, revenue, and quick actions.</p>
               </div>
               <div className="savedLinksActions">
