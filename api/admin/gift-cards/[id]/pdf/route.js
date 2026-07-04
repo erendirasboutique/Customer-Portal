@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
-import fontkit from '@pdf-lib/fontkit';
 import QRCode from 'qrcode';
 import fs from 'fs/promises';
 import path from 'path';
@@ -10,41 +9,21 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 const COLORS = {
-  bg: rgb(0.965, 0.957, 0.945),      // #f6f4f1
-  primary: rgb(0.584, 0.498, 0.404), // #957f67
-  accent: rgb(0.812, 0.741, 0.663),  // #cfbda9
-  text: rgb(0.31, 0.26, 0.21),
-  muted: rgb(0.55, 0.49, 0.41),
+  bg: rgb(0.965, 0.957, 0.945),
+  primary: rgb(0.584, 0.498, 0.404),
+  accent: rgb(0.812, 0.741, 0.663),
+  text: rgb(0.25, 0.22, 0.19),
   white: rgb(1, 0.992, 0.976),
 };
-
-function money(value) {
-  return `$${Number(value || 0).toFixed(0)}`;
-}
 
 function drawCenteredText(page, text, y, font, size, color = COLORS.text) {
   const width = page.getWidth();
   const textWidth = font.widthOfTextAtSize(text, size);
-  page.drawText(String(text || ''), {
-    x: (width - textWidth) / 2,
-    y,
-    size,
-    font,
-    color,
-  });
+  page.drawText(text, { x: (width - textWidth) / 2, y, size, font, color });
 }
 
-function safeText(value = '') {
-  return String(value || '').replace(/[^\x20-\x7EÀ-ÿ]/g, '');
-}
-
-async function tryEmbedFont(pdfDoc, fontPath, fallbackFont) {
-  try {
-    const fontBytes = await fs.readFile(fontPath);
-    return await pdfDoc.embedFont(fontBytes);
-  } catch {
-    return fallbackFont;
-  }
+function money(value) {
+  return `$${Number(value || 0).toFixed(0)}`;
 }
 
 export async function GET(_req, { params }) {
@@ -59,272 +38,76 @@ export async function GET(_req, { params }) {
       .single();
 
     if (error || !giftCard) {
-      return NextResponse.json(
-        { error: error?.message || 'Gift card not found.' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: error?.message || 'Gift card not found.' }, { status: 404 });
     }
 
     const pdfDoc = await PDFDocument.create();
-    pdfDoc.registerFontkit(fontkit);
-
     const page = pdfDoc.addPage([612, 792]);
     const width = page.getWidth();
     const height = page.getHeight();
 
-    const fallbackSerif = await pdfDoc.embedFont(StandardFonts.TimesRoman);
-    const fallbackSerifBold = await pdfDoc.embedFont(StandardFonts.TimesRomanBold);
-    const fallbackSans = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    const fallbackSansBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+    const serif = await pdfDoc.embedFont(StandardFonts.TimesRoman);
+    const serifBold = await pdfDoc.embedFont(StandardFonts.TimesRomanBold);
+    const sans = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const sansBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
-    const headingFont = await tryEmbedFont(
-      pdfDoc,
-      path.join(process.cwd(), 'public', 'fonts', 'la_luxes_serif.otf'),
-      fallbackSerif
-    );
+    page.drawRectangle({ x: 0, y: 0, width, height, color: COLORS.bg });
 
-    const bodyFont = await tryEmbedFont(
-      pdfDoc,
-      path.join(process.cwd(), 'public', 'fonts', 'recoleta-regular.otf'),
-      fallbackSans
-    );
-
-    const bodyBold = fallbackSansBold;
-    const headingBold = fallbackSerifBold;
-
-    const amount = money(giftCard.amount);
-    const code = safeText(giftCard.code);
-    const recipientName = safeText(
-      giftCard.recipient_name || giftCard.customer_name || giftCard.customerName || ''
-    );
-    const note = safeText(giftCard.note || giftCard.message || '');
-
-    const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || '').replace(/\/$/, '');
-    const portalUrl =
-      giftCard.gift_card_url ||
-      `${siteUrl}/gift-card/${encodeURIComponent(giftCard.code)}`;
-
-    page.drawRectangle({
-      x: 0,
-      y: 0,
-      width,
-      height,
-      color: COLORS.bg,
-    });
-
-    page.drawRectangle({
-      x: 42,
-      y: height - 94,
-      width: width - 84,
-      height: 60,
-      color: COLORS.white,
-      borderColor: COLORS.primary,
-      borderWidth: 1,
-      borderOpacity: 0.8,
-    });
+    // Top logo pill
+    page.drawRectangle({ x: 46, y: height - 96, width: width - 92, height: 58, color: COLORS.white, borderColor: COLORS.primary, borderWidth: 1, borderOpacity: 0.65 });
 
     try {
-      const logoPath = path.join(process.cwd(), 'public', 'logo2.png');
+      const logoPath = path.join(process.cwd(), 'public', 'logo.png');
       const logoBytes = await fs.readFile(logoPath);
       const logoImage = await pdfDoc.embedPng(logoBytes);
-      const maxLogoW = 190;
-      const maxLogoH = 42;
-      const scale = Math.min(maxLogoW / logoImage.width, maxLogoH / logoImage.height);
-      const logoW = logoImage.width * scale;
-      const logoH = logoImage.height * scale;
-
-      page.drawImage(logoImage, {
-        x: (width - logoW) / 2,
-        y: height - 84,
-        width: logoW,
-        height: logoH,
-      });
+      const logoDims = logoImage.scale(0.13);
+      page.drawImage(logoImage, { x: (width - logoDims.width) / 2, y: height - 86, width: logoDims.width, height: logoDims.height });
     } catch {
-      drawCenteredText(page, "Erendira's Boutique", height - 74, bodyBold, 18, COLORS.primary);
+      drawCenteredText(page, "Erendira's Boutique", height - 74, sansBold, 18, COLORS.primary);
     }
 
-    drawCenteredText(page, "Here’s your e-gift card", height - 140, headingFont, 28, COLORS.primary);
+    drawCenteredText(page, "Here's your e-gift card!", height - 142, serif, 24, COLORS.text);
 
-    if (recipientName) {
-      drawCenteredText(page, `For ${recipientName}`, height - 166, bodyFont, 13, COLORS.muted);
-    }
+    // Gift card illustration
+    const cardX = 140;
+    const cardY = height - 355;
+    const cardW = 332;
+    const cardH = 188;
+    page.drawRectangle({ x: cardX, y: cardY, width: cardW, height: cardH, color: COLORS.white, borderColor: COLORS.accent, borderWidth: 0.8 });
+    page.drawText("Erendira's Boutique", { x: cardX + 28, y: cardY + cardH - 35, size: 14, font: sansBold, color: COLORS.text });
+    page.drawText(money(giftCard.amount), { x: cardX + 28, y: cardY + cardH - 76, size: 26, font: sansBold, color: COLORS.text });
+    page.drawRectangle({ x: cardX + 100, y: cardY + cardH - 72, width: 142, height: 20, color: COLORS.accent });
+    page.drawRectangle({ x: cardX + cardW - 58, y: cardY, width: 22, height: cardH, color: COLORS.accent });
+    page.drawText('Gift', { x: cardX + 118, y: cardY + 78, size: 50, font: serif, color: COLORS.text });
+    page.drawText('Card', { x: cardX + 104, y: cardY + 35, size: 50, font: serif, color: COLORS.text });
 
-    if (note) {
-      drawCenteredText(page, note.slice(0, 70), height - 188, bodyFont, 12, COLORS.muted);
-    }
+    // Code pill
+    page.drawRectangle({ x: 110, y: height - 420, width: width - 220, height: 46, color: COLORS.white, borderColor: COLORS.primary, borderWidth: 1 });
+    drawCenteredText(page, giftCard.code, height - 405, sans, 20, COLORS.text);
 
-    const cardX = 106;
-    const cardY = height - 392;
-    const cardW = 400;
-    const cardH = 230;
-
-    page.drawRectangle({
-      x: cardX,
-      y: cardY,
-      width: cardW,
-      height: cardH,
-      color: COLORS.white,
-      borderColor: COLORS.primary,
-      borderWidth: 1.4,
-    });
-
-    page.drawRectangle({
-      x: cardX + 14,
-      y: cardY + 14,
-      width: cardW - 28,
-      height: cardH - 28,
-      borderColor: COLORS.accent,
-      borderWidth: 0.8,
-    });
-
-    page.drawRectangle({
-      x: cardX + cardW - 112,
-      y: cardY,
-      width: 36,
-      height: cardH,
-      color: COLORS.accent,
-    });
-
-    page.drawRectangle({
-      x: cardX + cardW - 190,
-      y: cardY + cardH - 96,
-      width: 190,
-      height: 36,
-      color: COLORS.accent,
-    });
-
-    page.drawEllipse({
-      x: cardX + cardW - 112,
-      y: cardY + cardH - 100,
-      xScale: 30,
-      yScale: 20,
-      borderColor: COLORS.primary,
-      borderWidth: 3,
-    });
-
-    page.drawEllipse({
-      x: cardX + cardW - 42,
-      y: cardY + cardH - 100,
-      xScale: 30,
-      yScale: 20,
-      borderColor: COLORS.primary,
-      borderWidth: 3,
-    });
-
-    page.drawText("Erendira's Boutique", {
-      x: cardX + 34,
-      y: cardY + cardH - 42,
-      size: 14,
-      font: bodyBold,
-      color: COLORS.text,
-    });
-
-    page.drawText(amount, {
-      x: cardX + 34,
-      y: cardY + cardH - 84,
-      size: 30,
-      font: bodyBold,
-      color: COLORS.primary,
-    });
-
-    page.drawText('Gift', {
-      x: cardX + 142,
-      y: cardY + 94,
-      size: 56,
-      font: headingFont,
-      color: COLORS.text,
-    });
-
-    page.drawText('Card', {
-      x: cardX + 130,
-      y: cardY + 48,
-      size: 56,
-      font: headingFont,
-      color: COLORS.text,
-    });
-
-    page.drawRectangle({
-      x: 96,
-      y: height - 452,
-      width: width - 192,
-      height: 48,
-      color: COLORS.white,
-      borderColor: COLORS.primary,
-      borderWidth: 1.1,
-    });
-
-    drawCenteredText(page, code, height - 434, bodyFont, 20, COLORS.text);
-
-    const qrPayload = portalUrl || `${code}\nRedeem at checkout or show this gift card.`;
-
-    const qrDataUrl = await QRCode.toDataURL(qrPayload, {
-      margin: 1,
-      width: 220,
-      color: {
-        dark: '#5f4e3d',
-        light: '#fffdf9',
-      },
-    });
-
+    // QR code
+    const qrPayload = `${giftCard.code}\nRedeem at checkout or send a screenshot to Erendira's Boutique.`;
+    const qrDataUrl = await QRCode.toDataURL(qrPayload, { margin: 1, width: 180 });
     const qrBase64 = qrDataUrl.split(',')[1];
     const qrImage = await pdfDoc.embedPng(Buffer.from(qrBase64, 'base64'));
+    page.drawImage(qrImage, { x: (width - 142) / 2, y: height - 590, width: 142, height: 142 });
 
-    page.drawRectangle({
-      x: (width - 158) / 2,
-      y: height - 624,
-      width: 158,
-      height: 158,
-      color: COLORS.white,
-      borderColor: COLORS.accent,
-      borderWidth: 1,
-    });
-
-    page.drawImage(qrImage, {
-      x: (width - 142) / 2,
-      y: height - 616,
-      width: 142,
-      height: 142,
-    });
-
-    drawCenteredText(page, 'How to Redeem', height - 662, headingFont, 19, COLORS.primary);
+    drawCenteredText(page, 'How to Redeem Your Gift Card', height - 642, serifBold, 15, COLORS.text);
 
     const instructions = [
-      'Scan the QR code or open your private gift card page.',
-      'Enter this code at checkout as a promo code.',
-      'You may also show this gift card in person or send a screenshot through Messenger.',
+      'To redeem your gift card, simply send a',
+      'screenshot or photo of this gift card through',
+      'Messenger, bring it with you in person, or use',
+      'the code at checkout when promotion codes are allowed.',
     ];
 
-    let y = height - 696;
-    for (let i = 0; i < instructions.length; i++) {
-      page.drawText(`${i + 1}.`, {
-        x: 104,
-        y,
-        size: 12,
-        font: bodyBold,
-        color: COLORS.primary,
-      });
-
-      page.drawText(instructions[i], {
-        x: 128,
-        y,
-        size: 12,
-        font: bodyFont,
-        color: COLORS.text,
-      });
-
-      y -= 21;
+    let y = height - 680;
+    for (const line of instructions) {
+      drawCenteredText(page, line, y, serif, 15, COLORS.text);
+      y -= 19;
     }
 
-    drawCenteredText(
-      page,
-      giftCard.never_expires === false
-        ? 'Use before the expiration date shown by Erendira’s Boutique'
-        : 'This gift card never expires',
-      46,
-      bodyBold,
-      13,
-      COLORS.primary
-    );
+    drawCenteredText(page, giftCard.never_expires ? 'This gift card never expires' : 'Use before expiration date shown by Erendira\'s Boutique', 44, serifBold, 14, COLORS.text);
 
     const pdfBytes = await pdfDoc.save();
 
@@ -336,9 +119,6 @@ export async function GET(_req, { params }) {
       },
     });
   } catch (error) {
-    return NextResponse.json(
-      { error: error.message || 'Could not generate gift card PDF.' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: error.message || 'Could not generate gift card PDF.' }, { status: 500 });
   }
 }

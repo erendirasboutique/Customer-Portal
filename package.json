@@ -5,13 +5,14 @@
     "start": "next start"
   },
   "dependencies": {
+    "@supabase/ssr": "latest",
     "@supabase/supabase-js": "latest",
     "next": "latest",
     "react": "latest",
     "react-dom": "latest",
     "stripe": "latest",
-    "@supabase/ssr": "latest",
     "pdf-lib": "latest",
+    "@pdf-lib/fontkit": "latest",
     "qrcode": "latest"
   },
   "devDependencies": {}
