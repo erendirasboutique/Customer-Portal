@@ -3,10 +3,12 @@ import './globals.css';
 export const metadata = {
   title: "Erendira's Boutique | Billing Portal",
   description: "Secure Billing Portal",
-
+  icons: {
+    icon: "/favicon.png"
+  },
   openGraph: {
-    title: "Erendira's Boutique Billing Portal",
-    description: "Secure billing portal for Erendira's Boutique.",
+    title: "Erendira's Boutique | Billing Portal",
+    description: "",
     url: "https://billing.erendirasboutique.com",
     siteName: "Erendira's Boutique",
     images: [
