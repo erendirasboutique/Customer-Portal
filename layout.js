@@ -1,6 +1,9 @@
 export const metadata = {
   title: "Erendira's Boutique Billing Portal",
   description: "Secure billing portal for Erendira's Boutique.",
+  icons: {
+    icon: "/favicon.png"
+  },
 
   openGraph: {
     title: "Erendira's Boutique Billing Portal",
