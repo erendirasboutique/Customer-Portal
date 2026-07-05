@@ -72,7 +72,6 @@ if (!promoRes.ok) {
     { status: 500 }
   );
 },
-    });
     const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || '').replace(/\/$/, '');
     const giftCardUrl = `${siteUrl}/gift-card/${encodeURIComponent(code)}`;
     const pdfUrl = `${siteUrl}/api/gift-card/pdf?code=${encodeURIComponent(code)}`;
