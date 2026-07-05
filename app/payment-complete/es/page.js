@@ -44,9 +44,16 @@ export default function Page() {
           <span></span>
         </div>
 
-        <div className="ebConfirmBrand">
-          <img src="/logo2.png" alt="Erendira's Boutique" />
-        </div>
+       <div className="ebConfirmVideoWrap">
+  <video
+    className="ebConfirmVideo"
+    src="/confirmation-video.mp4"
+    autoPlay
+    muted
+    loop
+    playsInline
+  />
+</div>
 
         <section className="ebSuccessCard">
           <div className="ebSuccessImageWrap">
