@@ -1,0 +1,1 @@
+Set Stripe Payment Link after-payment redirect to:\nhttps://billing.erendirasboutique.com/payment-complete?session_id={CHECKOUT_SESSION_ID}\n
