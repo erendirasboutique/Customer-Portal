@@ -58,7 +58,8 @@ export default function Page() {
           </div>
 
           <p className="ebOverline">Payment Confirmation</p>
-          <h1>Payment confirmed</h1>
+          <h1>Thanks For Your Payment!
+</h1>
 
           <div className="ebPaymentInfo">
             <span>{name}</span>
@@ -66,13 +67,15 @@ export default function Page() {
           </div>
 
           <div className="ebConfirmText">
-            <p>Thank you for your payment. Your transaction was processed successfully.</p>
+            <p>Your Transaction Has Been Successfully Processed, And We’re Pleased To Confirm Receipt Of Your Payment. 
+
+.</p>
             <p>You’ll receive an email confirmation shortly with the details of your purchase.</p>
             <p>Please keep this confirmation for your records. If you need help, you can contact us anytime.</p>
           </div>
 
           <nav className="ebConfirmLinks">
-            <a href="https://www.erendirasboutique.com/legal">Legal</a>
+            <a href="https://www.erendirasboutique.com/legal/payments">Legal</a>
             <a href="https://www.erendirasboutique.com/returns">Returns</a>
             <a href="https://www.erendirasboutique.com/contact">Contact</a>
             <a href="/">Customer Portal</a>
