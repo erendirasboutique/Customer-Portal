@@ -41,7 +41,7 @@ export default function Page() {
       <section className="ebConfirmShell">
         <div className="ebConfirmTop">
           <span>{time}</span>
-          <span>Erendira&apos;s Boutique</span>
+          <span>Erendira&apos;s Bouti2222que</span>
         </div>
 
         <div className="ebConfirmBrand">
