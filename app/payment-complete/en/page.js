@@ -45,7 +45,7 @@ export default function Page() {
         </div>
 
         <div className="ebConfirmBrand">
-          <img src="/logo.png" alt="Erendira's Boutique" />
+          <img src="/logo2.png" alt="Erendira's Boutique" />
         </div>
 
         <section className="ebSuccessCard">
