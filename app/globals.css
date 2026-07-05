@@ -1389,9 +1389,11 @@ th {
 }
 
 .ebConfirmTop span:first-child {
-  font-family: Arial, sans-serif;
-  font-weight: 700;
-  color: #1e1a17;
+  font-family: 'LaLuxesSerif', Georgia, serif;
+  font-weight: 400;
+  color: #957f67;
+  font-size: clamp(24px, 5vw, 42px);
+  letter-spacing: 0.02em;
 }
 
 .ebConfirmBrand {
