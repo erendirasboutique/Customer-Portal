@@ -13,8 +13,8 @@ export default function PaymentCompleteLanguagePage() {
   useEffect(() => {
     const tick = () => setTime(new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }));
     tick();
-    const t = setInterval(tick, 1000);
-    return () => clearInterval(t);
+    const timer = setInterval(tick, 1000);
+    return () => clearInterval(timer);
   }, []);
 
   function go(lang) {
@@ -22,27 +22,34 @@ export default function PaymentCompleteLanguagePage() {
   }
 
   return (
-    <main className="confirmationPage confirmationLanguagePage">
-      <div className="mobileTime">{time}</div>
-      <div className="announcementBar">Envios Todos Los Sabados!<span>×</span></div>
+    <main className="ebConfirmPage ebLanguagePage">
+      <section className="ebConfirmShell">
+        <div className="ebConfirmTop">
+          <span>{time}</span>
+          <span>Secure Payment Confirmation</span>
+        </div>
 
-      <header className="confirmationHeader">
-        <div className="headerIcon">＋</div>
-        <img src="/logo.png" alt="Erendira's Boutique" />
-        <div className="bagIcon">⌑</div>
-      </header>
+        <div className="ebConfirmBrand">
+          <img src="/logo.png" alt="Erendira's Boutique" />
+        </div>
 
-      <section className="languagePanel">
-        <p>Payment Confirmation</p>
-        <h1>Por Favor,<br />Seleccione Un<br />Idioma</h1>
-        <div className="languageDivider" />
-        <h1>Please Select A<br />Language</h1>
-        <div className="languageDivider" />
-        <button type="button" onClick={() => go('es')}>Español</button>
-        <button type="button" onClick={() => go('en')}>English</button>
+        <section className="ebLanguageCard">
+          <p className="ebOverline">Payment Confirmation</p>
+          <h1>Choose your language</h1>
+          <p className="ebSubtext">Seleccione el idioma para ver la confirmación de su pago.</p>
+
+          <div className="ebLanguageActions">
+            <button type="button" onClick={() => go('es')}>
+              <span>Español</span>
+              <small>Ver confirmación en español</small>
+            </button>
+            <button type="button" onClick={() => go('en')}>
+              <span>English</span>
+              <small>View confirmation in English</small>
+            </button>
+          </div>
+        </section>
       </section>
-
-      <div className="confirmationWave" />
     </main>
   );
 }

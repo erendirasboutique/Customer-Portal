@@ -1354,3 +1354,248 @@ th {
   .checkCard { border-radius: 28px; box-shadow: 22px 20px 0 var(--confirm-accent); }
   .confirmationContent p { margin-bottom: 60px; }
 }
+
+
+
+/* V16 redesigned payment confirmation pages */
+.ebConfirmPage {
+  --eb-bg: #f6f4f1;
+  --eb-card: #fffdf9;
+  --eb-primary: #957f67;
+  --eb-primary-dark: #6f5a45;
+  --eb-accent: #cfbda9;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(207, 189, 169, .35), transparent 32%),
+    linear-gradient(180deg, #f6f4f1 0%, #f1ece6 100%);
+  color: var(--eb-primary-dark);
+  padding: clamp(18px, 4vw, 42px);
+}
+
+.ebConfirmShell {
+  width: min(820px, 100%);
+  margin: 0 auto;
+}
+
+.ebConfirmTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  color: var(--eb-primary);
+  font-family: 'Recoleta', Georgia, serif;
+  font-size: clamp(14px, 2.5vw, 18px);
+  padding: 10px 4px 22px;
+}
+
+.ebConfirmTop span:first-child {
+  font-family: Arial, sans-serif;
+  font-weight: 700;
+  color: #1e1a17;
+}
+
+.ebConfirmBrand {
+  display: flex;
+  justify-content: center;
+  padding: 18px 0 28px;
+}
+
+.ebConfirmBrand img {
+  width: min(420px, 78vw);
+  height: auto;
+  object-fit: contain;
+}
+
+.ebLanguageCard,
+.ebSuccessCard {
+  background: rgba(255, 253, 249, .92);
+  border: 1px solid rgba(207, 189, 169, .9);
+  border-radius: 34px;
+  box-shadow: 0 28px 80px rgba(111, 90, 69, .12);
+  padding: clamp(28px, 7vw, 56px);
+  position: relative;
+  overflow: hidden;
+}
+
+.ebLanguageCard:before,
+.ebSuccessCard:before {
+  content: "";
+  position: absolute;
+  inset: 14px;
+  border: 1px solid rgba(207, 189, 169, .65);
+  border-radius: 24px;
+  pointer-events: none;
+}
+
+.ebOverline {
+  margin: 0 0 14px;
+  text-transform: uppercase;
+  letter-spacing: .18em;
+  color: var(--eb-primary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.ebLanguageCard h1,
+.ebSuccessCard h1 {
+  font-family: 'LaLuxesSerif', Georgia, serif;
+  color: var(--eb-primary);
+  font-weight: 400;
+  letter-spacing: -.03em;
+  line-height: .92;
+  margin: 0;
+}
+
+.ebLanguageCard h1 {
+  font-size: clamp(52px, 11vw, 98px);
+}
+
+.ebSuccessCard h1 {
+  font-size: clamp(54px, 10vw, 92px);
+  text-align: center;
+  margin-bottom: 22px;
+}
+
+.ebSubtext {
+  color: #9f8f7b;
+  font-size: clamp(18px, 3vw, 24px);
+  line-height: 1.35;
+  margin: 24px 0 34px;
+}
+
+.ebLanguageActions {
+  display: grid;
+  gap: 16px;
+  position: relative;
+  z-index: 1;
+}
+
+.ebLanguageActions button {
+  width: 100%;
+  border: 1px solid var(--eb-accent);
+  border-radius: 24px;
+  background: #f6f4f1;
+  color: var(--eb-primary-dark);
+  padding: 20px 24px;
+  text-align: left;
+  cursor: pointer;
+  display: grid;
+  gap: 4px;
+}
+
+.ebLanguageActions span {
+  font-family: 'LaLuxesSerif', Georgia, serif;
+  font-size: clamp(34px, 6vw, 54px);
+  color: var(--eb-primary);
+}
+
+.ebLanguageActions small {
+  color: #9f8f7b;
+  font-size: 15px;
+}
+
+.ebSuccessImageWrap {
+  width: min(260px, 54vw);
+  height: min(260px, 54vw);
+  margin: 0 auto 28px;
+  border-radius: 36px;
+  background: #f6f4f1;
+  border: 1px solid var(--eb-accent);
+  display: grid;
+  place-items: center;
+  box-shadow: 18px 18px 0 rgba(207, 189, 169, .7);
+  position: relative;
+  z-index: 1;
+}
+
+.ebSuccessImage {
+  width: 82%;
+  height: 82%;
+  object-fit: contain;
+}
+
+.ebSuccessFallback {
+  width: 78%;
+  height: 78%;
+  border-radius: 999px;
+  background: var(--eb-primary);
+  color: #f6f4f1;
+  display: grid;
+  place-items: center;
+  font-family: 'LaLuxesSerif', Georgia, serif;
+  font-size: clamp(42px, 8vw, 72px);
+}
+
+.ebPaymentInfo {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px 18px;
+  margin: 0 auto 34px;
+  color: #9f8f7b;
+  font-size: clamp(16px, 3vw, 22px);
+  text-align: center;
+}
+
+.ebPaymentInfo b {
+  color: var(--eb-primary);
+}
+
+.ebConfirmText {
+  display: grid;
+  gap: 24px;
+  margin: 0 auto 34px;
+  max-width: 660px;
+}
+
+.ebConfirmText p {
+  margin: 0;
+  color: #b7a895;
+  font-family: 'Recoleta', Georgia, serif;
+  font-size: clamp(22px, 4.2vw, 34px);
+  line-height: 1.25;
+}
+
+.ebConfirmLinks {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px 24px;
+  padding-top: 8px;
+}
+
+.ebConfirmLinks a {
+  color: var(--eb-primary);
+  text-decoration: none;
+  border: 1px solid var(--eb-accent);
+  border-radius: 999px;
+  padding: 12px 18px;
+  background: rgba(246, 244, 241, .7);
+  font-family: 'Recoleta', Georgia, serif;
+  font-size: clamp(15px, 2.5vw, 18px);
+}
+
+.confirmationSocial,
+.confirmationWave,
+.headerIcon,
+.bagIcon {
+  display: none !important;
+}
+
+@media (max-width: 640px) {
+  .ebConfirmPage {
+    padding: 14px;
+  }
+
+  .ebSuccessCard,
+  .ebLanguageCard {
+    border-radius: 26px;
+  }
+
+  .ebSuccessImageWrap {
+    border-radius: 28px;
+    box-shadow: 12px 12px 0 rgba(207, 189, 169, .7);
+  }
+}
