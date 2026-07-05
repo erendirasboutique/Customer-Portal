@@ -26,7 +26,7 @@ export default function PaymentCompleteLanguagePage() {
       <section className="ebConfirmShell">
         <div className="ebConfirmTop">
           <span>{time}</span>
-          <span>Secure Payment Confirmation</span>
+          <span>Payment Confirmation</span>
         </div>
 
         <div className="ebConfirmBrand">
@@ -35,13 +35,15 @@ export default function PaymentCompleteLanguagePage() {
 
         <section className="ebLanguageCard">
           <p className="ebOverline">Payment Confirmation</p>
-          <h1>Choose your language</h1>
-          <p className="ebSubtext">Seleccione el idioma para ver la confirmación de su pago.</p>
+          <h1>Please Select A Language
+</h1>
+          <p className="ebSubtext">Por Favor, Seleccione Un Idioma
+</p>
 
           <div className="ebLanguageActions">
             <button type="button" onClick={() => go('es')}>
               <span>Español</span>
-              <small>Ver confirmación en español</small>
+              <small>Ver confirmación en Español</small>
             </button>
             <button type="button" onClick={() => go('en')}>
               <span>English</span>
