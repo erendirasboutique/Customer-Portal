@@ -41,7 +41,7 @@ export default function Page() {
         </div>
 
         <div className="ebConfirmBrand">
-          <img src="/logo.png" alt="Erendira's Boutique" />
+          <img src="/logo2.png" alt="Erendira's Boutique" />
         </div>
 
         <section className="ebSuccessCard">
@@ -54,7 +54,8 @@ export default function Page() {
           </div>
 
           <p className="ebOverline">Payment Confirmation</p>
-          <h1>Pago confirmado</h1>
+          <h1>Gracias Por Su Pago!
+</h1>
 
           <div className="ebPaymentInfo">
             <span>{name}</span>
@@ -68,7 +69,7 @@ export default function Page() {
           </div>
 
           <nav className="ebConfirmLinks">
-            <a href="https://www.erendirasboutique.com/legal">Legales</a>
+            <a href="https://www.erendirasboutique.com/legal/payments">Legales</a>
             <a href="https://www.erendirasboutique.com/returns">Devoluciones</a>
             <a href="https://www.erendirasboutique.com/contact">Contacto</a>
             <a href="/">Customer Portal</a>
