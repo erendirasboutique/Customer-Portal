@@ -23,8 +23,8 @@ export default function PaymentLinksPage() {
   const [copiedSavedLinkId, setCopiedSavedLinkId] = useState('');
   const [editingLink, setEditingLink] = useState(null);
   const [form, setForm] = useState({
-    title: 'Custom Boutique Payment',
-    description: 'Order payment',
+    title: '',
+    description: '',
     amount: '',
     customerChoosesAmount: false,
     minimumAmount: '',
@@ -35,7 +35,7 @@ export default function PaymentLinksPage() {
     requirePhone: true,
     allowPromotionCodes: true,
     redirectAfterPayment: true,
-    redirectUrl: 'https://ebtq.io/cc',
+    redirectUrl: 'https://pay.erendiras.boutique/payment-complete?session_id={CHECKOUT_SESSION_ID}',
   });
 
   const analytics = useMemo(() => {
@@ -69,8 +69,8 @@ export default function PaymentLinksPage() {
     setCreatedLink('');
     setCopied(false);
     setForm({
-      title: 'Custom Boutique Payment',
-      description: 'Order payment',
+      title: '',
+      description: '',
       amount: '',
       customerChoosesAmount: false,
       minimumAmount: '',
@@ -81,7 +81,7 @@ export default function PaymentLinksPage() {
       requirePhone: true,
       allowPromotionCodes: true,
       redirectAfterPayment: true,
-      redirectUrl: 'https://ebtq.io/cc',
+      redirectUrl: 'https://pay.erendiras.boutique/payment-complete?session_id={CHECKOUT_SESSION_ID}',
     });
   }
 
@@ -230,7 +230,7 @@ export default function PaymentLinksPage() {
 
       <div className="shell split adminShell">
         <aside className="card sidebar no-print">
-          <img src="/logo.png" className="logo" alt="Erendira's Boutique" />
+          <img src="/logo2.png" className="logo" alt="Erendira's Boutique" />
           <h2>Admin Studio</h2>
           <p>Payment Links</p>
           <div className="side-links">
@@ -246,7 +246,7 @@ export default function PaymentLinksPage() {
             <div>
               <p className="eyebrow">Stripe Payment Links</p>
               <h1>Payment Links</h1>
-              <p>Create, copy, edit, archive, and track Stripe payment links from your billing portal.</p>
+              <p>Create, copy, edit, archive, and track Stripe Payment Links..</p>
             </div>
             <LanguageToggle lang={lang} setLang={setLang} />
           </div>
