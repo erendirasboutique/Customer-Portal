@@ -1585,7 +1585,21 @@ th {
 .bagIcon {
   display: none !important;
 }
+.ebConfirmVideoWrap {
+  width: 100%;
+  margin: 0 auto 28px;
+  border-radius: 28px;
+  overflow: hidden;
+  border: 1px solid #cfbda9;
+  background: #fffdf9;
+}
 
+.ebConfirmVideo {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}
 @media (max-width: 640px) {
   .ebConfirmPage {
     padding: 14px;
