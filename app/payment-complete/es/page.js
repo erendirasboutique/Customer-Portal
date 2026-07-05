@@ -16,7 +16,11 @@ export default function Page() {
   const [imageMissing, setImageMissing] = useState(false);
 
   useEffect(() => {
-    const tick = () => setTime(new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }));
+    const tick = () => setTime(new Date().toLocaleTimeString([], {
+  hour: 'numeric',
+  minute: '2-digit',
+  second: '2-digit',
+}));
     tick();
     const timer = setInterval(tick, 1000);
 
