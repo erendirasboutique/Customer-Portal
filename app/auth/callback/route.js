@@ -7,7 +7,7 @@ const ALLOWED_ADMINS = ['hello@shoperendirasboutique.com'];
 export async function GET(req) {
   const url = new URL(req.url);
   const code = url.searchParams.get('code');
-  const next = url.searchParams.get('next') || '/';
+  const next = url.searchParams.get('next') || '/customer';
 
   const res = NextResponse.redirect(new URL(next, url.origin));
 
