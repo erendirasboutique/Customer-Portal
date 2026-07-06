@@ -1,8 +1,8 @@
 import './globals.css';
 
 export const metadata = {
-  title: "Erendira's Boutique Billing",
-  description: "Customer and admin billing portal",
+  title: "Erendira's Boutique - Billing Portal",
+  description: "Customer Billing portal",
   icons: { icon: '/favicon.png' },
 };
 
