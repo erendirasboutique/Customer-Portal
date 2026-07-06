@@ -45,7 +45,7 @@ export default function CustomerPortal({ initialUser, initialPayments }) {
         <div className="shell">
           <div className="topbar">
             <div className="brand">
-              <img src="/logo.png" className="logo" alt="Erendira's Boutique" />
+              <img src="/logo2.png" className="logo" alt="Erendira's Boutique" />
               <div className="brand-title">Erendira&apos;s Boutique</div>
             </div>
             <LanguageToggle lang={lang} setLang={setLang} />
@@ -65,7 +65,7 @@ export default function CustomerPortal({ initialUser, initialPayments }) {
               {message && <div className="notice">{message}</div>}
             </div>
             <div className="card brandShowcase">
-              <img src="/logo.png" alt="Erendira's Boutique" />
+              <img src="/logo2.png" alt="Erendira's Boutique" />
             </div>
           </section>
           <div className="footer">Erendira&apos;s Boutique LLC</div>
@@ -80,7 +80,7 @@ export default function CustomerPortal({ initialUser, initialPayments }) {
       <div className="shell customerDashboard">
         <div className="topbar">
           <div className="brand">
-            <img src="/logo.png" className="logo" alt="Erendira's Boutique" />
+            <img src="/logo2.png" className="logo" alt="Erendira's Boutique" />
             <div className="brand-title">Erendira&apos;s Boutique</div>
           </div>
           <div className="lang">
