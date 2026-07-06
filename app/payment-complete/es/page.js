@@ -83,7 +83,7 @@ export default function Page() {
             <a href="https://www.erendirasboutique.com/legal/payments">Legales</a>
             <a href="https://www.erendirasboutique.com/returns">Devoluciones</a>
             <a href="https://www.erendirasboutique.com/contact">Contacto</a>
-            <a href="/">Customer Portal</a>
+            <a href="https://billing.erendirasboutique.com">Customer Portal</a>
           </nav>
         </section>
       </section>
