@@ -1,15 +1,15 @@
 import { NextResponse } from 'next/server';
-import { getSupabaseServer } from '@/lib/supabaseServer';
+import { getSupabaseRoute } from '@/lib/supabaseRoute';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 
-const ALLOWED_ADMINS = [
-  'hello@shoperendirasboutique.com',
-];
+const ALLOWED_ADMINS = ['hello@shoperendirasboutique.com'];
 
 export async function GET(req) {
   const url = new URL(req.url);
   const code = url.searchParams.get('code');
   const next = url.searchParams.get('next') || '/';
+
+  const res = NextResponse.redirect(new URL(next, url.origin));
 
   if (!code) {
     return NextResponse.redirect(
@@ -17,13 +17,19 @@ export async function GET(req) {
     );
   }
 
-  const supabase = await getSupabaseServer();
+  const supabase = getSupabaseRoute(req, res);
+
   const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
   if (error || !data?.user?.email) {
     const message = encodeURIComponent(error?.message || 'No user returned.');
     return NextResponse.redirect(
-      new URL(next.startsWith('/admin') ? `/admin/login?error=session_failed&details=${message}` : '/', url.origin)
+      new URL(
+        next.startsWith('/admin')
+          ? `/admin/login?error=session_failed&details=${message}`
+          : '/',
+        url.origin
+      )
     );
   }
 
@@ -51,10 +57,13 @@ export async function GET(req) {
 
     if (upsertError) {
       return NextResponse.redirect(
-        new URL(`/admin/login?error=admin_upsert_failed&details=${encodeURIComponent(upsertError.message)}`, url.origin)
+        new URL(
+          `/admin/login?error=admin_upsert_failed&details=${encodeURIComponent(upsertError.message)}`,
+          url.origin
+        )
       );
     }
   }
 
-  return NextResponse.redirect(new URL(next, url.origin));
+  return res;
 }
