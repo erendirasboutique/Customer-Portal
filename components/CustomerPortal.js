@@ -22,16 +22,22 @@ export default function CustomerPortal({ initialUser, initialPayments }) {
   const total = payments.reduce((sum, p) => sum + Number(p.amount_total || 0), 0);
   const latest = payments[0];
 
-  async function sendMagicLink(e) {
-    e.preventDefault();
-    setMessage('Sending secure login link...');
-    const redirectTo = `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/auth/callback`;
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: redirectTo },
-    });
-    setMessage(error ? error.message : 'Check your email for the secure login link.');
-  }
+ async function sendMagicLink(e) {
+  e.preventDefault();
+  setMessage('Sending secure login link...');
+
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || window.location.origin).replace(/\/$/, '');
+  const redirectTo = `${siteUrl}/auth/callback?next=/`;
+
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      emailRedirectTo: redirectTo,
+    },
+  });
+
+  setMessage(error ? error.message : 'Check your email for the secure login link.');
+}
 
   async function logout() {
     await supabase.auth.signOut();
