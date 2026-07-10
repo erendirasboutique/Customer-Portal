@@ -169,7 +169,7 @@ export default function AdminLoginPage() {
 
       <div className="eb-grid">
         <div className="eb-card">
-          <img src="/logo.png" className="eb-logo" alt="Erendira&#8217;s Boutique" />
+          <img src="/logo2.png" className="eb-logo" alt="Erendira&#8217;s Boutique" />
           <h1 className="eb-title">Welcome Back to Erendira&#8217;s Boutique</h1>
 
           {message && <div className="eb-alert">{message}</div>}
