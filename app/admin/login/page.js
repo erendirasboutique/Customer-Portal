@@ -147,9 +147,7 @@ export default function AdminLoginPage() {
   return (
     <main className="eb-page">
       <style>{css}</style>
-
-      <div className="eb-toggle-row">
-        <div className="eb-toggle">
+<div className="eb-toggle">
           <button
             type="button"
             onClick={function () {
@@ -158,12 +156,16 @@ export default function AdminLoginPage() {
           >
             App
           </button>
-          <button type="button" className="active">
+          <button
+            type="button"
+            className="active"
+            onClick={function () {
+              window.location.href = 'https://billing.erendirasboutique.com/admin';
+            }}
+          >
             Admin
           </button>
         </div>
-        <LanguageToggle lang={lang} setLang={setLang} />
-      </div>
 
       <div className="eb-grid">
         <div className="eb-card">
