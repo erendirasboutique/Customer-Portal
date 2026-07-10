@@ -1615,3 +1615,525 @@ th {
     box-shadow: 12px 12px 0 rgba(207, 189, 169, .7);
   }
 }
+/* =========================================================
+   ADMIN LOGIN — Erendira's Boutique
+   Only affects /admin/login
+   ========================================================= */
+
+.adminLoginPage {
+  min-height: 100vh;
+  padding: 34px;
+  background: #f6f4f1;
+  color: #5f4e3d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.adminLoginShell {
+  width: min(1280px, 100%);
+  margin: 0 auto;
+}
+
+.adminPortalSwitcher {
+  width: fit-content;
+  margin: 0 auto 28px;
+  padding: 5px;
+  border: 1.5px solid #957f67;
+  border-radius: 999px;
+  display: flex;
+  gap: 4px;
+  background: #fffdf9;
+  box-shadow: 0 10px 30px rgba(95, 78, 61, 0.08);
+}
+
+.adminPortalSwitcher a {
+  min-width: 105px;
+  padding: 12px 24px;
+  border-radius: 999px;
+  color: #5f4e3d;
+  text-align: center;
+  text-decoration: none;
+  font-family: 'Recoleta', Georgia, serif;
+  font-weight: 600;
+  transition: 0.2s ease;
+}
+
+.adminPortalSwitcher a:hover {
+  background: #ebe3da;
+}
+
+.adminPortalSwitcher a.active {
+  background: #957f67;
+  color: #f6f4f1;
+}
+
+.adminLoginLayout {
+  display: grid;
+  grid-template-columns: minmax(390px, 0.9fr) minmax(500px, 1.1fr);
+  gap: 34px;
+  align-items: stretch;
+}
+
+.adminLoginCard {
+  border: 1.5px solid #957f67;
+  border-radius: 30px;
+  background: #fffdf9;
+  box-shadow:
+    13px 13px 0 #5f4e3d,
+    0 24px 60px rgba(95, 78, 61, 0.1);
+  padding: clamp(30px, 5vw, 56px);
+}
+
+.adminLoginIdentity {
+  text-align: center;
+}
+
+.adminLoginLogo {
+  display: block;
+  width: min(250px, 75%);
+  height: auto;
+  max-height: 105px;
+  object-fit: contain;
+  margin: 0 auto 18px;
+}
+
+.adminLoginIdentity > p {
+  margin: 0 0 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 12px;
+  color: #957f67;
+  font-weight: 700;
+}
+
+.adminLoginIdentity h1 {
+  margin: 0;
+  font-family: 'LaLuxesSerif', Georgia, serif;
+  font-size: clamp(42px, 5vw, 66px);
+  font-weight: 400;
+  line-height: 0.95;
+  color: #957f67;
+}
+
+.adminLoginIdentity > span {
+  display: block;
+  max-width: 430px;
+  margin: 20px auto 30px;
+  color: #8d7c69;
+  line-height: 1.5;
+  font-size: 16px;
+}
+
+.adminLoginForm {
+  display: grid;
+  gap: 18px;
+}
+
+.adminLoginField {
+  display: grid;
+  gap: 8px;
+}
+
+.adminLoginField > span {
+  color: #5f4e3d;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.adminLoginField input {
+  width: 100%;
+  height: 58px;
+  padding: 0 18px;
+  border: 1.5px solid #cfbda9;
+  border-radius: 15px;
+  background: #f6f4f1;
+  color: #5f4e3d;
+  outline: none;
+  font-size: 16px;
+}
+
+.adminLoginField input:focus {
+  border-color: #957f67;
+  box-shadow: 0 0 0 4px rgba(149, 127, 103, 0.12);
+}
+
+.adminPasswordWrap {
+  position: relative;
+}
+
+.adminPasswordWrap input {
+  padding-right: 80px;
+}
+
+.adminPasswordToggle {
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  transform: translateY(-50%);
+  border: 0;
+  background: transparent;
+  color: #957f67;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.adminPrimaryButton,
+.adminGoogleButton {
+  width: 100%;
+  min-height: 58px;
+  border-radius: 15px;
+  padding: 14px 20px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 700;
+  transition: 0.2s ease;
+}
+
+.adminPrimaryButton {
+  border: 1.5px solid #957f67;
+  background: #957f67;
+  color: #f6f4f1;
+}
+
+.adminPrimaryButton:hover {
+  background: #806b55;
+  border-color: #806b55;
+  transform: translateY(-1px);
+}
+
+.adminGoogleButton {
+  border: 1.5px solid #cfbda9;
+  background: #fffdf9;
+  color: #5f4e3d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.adminGoogleButton:hover {
+  border-color: #957f67;
+  background: #f6f4f1;
+}
+
+.adminLoginDivider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: #a18e79;
+  margin: 22px 0;
+}
+
+.adminLoginDivider::before,
+.adminLoginDivider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #e2d8cd;
+}
+
+.adminLoginDivider span {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.adminLoginMessage {
+  margin-top: 18px;
+  padding: 13px 15px;
+  border-radius: 14px;
+  background: #ebe3da;
+  border: 1px solid #cfbda9;
+  color: #5f4e3d;
+  text-align: center;
+}
+
+/* CSS boutique illustration */
+
+.adminBoutiqueScene {
+  min-height: 720px;
+  border: 2px solid #5f4e3d;
+  border-radius: 24px;
+  background: #d9c8b0;
+  padding: 34px 28px 28px;
+  box-shadow: 0 24px 60px rgba(95, 78, 61, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.boutiqueAwning {
+  height: 34px;
+  background: #cfbda9;
+  border: 2px solid #5f4e3d;
+  margin: 0 -10px 28px;
+}
+
+.boutiqueUpperDisplay {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  padding: 0 20px;
+}
+
+.boutiqueWindow {
+  aspect-ratio: 0.8;
+  border: 4px solid #5f4e3d;
+  background: #eeb14a;
+  position: relative;
+  overflow: hidden;
+}
+
+.boutiqueDress {
+  width: 58px;
+  height: 95px;
+  background: #957fce;
+  border: 4px solid #5f4e3d;
+  clip-path: polygon(35% 0, 65% 0, 100% 100%, 0 100%);
+  position: absolute;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+}
+
+.boutiqueDress::before {
+  content: '';
+  position: absolute;
+  width: 4px;
+  height: 18px;
+  background: #5f4e3d;
+  left: 50%;
+  top: -20px;
+  transform: translateX(-50%);
+}
+
+.boutiqueShelfSmall,
+.boutiqueShelfLarge {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 4px solid #5f4e3d;
+  background: #e7d6ea;
+}
+
+.boutiqueShelfSmall {
+  width: 62px;
+  height: 48px;
+  top: 25px;
+}
+
+.boutiqueShelfLarge {
+  width: 82px;
+  height: 52px;
+  bottom: 25px;
+  background: #c9b6de;
+}
+
+.boutiqueFrameSmall,
+.boutiqueFrameLarge {
+  position: absolute;
+  border: 4px solid #5f4e3d;
+  background: #d5a248;
+}
+
+.boutiqueFrameSmall {
+  width: 40px;
+  height: 72px;
+  left: 18px;
+  bottom: 22px;
+}
+
+.boutiqueFrameLarge {
+  width: 60px;
+  height: 100px;
+  right: 16px;
+  top: 18px;
+}
+
+.boutiqueDivider {
+  margin: 28px -10px;
+  min-height: 82px;
+  border-top: 4px solid #5f4e3d;
+  border-bottom: 4px solid #5f4e3d;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+}
+
+.boutiqueDivider span {
+  width: 34px;
+  height: 34px;
+  border: 4px solid #5f4e3d;
+  border-radius: 50%;
+  position: relative;
+}
+
+.boutiqueDivider span::after {
+  content: '';
+  position: absolute;
+  inset: 7px;
+  border: 3px solid #5f4e3d;
+  border-radius: 50%;
+}
+
+.boutiqueLowerDisplay {
+  display: grid;
+  grid-template-columns: 0.32fr 0.68fr;
+  gap: 14px;
+  padding: 0 20px;
+}
+
+.boutiqueDoor {
+  min-height: 290px;
+  background: #eeb14a;
+  border: 4px solid #5f4e3d;
+  position: relative;
+}
+
+.boutiqueDoor span {
+  position: absolute;
+  width: 54px;
+  height: 28px;
+  border: 4px solid #5f4e3d;
+  border-radius: 999px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.boutiqueDoor span::after {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  background: #eeb14a;
+  border: 3px solid #5f4e3d;
+  border-radius: 50%;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.boutiqueCounter {
+  min-height: 290px;
+  border: 4px solid #5f4e3d;
+  background: #eeb14a;
+  position: relative;
+  padding: 24px;
+}
+
+.boutiquePendant {
+  position: absolute;
+  width: 64px;
+  height: 52px;
+  border: 4px solid #5f4e3d;
+  background: #d8c7aa;
+  left: 34px;
+  top: 18px;
+  clip-path: polygon(20% 0, 80% 0, 100% 70%, 50% 100%, 0 70%);
+}
+
+.boutiquePendant::before {
+  content: '';
+  position: absolute;
+  width: 4px;
+  height: 35px;
+  background: #5f4e3d;
+  left: 50%;
+  top: -38px;
+  transform: translateX(-50%);
+}
+
+.boutiqueProductOne,
+.boutiqueProductTwo {
+  position: absolute;
+  border: 4px solid #5f4e3d;
+  background: #d39a2d;
+}
+
+.boutiqueProductOne {
+  width: 60px;
+  height: 68px;
+  left: 44px;
+  bottom: 54px;
+}
+
+.boutiqueProductTwo {
+  width: 56px;
+  height: 76px;
+  right: 20px;
+  bottom: 34px;
+}
+
+.boutiqueWordmark {
+  position: absolute;
+  right: 82px;
+  top: 90px;
+  font-family: 'LaLuxesSerif', Georgia, serif;
+  font-size: 34px;
+  line-height: 0.9;
+  color: #5f4e3d;
+  font-style: italic;
+}
+
+.boutiqueWordmark small {
+  display: block;
+  margin-top: 10px;
+  text-align: right;
+  font-size: 19px;
+}
+
+.boutiqueBottomWindows {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  width: 58%;
+  margin: 18px 20px 0 auto;
+}
+
+.boutiqueBottomWindows div {
+  height: 82px;
+  border: 4px solid #5f4e3d;
+  background: #fffdf9;
+  box-shadow: inset 0 0 0 12px #d9c8b0;
+}
+
+@media (max-width: 1020px) {
+  .adminLoginLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .adminBoutiqueScene {
+    min-height: 640px;
+  }
+}
+
+@media (max-width: 640px) {
+  .adminLoginPage {
+    padding: 18px;
+  }
+
+  .adminPortalSwitcher {
+    width: 100%;
+  }
+
+  .adminPortalSwitcher a {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .adminLoginCard {
+    padding: 28px 22px;
+    box-shadow:
+      8px 8px 0 #5f4e3d,
+      0 18px 40px rgba(95, 78, 61, 0.1);
+  }
+
+  .adminBoutiqueScene {
+    display: none;
+  }
+
+  .adminLoginIdentity h1 {
+    font-size: 45px;
+  }
+}
