@@ -5,7 +5,7 @@ import LanguageToggle from '@/components/LanguageToggle';
 import { getSupabaseBrowser } from '@/lib/supabaseBrowser';
 
 // Where the App tab goes (customer-facing side of the billing portal).
-const APP_URL = '/';
+const APP_URL = 'https://billing.erendirasboutique.com';
 
 var css = '' +
 '.eb-page { min-height: 100vh; background: #e9e3d9; color: #332b23; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 16px; font-family: Georgia, serif; }' +
