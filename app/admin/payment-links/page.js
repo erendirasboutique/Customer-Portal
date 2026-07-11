@@ -82,7 +82,30 @@ var css = '' +
 '.eb-pill.archived { border: 0.5px solid rgba(128,106,82,0.4); background: #e9e3d9; color: #5c4d3b; }' +
 '.eb-amt { font-size: 16px; color: #806a52; white-space: nowrap; }' +
 '.eb-rowbtns { display: flex; flex-wrap: wrap; gap: 6px; }' +
-'.eb-empty { padding: 40px 18px; text-align: center; font-size: 14px; color: rgba(51,43,35,0.55); }';
+'.eb-empty { padding: 40px 18px; text-align: center; font-size: 14px; color: rgba(51,43,35,0.55); }' +
+'@media (max-width: 720px) {' +
+' .eb-admin { padding: 16px 12px 48px; }' +
+' .eb-side { position: static; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 16px; }' +
+' .eb-side img { width: 70px; }' +
+' .eb-side h2 { font-size: 20px; margin: 0; }' +
+' .eb-side .eb-sub { display: none; }' +
+' .eb-nav { flex-direction: row; flex-wrap: wrap; margin-top: 4px; width: 100%; gap: 6px; }' +
+' .eb-nav a, .eb-nav button { width: auto; flex: 1 1 40%; padding: 9px 8px; font-size: 12px; }' +
+' .eb-head h1 { font-size: 30px; }' +
+' .eb-stats { display: grid; grid-template-columns: 1fr 1fr; row-gap: 14px; padding: 14px 0; }' +
+' .eb-stat { min-width: 0; padding: 0 16px; }' +
+' .eb-stat + .eb-stat { border-left: 0; }' +
+' .eb-stat:nth-child(even) { border-left: 0.5px solid rgba(128,106,82,0.2); }' +
+' .eb-stat b { font-size: 20px; }' +
+' .eb-card { padding: 16px; }' +
+' .eb-listtools { width: 100%; }' +
+' .eb-listtools .eb-in { flex: 1 1 100%; width: 100%; }' +
+' .eb-row { padding: 12px 14px; row-gap: 8px; }' +
+' .eb-who { flex: 1 1 100%; min-width: 0; }' +
+' .eb-amt { margin-left: auto; }' +
+' .eb-rowbtns { flex: 1 1 100%; }' +
+' .eb-rowbtns .eb-btn { flex: 1; text-align: center; }' +
+'}';
 
 export default function PaymentLinksPage() {
   const [lang, setLang] = useState('en');
