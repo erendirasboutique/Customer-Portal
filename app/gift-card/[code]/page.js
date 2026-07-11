@@ -62,7 +62,7 @@ export default async function GiftCardPortal({ params }) {
       <main className="eb-gift-page">
         <style>{css}</style>
         <section className="eb-gift-card">
-          <img src="/logo.png" className="eb-logo" alt="Erendira&#8217;s Boutique" />
+          <img src="/logo2.png" className="eb-logo" alt="Erendira&#8217;s Boutique" />
           <h1>Gift card not found</h1>
           <p className="body">Please check the gift card code and try again.</p>
         </section>
@@ -76,7 +76,7 @@ export default async function GiftCardPortal({ params }) {
     <main className="eb-gift-page">
       <style>{css}</style>
       <section className="eb-gift-card">
-        <img src="/logo.png" className="eb-logo" alt="Erendira&#8217;s Boutique" />
+        <img src="/logo2.png" className="eb-logo" alt="Erendira&#8217;s Boutique" />
         <p className="eb-eyebrow">Gift Card</p>
         <h1>Here&#8217;s your e-gift card!</h1>
         {giftCard.customer_name && <p className="eb-for">For {giftCard.customer_name}</p>}
