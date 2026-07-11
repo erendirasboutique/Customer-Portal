@@ -66,6 +66,7 @@ var css = '' +
 '.eb-pill { border-radius: 999px; padding: 3px 10px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; white-space: nowrap; }' +
 '.eb-pill.ok { border: 0.5px solid rgba(88,128,82,0.5); background: rgba(120,150,110,0.12); color: #4c6a44; }' +
 '.eb-pill.off { border: 0.5px solid rgba(128,106,82,0.4); background: #e9e3d9; color: #5c4d3b; }' +
+'.eb-pill.used { border: 0.5px solid #806a52; background: #806a52; color: #f2ede4; }' +
 '.eb-rowbtns { display: flex; flex-wrap: wrap; gap: 6px; }' +
 '.eb-empty { padding: 40px 18px; text-align: center; font-size: 14px; color: rgba(51,43,35,0.55); }';
 
@@ -164,6 +165,32 @@ export default function GiftCardsAdminPage() {
     }
 
     setMessage(nextActive ? 'Gift card activated.' : 'Gift card deactivated.');
+    await loadGiftCards();
+  }
+
+  async function redeemGiftCard(card) {
+    const ok = confirm(
+      'Mark the ' + money(card.amount) + ' gift card ' + card.code +
+      ' as redeemed? This deactivates the code so it cannot be used again.'
+    );
+    if (!ok) return;
+
+    const note = prompt('Optional note (e.g. "Redeemed in store 7/10"):', '') || '';
+
+    const res = await fetch('/api/admin/gift-cards/redeem', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: card.id, note: note }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      setMessage(data.error || 'Could not redeem gift card.');
+      return;
+    }
+
+    setMessage('Gift card ' + card.code + ' marked as redeemed.');
     await loadGiftCards();
   }
 
@@ -282,12 +309,18 @@ export default function GiftCardsAdminPage() {
           <div className="eb-ledger">
             {giftCards.map(function (card) {
               const active = card.status === 'active';
+              const redeemed = card.status === 'redeemed';
               const subParts = [];
               if (card.customer_name) subParts.push(card.customer_name);
               if (card.customer_email) subParts.push(card.customer_email);
               subParts.push('Created ' + formatDate(card.created_at));
-              subParts.push('Redeemed ' + (card.redeemed_count || 0));
+              if (redeemed && card.redeemed_at) {
+                subParts.push('Redeemed ' + formatDate(card.redeemed_at));
+              } else {
+                subParts.push('Redeemed ' + (card.redeemed_count || 0));
+              }
               subParts.push('Total ' + money(card.total_redeemed || 0));
+              if (card.redeemed_note) subParts.push(card.redeemed_note);
               return (
                 <div className={active ? 'eb-row' : 'eb-row off'} key={card.id}>
                   <span className="eb-who">
@@ -295,7 +328,7 @@ export default function GiftCardsAdminPage() {
                     <span className="s">{subParts.join(' \u00b7 ')}</span>
                     <span className="s eb-code">{card.code}</span>
                   </span>
-                  <span className={active ? 'eb-pill ok' : 'eb-pill off'}>{card.status || 'active'}</span>
+                  <span className={redeemed ? 'eb-pill used' : active ? 'eb-pill ok' : 'eb-pill off'}>{card.status || 'active'}</span>
                   <span className="eb-rowbtns">
                     <button className="eb-btn solid mini" onClick={function () { copyText(card.code, card.id + '-code'); }}>
                       {copiedId === card.id + '-code' ? 'Copied!' : 'Code'}
@@ -305,9 +338,16 @@ export default function GiftCardsAdminPage() {
                     </button>
                     <a className="eb-btn line mini" href={card.gift_card_url} target="_blank" rel="noopener noreferrer">Open</a>
                     <a className="eb-btn line mini" href={card.pdf_url} target="_blank" rel="noopener noreferrer">PDF</a>
-                    <button className="eb-btn line mini" onClick={function () { toggleGiftCard(card); }}>
-                      {active ? 'Deactivate' : 'Activate'}
-                    </button>
+                    {active && (
+                      <button className="eb-btn line mini" onClick={function () { redeemGiftCard(card); }}>
+                        Mark Redeemed
+                      </button>
+                    )}
+                    {!redeemed && (
+                      <button className="eb-btn line mini" onClick={function () { toggleGiftCard(card); }}>
+                        {active ? 'Deactivate' : 'Activate'}
+                      </button>
+                    )}
                   </span>
                 </div>
               );
