@@ -1,4 +1,3 @@
-
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
@@ -7,8 +6,10 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 function makeCode() {
-  const part = () => Math.random().toString(36).slice(2, 6).toUpperCase();
-  return `EB-${part()}-${part()}-${part()}`;
+  function part() {
+    return Math.random().toString(36).slice(2, 6).toUpperCase();
+  }
+  return 'EB-' + part() + '-' + part() + '-' + part();
 }
 
 export async function POST(req) {
@@ -26,29 +27,34 @@ export async function POST(req) {
     } = await req.json();
 
     const amountNumber = Number(amount);
-
-    if (!amountNumber || amountNumber < 1) {
+    if (!amountNumber || Number.isNaN(amountNumber) || amountNumber < 1) {
       return NextResponse.json({ error: 'Gift card amount must be at least $1.' }, { status: 400 });
     }
 
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
     const supabase = getSupabaseAdmin();
+
     const code = (customCode || makeCode()).trim().toUpperCase();
 
     const coupon = await stripe.coupons.create({
       amount_off: Math.round(amountNumber * 100),
       currency: 'usd',
       duration: 'once',
-      name: `Gift Card ${code}`,
+      name: 'Gift Card ' + code,
       metadata: {
         gift_card_code: code,
         created_from: 'erendiras_billing_portal',
       },
     });
 
+    // Newer Stripe API versions take the coupon nested under "promotion"
+    // instead of a top-level "coupon" parameter.
     const promotionCode = await stripe.promotionCodes.create({
-      coupon: coupon.id,
-      code,
+      promotion: {
+        type: 'coupon',
+        coupon: coupon.id,
+      },
+      code: code,
       active: true,
       metadata: {
         gift_card_code: code,
@@ -57,15 +63,15 @@ export async function POST(req) {
     });
 
     const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || '').replace(/\/$/, '');
-    const giftCardUrl = `${siteUrl}/gift-card/${encodeURIComponent(code)}`;
-    const pdfUrl = `${siteUrl}/api/gift-card/pdf?code=${encodeURIComponent(code)}`;
+    const giftCardUrl = siteUrl + '/gift-card/' + encodeURIComponent(code);
+    const pdfUrl = siteUrl + '/api/gift-card/pdf?code=' + encodeURIComponent(code);
 
     const { data, error } = await supabase
       .from('gift_cards')
       .insert({
         stripe_coupon_id: coupon.id,
         stripe_promotion_code_id: promotionCode.id,
-        code,
+        code: code,
         amount: amountNumber,
         customer_name: customerName || '',
         customer_email: customerEmail || '',
@@ -83,9 +89,9 @@ export async function POST(req) {
         {
           error: 'Stripe gift card was created, but Supabase did not save it.',
           details: error.message,
-          code,
-          giftCardUrl,
-          pdfUrl,
+          code: code,
+          giftCardUrl: giftCardUrl,
+          pdfUrl: pdfUrl,
         },
         { status: 500 }
       );
@@ -94,9 +100,9 @@ export async function POST(req) {
     return NextResponse.json({
       success: true,
       giftCard: data,
-      code,
-      giftCardUrl,
-      pdfUrl,
+      code: code,
+      giftCardUrl: giftCardUrl,
+      pdfUrl: pdfUrl,
     });
   } catch (error) {
     return NextResponse.json(
