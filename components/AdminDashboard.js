@@ -103,7 +103,28 @@ var css = '' +
 '.eb-notes textarea:focus { border-color: #806a52; }' +
 '.eb-notes .eb-btn { margin-top: 8px; }' +
 '.eb-empty { padding: 48px 18px; text-align: center; font-size: 14px; color: rgba(51,43,35,0.55); }' +
-'@media print { .no-print { display: none !important; } .eb-admin { background: #fff; padding: 0; } .eb-wrap { grid-template-columns: 1fr; } .eb-ledger { border: 1px solid #999; } }';
+'@media print { .no-print { display: none !important; } .eb-admin { background: #fff; padding: 0; } .eb-wrap { grid-template-columns: 1fr; } .eb-ledger { border: 1px solid #999; } }' +
+'@media (max-width: 720px) {' +
+' .eb-admin { padding: 16px 12px 48px; }' +
+' .eb-side { position: static; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 16px; }' +
+' .eb-side img { width: 70px; }' +
+' .eb-side h2 { font-size: 20px; margin: 0; }' +
+' .eb-side .eb-email, .eb-rolepill { display: none; }' +
+' .eb-nav { flex-direction: row; flex-wrap: wrap; margin-top: 4px; width: 100%; gap: 6px; }' +
+' .eb-nav a, .eb-nav button { width: auto; flex: 1 1 40%; padding: 9px 8px; font-size: 12px; }' +
+' .eb-head h1 { font-size: 30px; }' +
+' .eb-stats { display: grid; grid-template-columns: 1fr 1fr; row-gap: 14px; padding: 14px 0; }' +
+' .eb-stat { min-width: 0; padding: 0 16px; }' +
+' .eb-stat + .eb-stat { border-left: 0; }' +
+' .eb-stat:nth-child(even) { border-left: 0.5px solid rgba(128,106,82,0.2); }' +
+' .eb-stat b { font-size: 20px; }' +
+' .eb-bar .eb-search { min-width: 100%; }' +
+' .eb-row { flex-wrap: wrap; padding: 12px 14px; row-gap: 8px; }' +
+' .eb-who { flex: 1 1 100%; }' +
+' .eb-amt { font-size: 15px; margin-left: auto; }' +
+' .eb-detail { padding: 4px 14px 16px 14px; }' +
+' .eb-detail .grid { grid-template-columns: 1fr; }' +
+'}';
 
 export default function AdminDashboard({ payments, admin }) {
   const [lang, setLang] = useState(admin?.language || 'en');
