@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { getSupabaseBrowser } from '@/lib/supabaseBrowser';
 import { money, formatDate, formatAddress, paymentMethodLabel } from '@/lib/format';
 import LanguageToggle from './LanguageToggle';
@@ -12,31 +12,73 @@ function orderStatus(payment) {
   return payment.payment_status || 'Unknown';
 }
 
+function shipmentStatus(s, lang) {
+  if (s.status === 'refunded' || s.refund_status) {
+    return lang === 'es' ? 'Cancelado' : 'Canceled';
+  }
+  if (s.tracking_number) {
+    return lang === 'es' ? 'Enviado' : 'Shipped';
+  }
+  return lang === 'es' ? 'Preparando' : 'Preparing';
+}
+
 export default function CustomerPortal({ initialUser, initialPayments }) {
   const [lang, setLang] = useState('en');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
+  const [shipments, setShipments] = useState([]);
+  const [shipmentsLoading, setShipmentsLoading] = useState(true);
   const supabase = getSupabaseBrowser();
   const payments = initialPayments || [];
   const name = payments.find(p => p.customer_name)?.customer_name || initialUser?.email || 'Customer';
   const total = payments.reduce((sum, p) => sum + Number(p.amount_total || 0), 0);
   const latest = payments[0];
 
- async function sendMagicLink(e) {
-  e.preventDefault();
-  setMessage('Sending secure login link...');
+  useEffect(() => {
+    if (!initialUser) {
+      setShipmentsLoading(false);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        const token = data?.session?.access_token;
+        if (!token) {
+          if (!cancelled) setShipmentsLoading(false);
+          return;
+        }
+        const res = await fetch('/api/customer-shipments', {
+          headers: { Authorization: 'Bearer ' + token },
+        });
+        const json = await res.json();
+        if (!cancelled) setShipments(json.shipments || []);
+      } catch {
+        if (!cancelled) setShipments([]);
+      }
+      if (!cancelled) setShipmentsLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialUser]);
 
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || window.location.origin).replace(/\/$/, '');
-const redirectTo = `${siteUrl}/auth/callback?next=/customer`;
-  const { error } = await supabase.auth.signInWithOtp({
-    email,
-    options: {
-      emailRedirectTo: redirectTo,
-    },
-  });
+  async function sendMagicLink(e) {
+    e.preventDefault();
+    setMessage('Sending secure login link...');
 
-  setMessage(error ? error.message : 'Check your email for the secure login link.');
-}
+    const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || window.location.origin).replace(/\/$/, '');
+    const redirectTo = `${siteUrl}/auth/callback?next=/customer`;
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: redirectTo,
+      },
+    });
+
+    setMessage(error ? error.message : 'Check your email for the secure login link.');
+  }
 
   async function logout() {
     await supabase.auth.signOut();
@@ -105,10 +147,59 @@ const redirectTo = `${siteUrl}/auth/callback?next=/customer`;
         <div className="customerStats">
           <div className="stat highlight"><span>Lifetime Purchases</span><b>{money(total)}</b></div>
           <div className="stat"><span>Total Orders</span><b>{payments.length}</b></div>
-          <div className="stat"><span>Latest Order</span><b>{latest ? formatDate(latest.created_at) : '—'}</b></div>
+          <div className="stat"><span>{lang === 'es' ? 'Envíos' : 'Shipments'}</span><b>{shipmentsLoading ? '—' : shipments.length}</b></div>
         </div>
 
+        {(shipmentsLoading || shipments.length > 0) && (
+          <section className="paymentList">
+            <p className="eyebrow">{lang === 'es' ? 'Mis envíos' : 'My shipments'}</p>
+            {shipmentsLoading && (
+              <div className="emptyState">{lang === 'es' ? 'Buscando tus envíos...' : 'Looking up your shipments...'}</div>
+            )}
+            {!shipmentsLoading && shipments.map((s, i) => (
+              <article className="orderCard customerPaymentCard" key={s.tracking_number || s.order_number || i}>
+                <div className="orderTop">
+                  <div className="customerBlock">
+                    <p className="eyebrow">{formatDate(s.created_at)}</p>
+                    <h3>{s.order_number != null ? 'Order #EB-' + s.order_number : (lang === 'es' ? 'Envío' : 'Shipment')}</h3>
+                    <p>{s.carrier ? s.carrier + (s.mail_class ? ' · ' + s.mail_class : '') : '—'}</p>
+                  </div>
+                  <div className="amountBlock">
+                    <span className="pill">{shipmentStatus(s, lang)}</span>
+                  </div>
+                </div>
+                <div className="quickDetails">
+                  <div>
+                    <b>{lang === 'es' ? 'Rastreo' : 'Tracking'}</b>
+                    <p>
+                      {s.tracking_url
+                        ? <a href={s.tracking_url} target="_blank" rel="noopener noreferrer">{s.tracking_number}</a>
+                        : (lang === 'es' ? 'Aún no disponible' : 'Not available yet')}
+                    </p>
+                  </div>
+                  <div>
+                    <b>{lang === 'es' ? 'Destino' : 'Destination'}</b>
+                    <p>{s.city ? s.city + ', ' + s.state : '—'}</p>
+                  </div>
+                  <div>
+                    <b>{lang === 'es' ? 'Fecha de envío' : 'Ship date'}</b>
+                    <p>{formatDate(s.created_at)}</p>
+                  </div>
+                </div>
+                {s.tracking_url && (
+                  <a className="button secondary" href={s.tracking_url} target="_blank" rel="noopener noreferrer">
+                    {lang === 'es' ? 'Rastrear paquete' : 'Track package'}
+                  </a>
+                )}
+              </article>
+            ))}
+          </section>
+        )}
+
         <section className="paymentList">
+          {(shipments.length > 0 || shipmentsLoading) && (
+            <p className="eyebrow">{lang === 'es' ? 'Historial de pagos' : 'Payment history'}</p>
+          )}
           {payments.map((p) => (
             <article className="orderCard customerPaymentCard" key={p.id || p.stripe_session_id || p.clover_payment_id}>
               <div className="orderTop">
