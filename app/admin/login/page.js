@@ -5,7 +5,7 @@ import LanguageToggle from '@/components/LanguageToggle';
 import { getSupabaseBrowser } from '@/lib/supabaseBrowser';
 
 // Where the App tab goes (customer-facing side of the billing portal).
-const APP_URL = 'https://billing.erendirasboutique.com';
+const APP_URL = 'https://my.erendirasboutique.com';
 
 var css = '' +
 '.eb-page { min-height: 100vh; background: #e9e3d9; color: #332b23; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 16px; font-family: Georgia, serif; }' +
@@ -124,9 +124,12 @@ export default function AdminLoginPage() {
     setBusy(true);
     setMessage('Redirecting to Google...');
 
-    const siteUrl = (
-      process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
-    ).replace(/\/$/, '');
+    // Always return to the SAME domain this page is running on.
+    // Using NEXT_PUBLIC_SITE_URL here caused PKCE failures after the
+    // customer portal moved to my.erendirasboutique.com: the code
+    // verifier was stored on this domain but Google returned users
+    // to the other one.
+    const siteUrl = window.location.origin.replace(/\/$/, '');
 
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
