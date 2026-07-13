@@ -60,7 +60,7 @@ export async function GET(req) {
     .maybeSingle();
 
   if (error) {
-    return NextResponse.json({ error: "server_error" }, { status: 500 });
+    return NextResponse.json({ error: "server_error", detail: error.message, hint: (process.env.NEXT_PUBLIC_SUPABASE_URL || "no url set") }, { status: 500 });
   }
   if (!data) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
@@ -122,7 +122,7 @@ export async function POST(req) {
     .maybeSingle();
 
   if (error) {
-    return NextResponse.json({ error: "server_error" }, { status: 500 });
+    return NextResponse.json({ error: "server_error", detail: error.message, hint: (process.env.NEXT_PUBLIC_SUPABASE_URL || "no url set") }, { status: 500 });
   }
   if (!data) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
