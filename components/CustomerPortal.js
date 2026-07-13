@@ -307,7 +307,7 @@ export default function CustomerPortal({ initialUser, initialPayments }) {
           <div className={styles.avatar}>{initials(name)}</div>
           <div>
             <p className={styles.eyebrow}>{t.welcome}</p>
-            <h1 className={styles.heroName}>{name}</h1>
+            <h1 className={styles.heroName}>{name} 🌸</h1>
             <p className={styles.heroSub}>{t.heroSub}</p>
           </div>
         </section>
