@@ -2,9 +2,9 @@
    Cream #F5F3EF · Card #FDFCFA · Taupe #806a52 · Sand #bda891 · Ink #3d3428 */
 
 .wrap {
-  max-width: 860px;
+  width: 100%;
   margin: 0 auto;
-  padding: 28px 20px 60px;
+  padding: 28px clamp(20px, 4vw, 64px) 60px;
   color: #3d3428;
 }
 
