@@ -14,9 +14,13 @@ const CONTACT_EMAIL = 'hello@erendirasboutique.com';
 
 const T = {
   en: {
-    portalEyebrow: 'Secure billing portal',
-    loginTitle: 'Your payments, beautifully organized.',
-    loginSub: 'Sign in with the email you used at checkout to view your payment history, receipts, shipments, and gift cards.',
+    loginEyebrow: 'Customer portal',
+    loginHeadline: "Welcome back to Erendira's Boutique",
+    loginNote: "Enter the email you used at checkout and we'll send you a secure sign-in link. No password needed.",
+    lockNote: 'One-tap sign in · link expires after use',
+    chipReceipts: 'Receipts',
+    chipShipments: 'Shipment tracking',
+    chipGift: 'Gift cards',
     emailLabel: 'Email',
     sendLink: 'Send secure link',
     sending: 'Sending secure login link...',
@@ -69,9 +73,13 @@ const T = {
     footer: "Erendira's Boutique LLC",
   },
   es: {
-    portalEyebrow: 'Portal seguro de facturación',
-    loginTitle: 'Tus pagos, en un solo lugar.',
-    loginSub: 'Ingresa con el correo que usaste al pagar para ver tu historial de pagos, recibos, envíos y tarjetas de regalo.',
+    loginEyebrow: 'Portal de clientes',
+    loginHeadline: "Bienvenida de nuevo a Erendira's Boutique",
+    loginNote: 'Escribe el correo que usaste al pagar y te enviaremos un enlace seguro para ingresar. Sin contraseña.',
+    lockNote: 'Ingreso con un toque · el enlace expira después de usarse',
+    chipReceipts: 'Recibos',
+    chipShipments: 'Rastreo de envíos',
+    chipGift: 'Tarjetas de regalo',
     emailLabel: 'Correo electrónico',
     sendLink: 'Enviar enlace seguro',
     sending: 'Enviando enlace de acceso seguro...',
@@ -255,33 +263,48 @@ export default function CustomerPortal({ initialUser, initialPayments }) {
     return (
       <main className="page">
         <span className="flower one">✿</span><span className="flower two">❀</span>
-        <div className="shell">
-          <div className="topbar">
-            <div className="brand">
-              <img src="/logo2.png" className="logo" alt="Erendira's Boutique" />
-              <div className="brand-title">Erendira&apos;s Boutique</div>
+        <div className={styles.wrap}>
+          <header className={styles.header}>
+            <div className={styles.brand}>
+              <img src="/logo2.png" className={styles.brandLogoBig} alt="Erendira's Boutique" />
             </div>
-            <LanguageToggle lang={lang} setLang={setLang} />
-          </div>
-          <section className="hero">
-            <div className="card loginCard">
-              <p className="eyebrow">{t.portalEyebrow}</p>
-              <h1>{t.loginTitle}</h1>
-              <p>{t.loginSub}</p>
-              <form onSubmit={sendMagicLink}>
-                <label className="field">
+            <div className={styles.headerRight}>
+              <LanguageToggle lang={lang} setLang={setLang} />
+            </div>
+          </header>
+
+          <div className={styles.loginArea}>
+            <div className={styles.loginCard}>
+              <div className={styles.loginIcon}>✿</div>
+              <p className={styles.eyebrow}>{t.loginEyebrow}</p>
+              <h1 className={styles.loginHeadline}>{t.loginHeadline}</h1>
+              <p className={styles.loginNote}>{t.loginNote}</p>
+              <form onSubmit={sendMagicLink} className={styles.loginForm}>
+                <label className={styles.loginLabel}>
                   {t.emailLabel}
-                  <input className="input" type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="you@email.com" />
+                  <input
+                    className={styles.loginInput}
+                    type="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    required
+                    placeholder="you@email.com"
+                  />
                 </label>
-                <button className="button secondary" type="submit">{t.sendLink}</button>
+                <button className={styles.btnSolid + ' ' + styles.btnWide} type="submit">{t.sendLink}</button>
               </form>
-              {message && <div className="notice">{message}</div>}
+              {message && <div className={styles.loginNotice}>{message}</div>}
+              <p className={styles.lockNote}>{t.lockNote}</p>
             </div>
-            <div className="card brandShowcase">
-              <img src="/logo2.png" alt="Erendira's Boutique" />
+
+            <div className={styles.chips}>
+              <span className={styles.chip}>{t.chipReceipts}</span>
+              <span className={styles.chip}>{t.chipShipments}</span>
+              <span className={styles.chip}>{t.chipGift}</span>
             </div>
-          </section>
-          <div className="footer">{t.footer}</div>
+          </div>
+
+          <p className={styles.footer}>{t.footer}</p>
         </div>
       </main>
     );
