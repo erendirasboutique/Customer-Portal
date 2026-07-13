@@ -351,3 +351,128 @@
     justify-content: flex-start;
   }
 }
+
+/* ---- Login screen ---- */
+
+.brandLogoBig {
+  width: 130px;
+  height: auto;
+  object-fit: contain;
+}
+
+.loginArea {
+  min-height: 62vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 0 10px;
+}
+
+.loginCard {
+  width: 100%;
+  max-width: 440px;
+  background: #fdfcfa;
+  border: 1px solid #e5ddd1;
+  border-radius: 22px;
+  padding: 38px 34px 30px;
+  text-align: center;
+}
+
+.loginIcon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #eae3d8;
+  color: #806a52;
+  font-size: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+
+.loginHeadline {
+  margin: 8px 0 0;
+  font-size: 27px;
+  line-height: 1.2;
+}
+
+.loginNote {
+  margin: 12px 0 0;
+  font-size: 14px;
+  color: #806a52;
+  line-height: 1.6;
+}
+
+.loginForm {
+  margin-top: 24px;
+  text-align: left;
+}
+
+.loginLabel {
+  display: block;
+  font-size: 12.5px;
+  color: #806a52;
+}
+
+.loginInput {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  border: 1px solid #cfc2ae;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 15px;
+  color: #3d3428;
+  background: #ffffff;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+
+.loginInput:focus {
+  border-color: #806a52;
+}
+
+.btnWide {
+  display: block;
+  width: 100%;
+  margin-top: 14px;
+  text-align: center;
+  padding: 12px;
+  font-size: 14.5px;
+}
+
+.loginNotice {
+  margin-top: 14px;
+  background: #f1ece3;
+  border-radius: 12px;
+  padding: 11px 14px;
+  font-size: 13px;
+  color: #5c4a35;
+  text-align: left;
+}
+
+.lockNote {
+  margin: 16px 0 0;
+  font-size: 12px;
+  color: #bda891;
+}
+
+.chips {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 22px;
+}
+
+.chip {
+  font-size: 12.5px;
+  color: #806a52;
+  background: #fdfcfa;
+  border: 1px solid #e5ddd1;
+  border-radius: 999px;
+  padding: 7px 16px;
+}
