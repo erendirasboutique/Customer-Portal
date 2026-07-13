@@ -11,6 +11,7 @@ const CONTACT_PHONE_DISPLAY = '909.401.7221';
 const CONTACT_PHONE_TEL = 'tel:+19094017221';
 const CONTACT_WHATSAPP = 'https://wa.me/19094017221';
 const CONTACT_EMAIL = 'hello@erendirasboutique.com';
+const SUPPORT_EMAIL = 'info@erendirasboutique.com';
 
 const T = {
   en: {
@@ -24,7 +25,12 @@ const T = {
     emailLabel: 'Email',
     sendLink: 'Send secure link',
     sending: 'Sending secure login link...',
-    checkEmail: 'Check your email for the secure login link.',
+    sentTitle: 'Check your email for your login link',
+    sentBodyA: 'If ',
+    sentBodyB: " is active with Erendira's Boutique, you'll receive a link. The link will be active for 1 hour.",
+    differentEmail: 'Use a different email',
+    supportNoteA: 'Need support? Contact us at ',
+    supportNoteB: ' for assistance.',
     welcome: 'Welcome back',
     heroSub: 'Your orders, shipments, and receipts — all in one place.',
     logout: 'Log out',
@@ -83,7 +89,12 @@ const T = {
     emailLabel: 'Correo electrónico',
     sendLink: 'Enviar enlace seguro',
     sending: 'Enviando enlace de acceso seguro...',
-    checkEmail: 'Revisa tu correo para encontrar el enlace de acceso seguro.',
+    sentTitle: 'Revisa tu correo para encontrar tu enlace de acceso',
+    sentBodyA: 'Si ',
+    sentBodyB: " está activo con Erendira's Boutique, recibirás un enlace. El enlace estará activo por 1 hora.",
+    differentEmail: 'Usar otro correo',
+    supportNoteA: '¿Necesitas ayuda? Escríbenos a ',
+    supportNoteB: ' y con gusto te asistimos.',
     welcome: 'Bienvenida de nuevo',
     heroSub: 'Tus pedidos, envíos y recibos, todo en un solo lugar.',
     logout: 'Cerrar sesión',
@@ -163,6 +174,8 @@ export default function CustomerPortal({ initialUser, initialPayments }) {
   const [lang, setLangState] = useState('en');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
+  const [linkSent, setLinkSent] = useState(false);
+  const [sentTo, setSentTo] = useState('');
   const [shipments, setShipments] = useState([]);
   const [giftCards, setGiftCards] = useState([]);
   const [addressOnFile, setAddressOnFile] = useState(null);
@@ -239,7 +252,24 @@ export default function CustomerPortal({ initialUser, initialPayments }) {
       },
     });
 
-    setMessage(error ? error.message : t.checkEmail);
+    // Only surface real delivery problems (rate limits, network issues).
+    // "User not found"-style errors still show the confirmation screen so the
+    // form never reveals whether an email has an account.
+    if (error && /rate|network|fetch|timeout/i.test(error.message || '')) {
+      setMessage(error.message);
+      return;
+    }
+
+    setMessage('');
+    setSentTo(email);
+    setLinkSent(true);
+  }
+
+  function useDifferentEmail() {
+    setLinkSent(false);
+    setSentTo('');
+    setEmail('');
+    setMessage('');
   }
 
   async function logout() {
@@ -277,24 +307,48 @@ export default function CustomerPortal({ initialUser, initialPayments }) {
             <div className={styles.loginCard}>
               <div className={styles.loginIcon}>✿</div>
               <p className={styles.eyebrow}>{t.loginEyebrow}</p>
-              <h1 className={styles.loginHeadline}>{t.loginHeadline}</h1>
-              <p className={styles.loginNote}>{t.loginNote}</p>
-              <form onSubmit={sendMagicLink} className={styles.loginForm}>
-                <label className={styles.loginLabel}>
-                  {t.emailLabel}
-                  <input
-                    className={styles.loginInput}
-                    type="email"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    required
-                    placeholder="you@email.com"
-                  />
-                </label>
-                <button className={styles.btnSolid + ' ' + styles.btnWide} type="submit">{t.sendLink}</button>
-              </form>
-              {message && <div className={styles.loginNotice}>{message}</div>}
-              <p className={styles.lockNote}>{t.lockNote}</p>
+
+              {linkSent ? (
+                <>
+                  <h1 className={styles.loginHeadline}>{t.sentTitle}</h1>
+                  <p className={styles.loginNote}>
+                    {t.sentBodyA}<strong>{sentTo}</strong>{t.sentBodyB}
+                  </p>
+                  <button
+                    type="button"
+                    className={styles.btnSolid + ' ' + styles.btnWide}
+                    onClick={useDifferentEmail}
+                  >
+                    {t.differentEmail}
+                  </button>
+                  <p className={styles.lockNote}>
+                    {t.supportNoteA}
+                    <a href={'mailto:' + SUPPORT_EMAIL}>{SUPPORT_EMAIL}</a>
+                    {t.supportNoteB}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h1 className={styles.loginHeadline}>{t.loginHeadline}</h1>
+                  <p className={styles.loginNote}>{t.loginNote}</p>
+                  <form onSubmit={sendMagicLink} className={styles.loginForm}>
+                    <label className={styles.loginLabel}>
+                      {t.emailLabel}
+                      <input
+                        className={styles.loginInput}
+                        type="email"
+                        value={email}
+                        onChange={e => setEmail(e.target.value)}
+                        required
+                        placeholder="you@email.com"
+                      />
+                    </label>
+                    <button className={styles.btnSolid + ' ' + styles.btnWide} type="submit">{t.sendLink}</button>
+                  </form>
+                  {message && <div className={styles.loginNotice}>{message}</div>}
+                  <p className={styles.lockNote}>{t.lockNote}</p>
+                </>
+              )}
             </div>
 
             <div className={styles.chips}>
