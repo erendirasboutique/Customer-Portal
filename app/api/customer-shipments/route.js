@@ -1,19 +1,15 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-// Returns the logged-in customer's shipments from the SHIPPING portal's
-// Supabase. Matches by:
-//   1. Verified session email  ->  shipping_orders.to_email
-//   2. Shipping addresses on the customer's own payment records
-//      (billing payments.shipping_address)  ->  shipping_orders street + zip
-// The email always comes from the verified token, never from the request,
-// so customers can only ever surface shipments tied to their own identity.
+// Returns the logged-in customer's shipments (from the SHIPPING portal's
+// Supabase), plus their gift cards and address on file (from the BILLING
+// portal's own database). Everything is keyed off the verified session
+// email - never off anything the browser sends.
 //
 // Env vars required in the BILLING portal's Vercel project:
 //   SHIPPING_SUPABASE_URL
 //   SHIPPING_SUPABASE_SERVICE_ROLE_KEY
-//   SUPABASE_SERVICE_ROLE_KEY   (billing project's own service key -
-//                                likely already there for the Stripe webhook)
+//   SUPABASE_SERVICE_ROLE_KEY   (billing project's own service key)
 
 export const dynamic = 'force-dynamic';
 
@@ -31,8 +27,6 @@ function streetsMatch(a, b) {
   const nb = normalizeStreet(b);
   if (!na || !nb) return false;
   if (na === nb) return true;
-  // Same house number + one contains the other
-  // (handles "123 Main St" vs "123 Main Street Apt 4")
   const numA = (String(a).match(/^\s*(\d+)/) || [])[1];
   const numB = (String(b).match(/^\s*(\d+)/) || [])[1];
   if (numA && numB && numA !== numB) return false;
@@ -70,11 +64,6 @@ export async function GET(req) {
   const shippingUrl = process.env.SHIPPING_SUPABASE_URL;
   const shippingKey = process.env.SHIPPING_SUPABASE_SERVICE_ROLE_KEY;
 
-  if (!shippingUrl || !shippingKey) {
-    return NextResponse.json({ shipments: [], configured: false });
-  }
-
-  // 1. Verify the token belongs to a real session on the billing project
   const billingAuth = createClient(billingUrl, billingAnon, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
@@ -84,53 +73,68 @@ export async function GET(req) {
   }
   const email = userData.user.email;
 
-  const shipping = createClient(shippingUrl, shippingKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
+  const result = {
+    shipments: [],
+    giftCards: [],
+    addressOnFile: null,
+    configured: Boolean(shippingUrl && shippingKey),
+  };
 
-  const found = new Map();
-
-  // 2. Match by email
-  const { data: byEmail, error: emailError } = await shipping
-    .from('shipping_orders')
-    .select(SAFE_FIELDS)
-    .ilike('to_email', email)
-    .neq('status', 'draft')
-    .order('created_at', { ascending: false })
-    .limit(100);
-
-  if (emailError) {
-    return NextResponse.json({ error: emailError.message }, { status: 500 });
-  }
-  for (const s of byEmail || []) {
-    found.set(s.id, s);
-  }
-
-  // 3. Match by the customer's own payment shipping addresses
+  let billingDb = null;
   if (billingServiceKey) {
-    const billingDb = createClient(billingUrl, billingServiceKey, {
+    billingDb = createClient(billingUrl, billingServiceKey, {
       auth: { persistSession: false, autoRefreshToken: false },
     });
+  }
 
+  // ---- Customer's payment addresses (for matching + address on file) ----
+  let addresses = [];
+  if (billingDb) {
     const { data: myPayments } = await billingDb
       .from('payments')
-      .select('shipping_address')
+      .select('shipping_address, created_at')
       .ilike('customer_email', email)
       .not('shipping_address', 'is', null)
+      .order('created_at', { ascending: false })
       .limit(100);
 
-    // Collect the unique street + zip pairs this customer has paid with
-    const addresses = [];
     const seen = new Set();
     for (const p of myPayments || []) {
       const addr = p.shipping_address || {};
       const line1 = addr.line1 || addr.address_line1 || '';
       const zip = addr.postal_code || addr.zip || '';
+      if (!result.addressOnFile && line1) {
+        result.addressOnFile = addr;
+      }
       if (!line1 || !zip) continue;
       const key = normalizeStreet(line1) + '|' + zip;
       if (seen.has(key)) continue;
       seen.add(key);
       addresses.push({ line1: line1, zip: String(zip).trim() });
+    }
+  }
+
+  // ---- Shipments from the shipping portal ----
+  if (shippingUrl && shippingKey) {
+    const shipping = createClient(shippingUrl, shippingKey, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+
+    const found = new Map();
+
+    const { data: byEmail, error: emailError } = await shipping
+      .from('shipping_orders')
+      .select(SAFE_FIELDS)
+      .ilike('to_email', email)
+      .neq('status', 'draft')
+      .order('created_at', { ascending: false })
+      .limit(100);
+
+    if (emailError) {
+      return NextResponse.json({ error: emailError.message }, { status: 500 });
+    }
+    for (const s of byEmail || []) {
+      found.set(s.id, s);
     }
 
     if (addresses.length) {
@@ -155,14 +159,37 @@ export async function GET(req) {
         if (hit) found.set(s.id, s);
       }
     }
+
+    result.shipments = Array.from(found.values())
+      .sort(function (a, b) {
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      })
+      .map(toPublic);
   }
 
-  // 4. Newest first, strip internal fields
-  const shipments = Array.from(found.values())
-    .sort(function (a, b) {
-      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-    })
-    .map(toPublic);
+  // ---- Gift cards from the billing portal ----
+  if (billingDb) {
+    const { data: cards } = await billingDb
+      .from('gift_cards')
+      .select('code, amount, total_redeemed, status, last_redeemed_at, created_at')
+      .ilike('customer_email', email)
+      .order('created_at', { ascending: false })
+      .limit(20);
 
-  return NextResponse.json({ shipments, configured: true });
+    result.giftCards = (cards || []).map(function (c) {
+      const amount = Number(c.amount || 0);
+      const redeemed = Number(c.total_redeemed || 0);
+      const remaining = Math.max(0, Math.round((amount - redeemed) * 100) / 100);
+      return {
+        code: c.code,
+        amount: amount,
+        remaining: remaining,
+        status: c.status,
+        last_redeemed_at: c.last_redeemed_at,
+        created_at: c.created_at,
+      };
+    });
+  }
+
+  return NextResponse.json(result);
 }
