@@ -1,8 +1,9 @@
 // app/api/account/route.js
 // Token-based customer lookup + address update. No Supabase Auth session required.
-// Requires env vars (already in your Vercel project if the portal uses Supabase):
-//   NEXT_PUBLIC_SUPABASE_URL
-//   SUPABASE_SERVICE_ROLE_KEY   (server-only, never exposed to the client)
+// Requires env vars in THIS portal's Vercel project, copied from the
+// SHIPPING portal's Supabase project (Settings > API):
+//   SHIPPING_SUPABASE_URL                  (the shipping project URL)
+//   SHIPPING_SUPABASE_SERVICE_ROLE_KEY     (service_role key, server-only)
 
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
@@ -24,9 +25,11 @@ const COLS = {
 // ────────────────────────────────────────────────────────────────────────
 
 function db() {
+  // This route reads/writes the SHIPPING portal's Supabase project,
+  // which is separate from this portal's own Supabase project.
   return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY,
+    process.env.SHIPPING_SUPABASE_URL,
+    process.env.SHIPPING_SUPABASE_SERVICE_ROLE_KEY,
     { auth: { persistSession: false } }
   );
 }
@@ -60,7 +63,7 @@ export async function GET(req) {
     .maybeSingle();
 
   if (error) {
-    return NextResponse.json({ error: "server_error", detail: error.message, hint: (process.env.NEXT_PUBLIC_SUPABASE_URL || "no url set") }, { status: 500 });
+    return NextResponse.json({ error: "server_error" }, { status: 500 });
   }
   if (!data) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
@@ -122,7 +125,7 @@ export async function POST(req) {
     .maybeSingle();
 
   if (error) {
-    return NextResponse.json({ error: "server_error", detail: error.message, hint: (process.env.NEXT_PUBLIC_SUPABASE_URL || "no url set") }, { status: 500 });
+    return NextResponse.json({ error: "server_error" }, { status: 500 });
   }
   if (!data) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
