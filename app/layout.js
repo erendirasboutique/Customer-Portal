@@ -5,7 +5,7 @@ export const metadata = {
   title: "Erendira's Boutique | Customer Portal",
   description: "Customer portal for Erendira's Boutique.",
   icons: {
-    icon: '/favicon.ico',
+    icon: '/favicon.png',
     apple: '/apple-touch-icon.png',
   },
   openGraph: {
