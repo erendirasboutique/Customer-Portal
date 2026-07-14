@@ -5,12 +5,12 @@ import { createClient } from '@supabase/supabase-js';
 
 /* ============================================================
    Erendira's Boutique — Billing Dashboard (Admin Studio)
-   Drop-in replacement for the dashboard page.
-   Requirements:
-   - /public/logo2.png  (light version of the logo, shown on taupe)
-   - NEXT_PUBLIC_SUPABASE_URL + NEXT_PUBLIC_SUPABASE_ANON_KEY env vars
-   - Payments come from GET /api/payments (same data the old page used).
-     Expected: an array of objects; field names are mapped leniently below.
+   Self-contained: all styles are in the <style> block below.
+   Requires:
+   - /public/logo2.png (light logo, shown on taupe)
+   - NEXT_PUBLIC_SUPABASE_URL + NEXT_PUBLIC_SUPABASE_ANON_KEY
+   Reads the `payments` table written by api/stripe-webhook/route.js,
+   falling back to GET /api/admin/payments if the direct read fails.
    ============================================================ */
 
 const supabase = createClient(
@@ -18,29 +18,7 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
 
-/* ---------------- Brand ---------------- */
-const C = {
-  cream: '#F5F3EF',
-  creamDark: '#EDEAE3',
-  taupe: '#806a52',
-  taupeDark: '#6b5638',
-  ink: '#3d3128',
-  sand: '#bda891',
-  sandLight: '#e3d9cc',
-  hairline: '#d8d2c8',
-  rowLine: '#eee8dd',
-  muted: '#a08a71',
-  paidBg: '#e7efe0',
-  paidText: '#3b5a2a',
-  pendingBg: '#f3e4dc',
-  pendingText: '#8a4a2e',
-};
-
-const SERIF = "'La Luxes Serif', Georgia, serif";
-const BODY = "'Recoleta', Georgia, serif";
-
 /* ---------------- Translations ---------------- */
-
 const T = {
   en: {
     eyebrow: "ERENDIRA'S BOUTIQUE · ADMIN STUDIO",
@@ -75,7 +53,7 @@ const T = {
     loading: 'Loading payments…',
     logOut: 'Log out',
     owner: 'Owner',
-    recentPayments: 'Recent payments',
+    loadError: "Couldn't load payments",
   },
   es: {
     eyebrow: "ERENDIRA'S BOUTIQUE · ADMIN STUDIO",
@@ -109,20 +87,22 @@ const T = {
     noPaymentsHint: 'Intenta quitar los filtros o sincronizar Clover.',
     loading: 'Cargando pagos…',
     logOut: 'Cerrar sesión',
-    owner: 'Propietario',
-    recentPayments: 'Pagos recientes',
+    owner: 'Propietaria',
+    loadError: 'No se pudieron cargar los pagos',
   },
 };
 
 const dateLocale = { en: 'en-US', es: 'es-MX' };
 
-/* ---------------- Types + lenient mapping ---------------- */
-/* Maps a row from the `payments` table (written by api/stripe-webhook/route.js) */
+/* Maps a row from the `payments` table (written by the Stripe webhook) */
 function mapPayment(raw, i) {
   const refunded = raw.refund_status && raw.refund_status !== 'none';
   let method = raw.payment_method || 'card';
   if (raw.payment_method_brand || raw.payment_method_last4) {
-    method = `${method} (${[raw.payment_method_brand, raw.payment_method_last4 ? `•••• ${raw.payment_method_last4}` : '']
+    method = `${method} (${[
+      raw.payment_method_brand,
+      raw.payment_method_last4 ? `•••• ${raw.payment_method_last4}` : '',
+    ]
       .filter(Boolean)
       .join(' ')})`;
   }
@@ -139,42 +119,56 @@ function mapPayment(raw, i) {
   };
 }
 
-/* ---------------- Icons (inline, no deps) ---------------- */
-const ic = {
-  link: (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 15l6-6"/><path d="M11 6l.5-.5a4.95 4.95 0 017 7L18 13"/><path d="M13 18l-.5.5a4.95 4.95 0 01-7-7L6 11"/></svg>
-  ),
-  gift: (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 01-2 2H7a2 2 0 01-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 010-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 010 5"/></svg>
-  ),
-  box: (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/><path d="M12 12l8-4.5"/><path d="M12 12v9"/><path d="M12 12L4 7.5"/></svg>
-  ),
-  truck: (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/><path d="M5 17H3V6a1 1 0 011-1h9v12M9 17h6M15 8h4l2 3v6h-2"/></svg>
-  ),
-  external: (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg>
-  ),
-  search: (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
-  ),
-  chevron: (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
-  ),
+/* ---------------- Icons (inline SVG, no deps) ---------------- */
+function Icon({ d, size = 20, extra = null }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      {d.map((path, i) => (
+        <path key={i} d={path} />
+      ))}
+      {extra}
+    </svg>
+  );
+}
+
+const paths = {
+  link: ['M9 15l6-6', 'M11 6l.5-.5a4.95 4.95 0 017 7L18 13', 'M13 18l-.5.5a4.95 4.95 0 01-7-7L6 11'],
+  gift: [
+    'M3 9h18v3H3z',
+    'M12 9v12',
+    'M19 12v7a2 2 0 01-2 2H7a2 2 0 01-2-2v-7',
+    'M7.5 9a2.5 2.5 0 010-5C11 4 12 9 12 9s1-5 4.5-5a2.5 2.5 0 010 5',
+  ],
+  box: ['M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z', 'M12 12l8-4.5', 'M12 12v9', 'M12 12L4 7.5'],
+  truck: ['M5 17H3V6a1 1 0 011-1h9v12M9 17h6M15 8h4l2 3v6h-2'],
+  external: ['M7 17L17 7', 'M8 7h9v9'],
+  search: ['M21 21l-4.35-4.35'],
+  chevronDown: ['M6 9l6 6 6-6'],
+  chevronRight: ['M9 6l6 6-6 6'],
 };
 
-/* ---------------- Small helpers ---------------- */
-const money = (n) =>
-  n.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+/* ---------------- Helpers ---------------- */
+const money = (n) => n.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 
 function initials(name) {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase())
-    .join('') || '·';
+  return (
+    String(name || '')
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((w) => w[0]?.toUpperCase())
+      .join('') || '·'
+  );
 }
 
 function dayKey(iso) {
@@ -192,6 +186,7 @@ export default function AdminDashboard() {
 
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
   const [syncing, setSyncing] = useState(false);
 
   const [query, setQuery] = useState('');
@@ -215,9 +210,9 @@ export default function AdminDashboard() {
       if (!u) return;
       const m = u.user_metadata || {};
       setUser({
-        email: u.email ?? '',
-        avatar: m.avatar_url ?? m.picture ?? null,
-        name: m.full_name ?? m.name ?? u.email ?? '',
+        email: u.email || '',
+        avatar: m.avatar_url || m.picture || null,
+        name: m.full_name || m.name || u.email || '',
       });
     });
   }, []);
@@ -231,8 +226,9 @@ export default function AdminDashboard() {
     return () => document.removeEventListener('mousedown', close);
   }, []);
 
-  /* payments — read the `payments` table the Stripe webhook writes to */
+  /* payments — read the table the Stripe webhook writes to */
   async function loadPayments() {
+    setLoadError(null);
     try {
       const { data, error } = await supabase
         .from('payments')
@@ -247,24 +243,26 @@ export default function AdminDashboard() {
         return;
       }
 
-      // Fallback: RLS may block anon/authenticated reads — try an admin API route
-      console.warn('Direct payments read failed:', error?.message);
+      // Fallback: RLS may block reads — try an admin API route
       const res = await fetch('/api/admin/payments', { cache: 'no-store' });
       if (res.ok) {
         const json = await res.json();
-        const arr = Array.isArray(json) ? json : json.payments ?? json.data ?? [];
+        const arr = Array.isArray(json) ? json : json.payments || json.data || [];
         setPayments(arr.map(mapPayment));
       } else {
         setPayments([]);
+        setLoadError(error ? error.message : `API ${res.status}`);
       }
-    } catch {
+    } catch (err) {
       setPayments([]);
+      setLoadError(err.message || 'Unknown error');
     } finally {
       setLoading(false);
     }
   }
   useEffect(() => {
     loadPayments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function syncClover() {
@@ -308,7 +306,6 @@ export default function AdminDashboard() {
     return { revenue, count: payments.length, customers, stripe, clover };
   }, [payments]);
 
-  /* "N orders" per customer, like the original rows */
   const orderCounts = useMemo(() => {
     const m = new Map();
     for (const p of payments) {
@@ -349,7 +346,7 @@ export default function AdminDashboard() {
       p.source,
       p.method,
       new Date(p.date).toISOString(),
-      p.receiptUrl ?? '',
+      p.receiptUrl || '',
     ]);
     const csv = [header, ...rows]
       .map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(','))
@@ -362,14 +359,6 @@ export default function AdminDashboard() {
     URL.revokeObjectURL(url);
   }
 
-  const statusBadge = (s) => {
-    const paidLike = s === 'paid';
-    return {
-      background: paidLike ? C.paidBg : C.pendingBg,
-      color: paidLike ? C.paidText : C.pendingText,
-    };
-  };
-
   const statusLabel = {
     paid: t.paid,
     pending: t.pending,
@@ -377,106 +366,185 @@ export default function AdminDashboard() {
     failed: t.failed,
   };
 
-  /* module buttons */
   const SHIP = 'https://ship.erendirasboutique.com';
   const modules = [
-    { icon: ic.link, label: t.paymentLinks, sub: t.managePaymentLinks, href: '/payment-links', external: false, filled: true },
-    { icon: ic.gift, label: t.giftCards, sub: t.manageGiftCards, href: '/gift-cards', external: false, filled: false, sandFill: true },
-    { icon: ic.box, label: t.orders, sub: t.shippingPortal, href: `${SHIP}/orders`, external: true },
-    { icon: ic.truck, label: t.shipping, sub: t.shippingPortal, href: SHIP, external: true },
+    { icon: paths.link, label: t.paymentLinks, sub: t.managePaymentLinks, href: '/payment-links', cls: 'ebd-mod-taupe' },
+    { icon: paths.gift, label: t.giftCards, sub: t.manageGiftCards, href: '/gift-cards', cls: 'ebd-mod-sand' },
+    { icon: paths.box, label: t.orders, sub: t.shippingPortal, href: `${SHIP}/orders`, cls: 'ebd-mod-white', external: true },
+    { icon: paths.truck, label: t.shipping, sub: t.shippingPortal, href: SHIP, cls: 'ebd-mod-white', external: true },
   ];
 
   return (
-    <main
-      style={{ background: C.creamDark, minHeight: '100vh', fontFamily: BODY, color: C.ink }}
-    >
-      {/* ============ Taupe hero header ============ */}
-      <header style={{ background: C.taupe }} className="print:hidden">
-        <div className="mx-auto w-full max-w-[1500px] px-6 pt-6 pb-5 lg:px-10">
-          {/* top row: logo · lang + user */}
-          <div className="flex items-center justify-between gap-4">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/logo2.png"
-              alt="Erendira's Boutique"
-              className="h-12 w-auto lg:h-14"
-              style={{ objectFit: 'contain' }}
-            />
+    <main className="ebd">
+      <style>{`
+        .ebd { --cream:#F5F3EF; --cream-dark:#EDEAE3; --taupe:#806a52; --taupe-dark:#6b5638;
+          --ink:#3d3128; --sand:#bda891; --sand-light:#e3d9cc; --hairline:#d8d2c8;
+          --row-line:#eee8dd; --muted:#a08a71;
+          background: var(--cream-dark); min-height: 100vh; color: var(--ink);
+          font-family: 'Recoleta', Georgia, serif; }
+        .ebd * { box-sizing: border-box; }
+        .ebd .serif { font-family: 'La Luxes Serif', Georgia, serif; }
+        .ebd a { text-decoration: none; }
+        .ebd button { font-family: inherit; cursor: pointer; border: none; background: none; }
+        .ebd-wrap { max-width: 1500px; margin: 0 auto; padding: 0 24px; }
+        @media (min-width: 1024px) { .ebd-wrap { padding: 0 40px; } }
 
-            <div className="flex items-center gap-3">
-              {/* EN / ES toggle */}
-              <div
-                className="flex overflow-hidden rounded-full"
-                style={{ border: `1px solid ${C.muted}` }}
-                role="group"
-                aria-label="Language"
-              >
+        /* ---------- header ---------- */
+        .ebd-header { background: var(--taupe); }
+        .ebd-header-in { padding-top: 24px; padding-bottom: 22px; }
+        .ebd-toprow { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+        .ebd-logo { height: 52px; width: auto; object-fit: contain; display: block; }
+        @media (min-width: 1024px) { .ebd-logo { height: 60px; } }
+        .ebd-topright { display: flex; align-items: center; gap: 12px; }
+        .ebd-langs { display: flex; border: 1px solid var(--muted); border-radius: 999px; overflow: hidden; }
+        .ebd-langs button { padding: 7px 15px; font-size: 12px; letter-spacing: 2px; color: var(--sand-light); }
+        .ebd-langs button.on { background: var(--cream); color: var(--taupe-dark); }
+        .ebd-userpill { display: flex; align-items: center; gap: 10px; border: 1px solid var(--muted);
+          border-radius: 999px; padding: 5px 12px 5px 5px; color: var(--cream); }
+        .ebd-avatar { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; display: block; }
+        .ebd-avatar-fallback { width: 30px; height: 30px; border-radius: 50%; background: var(--sand);
+          color: #fff; font-size: 11px; display: flex; align-items: center; justify-content: center; }
+        .ebd-useremail { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; }
+        @media (max-width: 640px) { .ebd-useremail { display: none; } }
+        .ebd-menu-wrap { position: relative; }
+        .ebd-menu { position: absolute; right: 0; top: calc(100% + 8px); z-index: 20; width: 260px;
+          background: #fff; border: 1px solid var(--hairline); border-radius: 16px; overflow: hidden;
+          box-shadow: 0 8px 24px rgba(61,49,40,0.12); }
+        .ebd-menu-head { padding: 12px 16px; border-bottom: 1px solid var(--row-line); }
+        .ebd-menu-head p { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .ebd-menu-name { font-size: 14px; font-weight: 500; color: var(--ink); }
+        .ebd-menu-email { font-size: 12px; color: var(--muted); }
+        .ebd-menu button { display: block; width: 100%; text-align: left; padding: 12px 16px;
+          font-size: 14px; color: var(--taupe-dark); }
+        .ebd-menu button:hover { background: var(--cream); }
+
+        .ebd-eyebrow { margin: 26px 0 0; font-size: 11px; letter-spacing: 0.25em; color: var(--sand-light); }
+        .ebd-herorow { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between;
+          column-gap: 32px; row-gap: 12px; }
+        .ebd-revenue { margin: 0; line-height: 1; color: var(--cream); font-size: clamp(44px, 6vw, 72px); }
+        .ebd-substats { margin: 10px 0 0; font-size: 14px; color: var(--sand-light); }
+        .ebd-nav { display: flex; flex-wrap: wrap; gap: 8px; padding-bottom: 4px; }
+        .ebd-nav a, .ebd-nav span { border-radius: 999px; padding: 8px 20px; font-size: 14px; }
+        .ebd-nav .on { background: var(--cream); color: var(--taupe-dark); }
+        .ebd-nav a { border: 1px solid var(--muted); color: var(--sand-light); }
+        .ebd-nav a:hover { border-color: var(--sand-light); }
+
+        /* ---------- modules ---------- */
+        .ebd-body { padding: 32px 0; }
+        .ebd-mods { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; margin-bottom: 32px; }
+        @media (min-width: 1024px) { .ebd-mods { grid-template-columns: repeat(4, minmax(0,1fr)); } }
+        .ebd-mod { border-radius: 16px; padding: 18px 20px; display: block; transition: transform .15s ease; }
+        .ebd-mod:hover { transform: translateY(-2px); }
+        .ebd-mod-taupe { background: var(--taupe); color: var(--cream); }
+        .ebd-mod-sand { background: var(--sand); color: #fff; }
+        .ebd-mod-white { background: #fff; border: 1px solid var(--hairline); color: var(--ink); }
+        .ebd-mod-white svg { color: var(--taupe); }
+        .ebd-mod-label { margin: 12px 0 0; font-size: 15px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
+        .ebd-mod-sub { margin: 2px 0 0; font-size: 12px; }
+        .ebd-mod-taupe .ebd-mod-sub, .ebd-mod-sand .ebd-mod-sub { color: var(--sand-light); }
+        .ebd-mod-white .ebd-mod-sub { color: var(--muted); }
+        .ebd-mod-white .ebd-ext { color: var(--muted); }
+
+        /* ---------- toolbar ---------- */
+        .ebd-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 26px; }
+        .ebd-search { flex: 1; min-width: 240px; display: flex; align-items: center; gap: 8px;
+          background: #fff; border: 1px solid var(--hairline); border-radius: 999px; padding: 10px 16px; }
+        .ebd-search svg { color: var(--muted); flex-shrink: 0; }
+        .ebd-search input { border: none; outline: none; background: transparent; width: 100%;
+          font-size: 14px; color: var(--ink); font-family: inherit; }
+        .ebd-search input::placeholder { color: var(--muted); }
+        .ebd-select { appearance: none; background: #fff; border: 1px solid var(--hairline);
+          border-radius: 999px; padding: 10px 34px 10px 16px; font-size: 14px; color: var(--taupe-dark);
+          font-family: inherit; outline: none;
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23a08a71' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+          background-repeat: no-repeat; background-position: right 14px center; }
+        .ebd-btn { border-radius: 999px; padding: 10px 20px; font-size: 14px; }
+        .ebd-btn-taupe { background: var(--taupe); color: var(--cream); }
+        .ebd-btn-taupe:disabled { opacity: .6; cursor: default; }
+        .ebd-btn-white { background: #fff; border: 1px solid var(--hairline); color: var(--taupe-dark); }
+        .ebd-btn-white:hover { background: var(--cream); }
+
+        /* ---------- list ---------- */
+        .ebd-error { background: #f3e4dc; border: 1px solid #e0c4b4; color: #8a4a2e; border-radius: 12px;
+          padding: 12px 16px; font-size: 13px; margin-bottom: 20px; }
+        .ebd-groupdate { margin: 0 0 10px; font-size: 11px; text-transform: uppercase;
+          letter-spacing: 0.25em; color: var(--muted); }
+        .ebd-group { margin-bottom: 28px; }
+        .ebd-list { background: #fff; border: 1px solid var(--hairline); border-radius: 16px; overflow: hidden; }
+        .ebd-row { display: flex; align-items: center; gap: 12px; padding: 14px 16px; }
+        @media (min-width: 1024px) { .ebd-row { padding: 14px 24px; } }
+        .ebd-row + .ebd-row { border-top: 1px solid var(--row-line); }
+        .ebd-row-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--cream-dark);
+          color: var(--taupe); font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .ebd-row-main { flex: 1; min-width: 0; }
+        .ebd-row-name { margin: 0; font-size: 15px; font-weight: 500; color: var(--ink);
+          overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .ebd-row-meta { margin: 0; font-size: 12px; color: var(--muted);
+          overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .ebd-badge { border-radius: 999px; padding: 4px 12px; font-size: 10px; letter-spacing: 2px;
+          text-transform: uppercase; flex-shrink: 0; }
+        .ebd-badge-source { border: 1px solid var(--hairline); color: var(--taupe-dark); }
+        @media (max-width: 640px) { .ebd-badge-source { display: none; } }
+        .ebd-badge-paid { background: #e7efe0; color: #3b5a2a; }
+        .ebd-badge-warn { background: #f3e4dc; color: #8a4a2e; }
+        .ebd-row-amount { min-width: 92px; text-align: right; font-size: 18px; color: var(--ink); flex-shrink: 0; }
+        .ebd-row-receipt { color: var(--muted); display: flex; align-items: center; }
+        .ebd-row-receipt:hover { color: var(--taupe); }
+        @media (max-width: 640px) { .ebd-row-receipt { display: none; } }
+        .ebd-empty { background: #fff; border: 1px solid var(--hairline); border-radius: 16px;
+          padding: 64px 24px; text-align: center; }
+        .ebd-empty-title { margin: 0; font-size: 16px; color: var(--ink); }
+        .ebd-empty-hint { margin: 4px 0 0; font-size: 14px; color: var(--muted); }
+        .ebd-loading { padding: 64px 0; text-align: center; font-size: 14px; color: var(--muted); }
+
+        @media print {
+          .ebd-header, .ebd-mods, .ebd-toolbar { display: none !important; }
+          .ebd { background: #fff; }
+        }
+      `}</style>
+
+      {/* ============ Taupe hero header ============ */}
+      <header className="ebd-header">
+        <div className="ebd-wrap ebd-header-in">
+          <div className="ebd-toprow">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo2.png" alt="Erendira's Boutique" className="ebd-logo" />
+
+            <div className="ebd-topright">
+              <div className="ebd-langs" role="group" aria-label="Language">
                 {['en', 'es'].map((l) => (
-                  <button
-                    key={l}
-                    onClick={() => setLang(l)}
-                    className="px-3.5 py-1.5 text-xs tracking-widest transition-colors"
-                    style={{
-                      background: lang === l ? C.cream : 'transparent',
-                      color: lang === l ? C.taupeDark : C.sandLight,
-                    }}
-                  >
+                  <button key={l} className={lang === l ? 'on' : ''} onClick={() => setLang(l)}>
                     {l.toUpperCase()}
                   </button>
                 ))}
               </div>
 
-              {/* user pill */}
-              <div className="relative" ref={menuRef}>
+              <div className="ebd-menu-wrap" ref={menuRef}>
                 <button
+                  className="ebd-userpill"
                   onClick={() => setMenuOpen((v) => !v)}
-                  className="flex items-center gap-2.5 rounded-full py-1.5 pl-1.5 pr-3 transition-colors"
-                  style={{ border: `1px solid ${C.muted}`, color: C.cream }}
                   aria-haspopup="menu"
                   aria-expanded={menuOpen}
                 >
-                  {user?.avatar ? (
+                  {user && user.avatar ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={user.avatar}
-                      alt=""
-                      referrerPolicy="no-referrer"
-                      className="h-7 w-7 rounded-full object-cover"
-                    />
+                    <img src={user.avatar} alt="" referrerPolicy="no-referrer" className="ebd-avatar" />
                   ) : (
-                    <span
-                      className="flex h-7 w-7 items-center justify-center rounded-full text-[11px]"
-                      style={{ background: C.sand, color: '#fff' }}
-                    >
-                      {initials(user?.name || user?.email || '·')}
-                    </span>
+                    <span className="ebd-avatar-fallback">{initials(user?.name || user?.email)}</span>
                   )}
-                  <span className="hidden max-w-[220px] truncate text-sm sm:block">
-                    {user?.email ?? '…'}
-                  </span>
-                  <span style={{ color: C.sandLight }}>{ic.chevron}</span>
+                  <span className="ebd-useremail">{user ? user.email : '…'}</span>
+                  <Icon d={paths.chevronDown} size={14} />
                 </button>
 
                 {menuOpen && (
-                  <div
-                    role="menu"
-                    className="absolute right-0 z-20 mt-2 w-64 overflow-hidden rounded-2xl bg-white"
-                    style={{ border: `1px solid ${C.hairline}`, boxShadow: '0 8px 24px rgba(61,49,40,0.12)' }}
-                  >
-                    <div className="px-4 py-3" style={{ borderBottom: `1px solid ${C.rowLine}` }}>
-                      <p className="m-0 truncate text-sm font-medium" style={{ color: C.ink }}>
-                        {user?.name}
-                      </p>
-                      <p className="m-0 truncate text-xs" style={{ color: C.muted }}>
+                  <div className="ebd-menu" role="menu">
+                    <div className="ebd-menu-head">
+                      <p className="ebd-menu-name">{user?.name}</p>
+                      <p className="ebd-menu-email">
                         {user?.email} · {t.owner}
                       </p>
                     </div>
-                    <button
-                      role="menuitem"
-                      onClick={logOut}
-                      className="w-full px-4 py-3 text-left text-sm transition-colors hover:bg-[#F5F3EF]"
-                      style={{ color: C.taupeDark }}
-                    >
+                    <button role="menuitem" onClick={logOut}>
                       {t.logOut}
                     </button>
                   </div>
@@ -485,108 +553,68 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* hero numbers */}
-          <p className="mt-6 mb-0 text-[11px] tracking-[0.25em]" style={{ color: C.sandLight }}>
-            {t.eyebrow}
-          </p>
-          <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-3">
+          <p className="ebd-eyebrow">{t.eyebrow}</p>
+          <div className="ebd-herorow">
             <div>
-              <p
-                className="m-0 leading-none"
-                style={{ fontFamily: SERIF, fontSize: 'clamp(44px, 6vw, 72px)', color: C.cream }}
-              >
-                {money(stats.revenue)}
-              </p>
-              <p className="mb-0 mt-2 text-sm" style={{ color: C.sandLight }}>
+              <p className="ebd-revenue serif">{money(stats.revenue)}</p>
+              <p className="ebd-substats">
                 {t.totalRevenue} · {stats.count} {t.payments} · {stats.customers} {t.customers} ·{' '}
                 {t.stripeClover} {stats.stripe} / {stats.clover}
               </p>
             </div>
 
-            {/* pill nav */}
-            <nav className="flex flex-wrap gap-2 pb-1">
-              <span
-                className="rounded-full px-5 py-2 text-sm"
-                style={{ background: C.cream, color: C.taupeDark }}
-              >
-                {t.dashboard}
-              </span>
-              <a
-                href="/payment-links"
-                className="rounded-full px-5 py-2 text-sm no-underline transition-colors"
-                style={{ border: `1px solid ${C.muted}`, color: C.sandLight }}
-              >
-                {t.paymentLinks}
-              </a>
-              <a
-                href="/gift-cards"
-                className="rounded-full px-5 py-2 text-sm no-underline"
-                style={{ border: `1px solid ${C.muted}`, color: C.sandLight }}
-              >
-                {t.giftCards}
-              </a>
+            <nav className="ebd-nav">
+              <span className="on">{t.dashboard}</span>
+              <a href="/payment-links">{t.paymentLinks}</a>
+              <a href="/gift-cards">{t.giftCards}</a>
             </nav>
           </div>
         </div>
       </header>
 
       {/* ============ Body ============ */}
-      <div className="mx-auto w-full max-w-[1500px] px-6 py-8 lg:px-10">
+      <div className="ebd-wrap ebd-body">
         {/* module buttons */}
-        <div className="mb-8 grid grid-cols-2 gap-3 lg:grid-cols-4 print:hidden">
-          {modules.map((m) => {
-            const filled = 'filled' in m && m.filled;
-            const sandFill = 'sandFill' in m && m.sandFill;
-            const bg = filled ? C.taupe : sandFill ? C.sand : '#fff';
-            const fg = filled || sandFill ? C.cream : C.ink;
-            const sub = filled || sandFill ? C.sandLight : C.muted;
-            return (
-              <a
-                key={m.label}
-                href={m.href}
-                target={m.external ? '_blank' : undefined}
-                rel={m.external ? 'noopener noreferrer' : undefined}
-                className="group rounded-2xl p-4 no-underline transition-transform hover:-translate-y-0.5 lg:p-5"
-                style={{
-                  background: bg,
-                  border: filled || sandFill ? 'none' : `1px solid ${C.hairline}`,
-                }}
-              >
-                <span style={{ color: filled || sandFill ? C.cream : C.taupe }}>{m.icon}</span>
-                <p className="mb-0 mt-3 flex items-center gap-1.5 text-[15px] font-medium" style={{ color: fg }}>
-                  {m.label}
-                  {m.external && <span style={{ color: sub }}>{ic.external}</span>}
-                </p>
-                <p className="m-0 mt-0.5 text-xs" style={{ color: sub }}>
-                  {m.sub}
-                </p>
-              </a>
-            );
-          })}
+        <div className="ebd-mods">
+          {modules.map((m) => (
+            <a
+              key={m.label}
+              href={m.href}
+              className={`ebd-mod ${m.cls}`}
+              target={m.external ? '_blank' : undefined}
+              rel={m.external ? 'noopener noreferrer' : undefined}
+            >
+              <Icon d={m.icon} extra={m.icon === paths.truck ? (
+                <>
+                  <circle cx="7" cy="17" r="2" />
+                  <circle cx="17" cy="17" r="2" />
+                </>
+              ) : m.icon === paths.search ? <circle cx="11" cy="11" r="7" /> : null} />
+              <p className="ebd-mod-label">
+                {m.label}
+                {m.external && (
+                  <span className="ebd-ext">
+                    <Icon d={paths.external} size={12} />
+                  </span>
+                )}
+              </p>
+              <p className="ebd-mod-sub">{m.sub}</p>
+            </a>
+          ))}
         </div>
 
         {/* toolbar */}
-        <div className="mb-6 flex flex-wrap items-center gap-2.5 print:hidden">
-          <label
-            className="flex min-w-[240px] flex-1 items-center gap-2 rounded-full bg-white px-4 py-2.5"
-            style={{ border: `1px solid ${C.hairline}` }}
-          >
-            <span style={{ color: C.muted }}>{ic.search}</span>
+        <div className="ebd-toolbar">
+          <label className="ebd-search">
+            <Icon d={paths.search} size={16} extra={<circle cx="11" cy="11" r="7" />} />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={t.search}
-              className="w-full bg-transparent text-sm outline-none"
-              style={{ color: C.ink, fontFamily: BODY }}
             />
           </label>
 
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="rounded-full bg-white px-4 py-2.5 text-sm outline-none"
-            style={{ border: `1px solid ${C.hairline}`, color: C.taupeDark, fontFamily: BODY }}
-          >
+          <select className="ebd-select" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
             <option value="all">{t.allStatuses}</option>
             <option value="paid">{t.paid}</option>
             <option value="pending">{t.pending}</option>
@@ -594,127 +622,75 @@ export default function AdminDashboard() {
             <option value="failed">{t.failed}</option>
           </select>
 
-          <select
-            value={sourceFilter}
-            onChange={(e) => setSourceFilter(e.target.value)}
-            className="rounded-full bg-white px-4 py-2.5 text-sm outline-none"
-            style={{ border: `1px solid ${C.hairline}`, color: C.taupeDark, fontFamily: BODY }}
-          >
+          <select className="ebd-select" value={sourceFilter} onChange={(e) => setSourceFilter(e.target.value)}>
             <option value="all">{t.allSources}</option>
             <option value="stripe">Stripe</option>
             <option value="clover">Clover</option>
           </select>
 
-          <button
-            onClick={syncClover}
-            disabled={syncing}
-            className="rounded-full px-5 py-2.5 text-sm transition-opacity disabled:opacity-60"
-            style={{ background: C.taupe, color: C.cream }}
-          >
+          <button className="ebd-btn ebd-btn-taupe" onClick={syncClover} disabled={syncing}>
             {syncing ? t.syncing : t.syncClover}
           </button>
-          <button
-            onClick={exportCsv}
-            className="rounded-full bg-white px-5 py-2.5 text-sm"
-            style={{ border: `1px solid ${C.hairline}`, color: C.taupeDark }}
-          >
+          <button className="ebd-btn ebd-btn-white" onClick={exportCsv}>
             {t.exportCsv}
           </button>
-          <button
-            onClick={() => window.print()}
-            className="rounded-full bg-white px-5 py-2.5 text-sm"
-            style={{ border: `1px solid ${C.hairline}`, color: C.taupeDark }}
-          >
+          <button className="ebd-btn ebd-btn-white" onClick={() => window.print()}>
             {t.print}
           </button>
         </div>
 
-        {/* payments — one list, date-grouped rows */}
+        {loadError && (
+          <div className="ebd-error">
+            {t.loadError}: {loadError}
+          </div>
+        )}
+
+        {/* payments — one list per date group */}
         {loading ? (
-          <p className="py-16 text-center text-sm" style={{ color: C.muted }}>
-            {t.loading}
-          </p>
+          <p className="ebd-loading">{t.loading}</p>
         ) : groups.length === 0 ? (
-          <div
-            className="rounded-2xl bg-white px-6 py-16 text-center"
-            style={{ border: `1px solid ${C.hairline}` }}
-          >
-            <p className="m-0 text-base" style={{ fontFamily: SERIF, color: C.ink }}>
-              {t.noPayments}
-            </p>
-            <p className="mb-0 mt-1 text-sm" style={{ color: C.muted }}>
-              {t.noPaymentsHint}
-            </p>
+          <div className="ebd-empty">
+            <p className="ebd-empty-title serif">{t.noPayments}</p>
+            <p className="ebd-empty-hint">{t.noPaymentsHint}</p>
           </div>
         ) : (
           groups.map(([key, rows]) => (
-            <section key={key} className="mb-7">
-              <p
-                className="mb-2.5 text-[11px] uppercase tracking-[0.25em]"
-                style={{ color: C.muted }}
-              >
-                {groupLabel(key)}
-              </p>
-              <div
-                className="overflow-hidden rounded-2xl bg-white"
-                style={{ border: `1px solid ${C.hairline}` }}
-              >
-                {rows.map((p, i) => (
-                  <div
-                    key={p.id}
-                    className="flex items-center gap-3 px-4 py-3.5 lg:px-6"
-                    style={{ borderTop: i === 0 ? 'none' : `1px solid ${C.rowLine}` }}
-                  >
-                    <span
-                      className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-xs"
-                      style={{ background: C.creamDark, color: C.taupe }}
-                    >
-                      {initials(p.name)}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className="m-0 truncate text-[15px] font-medium" style={{ color: C.ink }}>
-                        {p.name}
-                      </p>
-                      <p className="m-0 truncate text-xs" style={{ color: C.muted }}>
-                        {p.email && `${p.email} · `}
-                        {p.method} · {orderCounts.get(p.email || p.name) || 1}{' '}
-                        {(orderCounts.get(p.email || p.name) || 1) === 1 ? t.order : t.ordersWord}
-                      </p>
-                    </div>
-                    <span
-                      className="hidden rounded-full px-3 py-1 text-[10px] uppercase tracking-widest sm:inline"
-                      style={{ border: `1px solid ${C.hairline}`, color: C.taupeDark }}
-                    >
-                      {p.source}
-                    </span>
-                    <span
-                      className="rounded-full px-3 py-1 text-[10px] uppercase tracking-widest"
-                      style={statusBadge(p.status)}
-                    >
-                      {statusLabel[p.status] ?? p.status}
-                    </span>
-                    <span
-                      className="min-w-[92px] text-right text-lg"
-                      style={{ fontFamily: SERIF, color: C.ink }}
-                    >
-                      {money(p.amount)}
-                    </span>
-                    {p.receiptUrl ? (
-                      <a
-                        href={p.receiptUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label="Receipt"
-                        className="hidden sm:block"
-                        style={{ color: C.muted }}
+            <section className="ebd-group" key={key}>
+              <p className="ebd-groupdate">{groupLabel(key)}</p>
+              <div className="ebd-list">
+                {rows.map((p) => {
+                  const n = orderCounts.get(p.email || p.name) || 1;
+                  return (
+                    <div className="ebd-row" key={p.id}>
+                      <span className="ebd-row-avatar">{initials(p.name)}</span>
+                      <div className="ebd-row-main">
+                        <p className="ebd-row-name">{p.name}</p>
+                        <p className="ebd-row-meta">
+                          {p.email && `${p.email} · `}
+                          {p.method} · {n} {n === 1 ? t.order : t.ordersWord}
+                        </p>
+                      </div>
+                      <span className="ebd-badge ebd-badge-source">{p.source}</span>
+                      <span
+                        className={`ebd-badge ${p.status === 'paid' ? 'ebd-badge-paid' : 'ebd-badge-warn'}`}
                       >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
-                      </a>
-                    ) : (
-                      <span className="hidden w-4 sm:block" />
-                    )}
-                  </div>
-                ))}
+                        {statusLabel[p.status] || p.status}
+                      </span>
+                      <span className="ebd-row-amount serif">{money(p.amount)}</span>
+                      {p.receiptUrl ? (
+                        <a
+                          className="ebd-row-receipt"
+                          href={p.receiptUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label="Receipt"
+                        >
+                          <Icon d={paths.chevronRight} size={16} />
+                        </a>
+                      ) : null}
+                    </div>
+                  );
+                })}
               </div>
             </section>
           ))
