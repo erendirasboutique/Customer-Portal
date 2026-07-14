@@ -14,8 +14,8 @@ import { createClient } from '@supabase/supabase-js';
    ============================================================ */
 
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
 
 /* ---------------- Brand ---------------- */
@@ -40,9 +40,8 @@ const SERIF = "'La Luxes Serif', Georgia, serif";
 const BODY = "'Recoleta', Georgia, serif";
 
 /* ---------------- Translations ---------------- */
-type Lang = 'en' | 'es';
 
-const T: Record<Lang, Record<string, string>> = {
+const T = {
   en: {
     eyebrow: "ERENDIRA'S BOUTIQUE · ADMIN STUDIO",
     totalRevenue: 'Total revenue',
@@ -115,23 +114,11 @@ const T: Record<Lang, Record<string, string>> = {
   },
 };
 
-const dateLocale: Record<Lang, string> = { en: 'en-US', es: 'es-MX' };
+const dateLocale = { en: 'en-US', es: 'es-MX' };
 
 /* ---------------- Types + lenient mapping ---------------- */
-type Payment = {
-  id: string;
-  name: string;
-  email: string;
-  amount: number; // dollars (amount_total is already divided by 100 by the webhook)
-  status: 'paid' | 'pending' | 'refunded' | 'failed' | string;
-  source: 'stripe' | 'clover' | string;
-  method: string;
-  receiptUrl: string | null;
-  date: string; // ISO
-};
-
 /* Maps a row from the `payments` table (written by api/stripe-webhook/route.js) */
-function mapPayment(raw: any, i: number): Payment {
+function mapPayment(raw, i) {
   const refunded = raw.refund_status && raw.refund_status !== 'none';
   let method = raw.payment_method || 'card';
   if (raw.payment_method_brand || raw.payment_method_last4) {
@@ -178,10 +165,10 @@ const ic = {
 };
 
 /* ---------------- Small helpers ---------------- */
-const money = (n: number) =>
+const money = (n) =>
   n.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 
-function initials(name: string) {
+function initials(name) {
   return name
     .split(/\s+/)
     .filter(Boolean)
@@ -190,20 +177,20 @@ function initials(name: string) {
     .join('') || '·';
 }
 
-function dayKey(iso: string) {
+function dayKey(iso) {
   return new Date(iso).toDateString();
 }
 
 /* ============================================================ */
-export default function BillingDashboard() {
-  const [lang, setLang] = useState<Lang>('en');
+export default function AdminDashboard() {
+  const [lang, setLang] = useState('en');
   const t = T[lang];
 
-  const [user, setUser] = useState<{ email: string; avatar: string | null; name: string } | null>(null);
+  const [user, setUser] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef(null);
 
-  const [payments, setPayments] = useState<Payment[]>([]);
+  const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
 
@@ -226,7 +213,7 @@ export default function BillingDashboard() {
     supabase.auth.getUser().then(({ data }) => {
       const u = data.user;
       if (!u) return;
-      const m: any = u.user_metadata || {};
+      const m = u.user_metadata || {};
       setUser({
         email: u.email ?? '',
         avatar: m.avatar_url ?? m.picture ?? null,
@@ -237,8 +224,8 @@ export default function BillingDashboard() {
 
   /* close user menu on outside click */
   useEffect(() => {
-    const close = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+    const close = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false);
     };
     document.addEventListener('mousedown', close);
     return () => document.removeEventListener('mousedown', close);
@@ -323,7 +310,7 @@ export default function BillingDashboard() {
 
   /* "N orders" per customer, like the original rows */
   const orderCounts = useMemo(() => {
-    const m = new Map<string, number>();
+    const m = new Map();
     for (const p of payments) {
       const k = p.email || p.name;
       m.set(k, (m.get(k) || 0) + 1);
@@ -332,16 +319,16 @@ export default function BillingDashboard() {
   }, [payments]);
 
   const groups = useMemo(() => {
-    const map = new Map<string, Payment[]>();
+    const map = new Map();
     for (const p of filtered) {
       const k = dayKey(p.date);
       if (!map.has(k)) map.set(k, []);
-      map.get(k)!.push(p);
+      map.get(k).push(p);
     }
     return Array.from(map.entries());
   }, [filtered]);
 
-  function groupLabel(key: string) {
+  function groupLabel(key) {
     const d = new Date(key);
     const label = d.toLocaleDateString(dateLocale[lang], {
       month: 'long',
@@ -375,7 +362,7 @@ export default function BillingDashboard() {
     URL.revokeObjectURL(url);
   }
 
-  const statusBadge = (s: Payment['status']) => {
+  const statusBadge = (s) => {
     const paidLike = s === 'paid';
     return {
       background: paidLike ? C.paidBg : C.pendingBg,
@@ -383,7 +370,7 @@ export default function BillingDashboard() {
     };
   };
 
-  const statusLabel: Record<string, string> = {
+  const statusLabel = {
     paid: t.paid,
     pending: t.pending,
     refunded: t.refunded,
@@ -424,7 +411,7 @@ export default function BillingDashboard() {
                 role="group"
                 aria-label="Language"
               >
-                {(['en', 'es'] as Lang[]).map((l) => (
+                {['en', 'es'].map((l) => (
                   <button
                     key={l}
                     onClick={() => setLang(l)}
@@ -549,7 +536,7 @@ export default function BillingDashboard() {
         <div className="mb-8 grid grid-cols-2 gap-3 lg:grid-cols-4 print:hidden">
           {modules.map((m) => {
             const filled = 'filled' in m && m.filled;
-            const sandFill = 'sandFill' in m && (m as any).sandFill;
+            const sandFill = 'sandFill' in m && m.sandFill;
             const bg = filled ? C.taupe : sandFill ? C.sand : '#fff';
             const fg = filled || sandFill ? C.cream : C.ink;
             const sub = filled || sandFill ? C.sandLight : C.muted;
