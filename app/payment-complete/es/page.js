@@ -107,6 +107,23 @@ export default function Page() {
         </section>
       </section>
 
+      <style jsx global>{`
+        @font-face {
+          font-family: 'La Luxes Serif';
+          src: url('/fonts/la_luxes_serif.otf') format('opentype');
+          font-weight: 400;
+          font-style: normal;
+          font-display: swap;
+        }
+        @font-face {
+          font-family: 'Recoleta';
+          src: url('/fonts/recoleta-regular.otf') format('opentype');
+          font-weight: 400;
+          font-style: normal;
+          font-display: swap;
+        }
+      `}</style>
+
       <style jsx>{`
         .ebcPage {
           min-height: 100vh;
