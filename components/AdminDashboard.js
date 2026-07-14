@@ -50,8 +50,8 @@ const T: Record<Lang, Record<string, string>> = {
     customers: 'customers',
     stripeClover: 'Stripe / Clover',
     dashboard: 'Dashboard',
-    paymentLinks: 'Payment Links',
-    giftCards: 'Gift Cards',
+    paymentLinks: 'Payment links',
+    giftCards: 'Gift cards',
     orders: 'Orders',
     shipping: 'Shipping',
     shippingPortal: 'Shipping portal',
@@ -122,32 +122,34 @@ type Payment = {
   id: string;
   name: string;
   email: string;
-  amount: number; // dollars
-  status: 'paid' | 'pending' | 'refunded' | 'failed';
-  source: 'stripe' | 'clover';
+  amount: number; // dollars (amount_total is already divided by 100 by the webhook)
+  status: 'paid' | 'pending' | 'refunded' | 'failed' | string;
+  source: 'stripe' | 'clover' | string;
   method: string;
-  orderCount: number;
+  receiptUrl: string | null;
   date: string; // ISO
 };
 
+/* Maps a row from the `payments` table (written by api/stripe-webhook/route.js) */
 function mapPayment(raw: any, i: number): Payment {
-  const amountRaw =
-    raw.amount ?? raw.amount_total ?? raw.total ?? raw.amount_cents ?? 0;
-  const amount =
-    raw.amount_cents != null || (raw.amount_total != null && amountRaw > 5000)
-      ? Number(amountRaw) / 100
-      : Number(amountRaw);
+  const refunded = raw.refund_status && raw.refund_status !== 'none';
+  let method = raw.payment_method || 'card';
+  if (raw.payment_method_brand || raw.payment_method_last4) {
+    method = `${method} (${[raw.payment_method_brand, raw.payment_method_last4 ? `•••• ${raw.payment_method_last4}` : '']
+      .filter(Boolean)
+      .join(' ')})`;
+  }
   return {
-    id: String(raw.id ?? raw.payment_id ?? i),
-    name: raw.name ?? raw.customer_name ?? raw.customer?.name ?? 'Customer',
-    email: raw.email ?? raw.customer_email ?? raw.customer?.email ?? '',
-    amount: isFinite(amount) ? amount : 0,
-    status: (raw.status ?? 'paid').toLowerCase(),
-    source: (raw.source ?? raw.provider ?? 'stripe').toLowerCase(),
-    method: raw.method ?? raw.payment_method ?? raw.payment_method_type ?? 'card',
-    orderCount: Number(raw.order_count ?? raw.orders ?? 1),
-    date: raw.date ?? raw.created_at ?? raw.created ?? new Date().toISOString(),
-  } as Payment;
+    id: String(raw.stripe_session_id ?? raw.id ?? i),
+    name: raw.customer_name || raw.customer_email || 'Customer',
+    email: (raw.customer_email || '').toLowerCase(),
+    amount: Number(raw.amount_total) || 0,
+    status: refunded ? 'refunded' : (raw.payment_status || 'paid').toLowerCase(),
+    source: (raw.payment_source || 'stripe').toLowerCase(),
+    method,
+    receiptUrl: raw.receipt_url || null,
+    date: raw.created_at || new Date().toISOString(),
+  };
 }
 
 /* ---------------- Icons (inline, no deps) ---------------- */
@@ -242,14 +244,32 @@ export default function BillingDashboard() {
     return () => document.removeEventListener('mousedown', close);
   }, []);
 
-  /* payments */
+  /* payments — read the `payments` table the Stripe webhook writes to */
   async function loadPayments() {
     try {
-      const res = await fetch('/api/payments', { cache: 'no-store' });
-      if (!res.ok) throw new Error(String(res.status));
-      const json = await res.json();
-      const arr = Array.isArray(json) ? json : json.payments ?? json.data ?? [];
-      setPayments(arr.map(mapPayment));
+      const { data, error } = await supabase
+        .from('payments')
+        .select(
+          'id, stripe_session_id, customer_name, customer_email, amount_total, payment_status, refund_status, payment_source, payment_method, payment_method_brand, payment_method_last4, receipt_url, created_at'
+        )
+        .order('created_at', { ascending: false })
+        .limit(500);
+
+      if (!error && data) {
+        setPayments(data.map(mapPayment));
+        return;
+      }
+
+      // Fallback: RLS may block anon/authenticated reads — try an admin API route
+      console.warn('Direct payments read failed:', error?.message);
+      const res = await fetch('/api/admin/payments', { cache: 'no-store' });
+      if (res.ok) {
+        const json = await res.json();
+        const arr = Array.isArray(json) ? json : json.payments ?? json.data ?? [];
+        setPayments(arr.map(mapPayment));
+      } else {
+        setPayments([]);
+      }
     } catch {
       setPayments([]);
     } finally {
@@ -301,6 +321,16 @@ export default function BillingDashboard() {
     return { revenue, count: payments.length, customers, stripe, clover };
   }, [payments]);
 
+  /* "N orders" per customer, like the original rows */
+  const orderCounts = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const p of payments) {
+      const k = p.email || p.name;
+      m.set(k, (m.get(k) || 0) + 1);
+    }
+    return m;
+  }, [payments]);
+
   const groups = useMemo(() => {
     const map = new Map<string, Payment[]>();
     for (const p of filtered) {
@@ -323,7 +353,7 @@ export default function BillingDashboard() {
   }
 
   function exportCsv() {
-    const header = ['Name', 'Email', 'Amount', 'Status', 'Source', 'Method', 'Date'];
+    const header = ['Name', 'Email', 'Amount', 'Status', 'Source', 'Method', 'Date', 'Receipt'];
     const rows = filtered.map((p) => [
       p.name,
       p.email,
@@ -332,6 +362,7 @@ export default function BillingDashboard() {
       p.source,
       p.method,
       new Date(p.date).toISOString(),
+      p.receiptUrl ?? '',
     ]);
     const csv = [header, ...rows]
       .map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(','))
@@ -659,8 +690,8 @@ export default function BillingDashboard() {
                       </p>
                       <p className="m-0 truncate text-xs" style={{ color: C.muted }}>
                         {p.email && `${p.email} · `}
-                        {p.method} · {p.orderCount}{' '}
-                        {p.orderCount === 1 ? t.order : t.ordersWord}
+                        {p.method} · {orderCounts.get(p.email || p.name) || 1}{' '}
+                        {(orderCounts.get(p.email || p.name) || 1) === 1 ? t.order : t.ordersWord}
                       </p>
                     </div>
                     <span
@@ -681,6 +712,20 @@ export default function BillingDashboard() {
                     >
                       {money(p.amount)}
                     </span>
+                    {p.receiptUrl ? (
+                      <a
+                        href={p.receiptUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="Receipt"
+                        className="hidden sm:block"
+                        style={{ color: C.muted }}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+                      </a>
+                    ) : (
+                      <span className="hidden w-4 sm:block" />
+                    )}
                   </div>
                 ))}
               </div>
