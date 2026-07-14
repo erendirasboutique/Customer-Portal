@@ -101,7 +101,7 @@ export default function Page() {
 
           <nav className="ebcLinks">
             <a href="https://www.erendirasboutique.com/legal/payments">Legal</a>
-            <a href="https://www.erendirasboutique.com/returns">Returns</a>
+            <a href="https://returns.erendirasboutique.com">Returns</a>
             <a href="https://www.erendirasboutique.com/contact">Contact</a>
             <a className="ebcLinkPrimary" href="https://my.erendirasboutique.com">
               Customer Portal
