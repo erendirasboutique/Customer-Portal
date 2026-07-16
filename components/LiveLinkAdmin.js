@@ -3,13 +3,84 @@
 // components/LiveLinkAdmin.js
 // One field. Paste the link after the live ends, hit save, done.
 //
+// Renders inside AdminShell, so it uses the same .eba-* design system as the
+// dashboard — espresso sidebar, ruled header, stat strip, pill controls.
+//
 // No auth plumbing here — /api/live-link checks the Supabase session cookie
 // server-side, and cookies ride along with fetch automatically.
 
 import { useCallback, useEffect, useState } from 'react';
+import AdminShell from '@/components/AdminShell';
 import { describeAge, isStale } from '@/lib/liveLink';
 
-export default function LiveLinkAdmin() {
+const T = {
+  en: {
+    title: 'Live link',
+    lastUpdated: 'Last updated',
+    never: 'Never',
+    publicLink: 'Public link',
+    statusFresh: 'Current',
+    statusStale: 'Check this',
+    statusNone: 'Not set',
+    label: 'Facebook video link',
+    placeholder: 'https://www.facebook.com/...',
+    save: 'Save link',
+    saving: 'Saving...',
+    savedBtn: 'Saved',
+    test: 'Test redirect',
+    loading: 'Loading...',
+    byLine: 'Set by',
+    howItWorks: 'How it works',
+    howBody: 'Customers open live.erendirasboutique.com and land wherever this points. Paste the new video link after each live and they follow along automatically.',
+    reminder: 'One thing to watch',
+    reminderBody: 'The video has to be set to Public on Facebook. Friends-only videos hit a login wall for customers who are not your friends.',
+    fallback: 'If nothing is set',
+    fallbackBody: 'Visitors go to the boutique Facebook page instead of an error screen.',
+    staleNote: 'This link is more than a week old, so it is probably from last week\u2019s live.',
+    noneNote: 'No link set yet. Paste one below.',
+  },
+  es: {
+    title: 'Enlace en vivo',
+    lastUpdated: 'Actualizado',
+    never: 'Nunca',
+    publicLink: 'Enlace p\u00fablico',
+    statusFresh: 'Al d\u00eda',
+    statusStale: 'Rev\u00edsalo',
+    statusNone: 'Sin definir',
+    label: 'Enlace del video de Facebook',
+    placeholder: 'https://www.facebook.com/...',
+    save: 'Guardar enlace',
+    saving: 'Guardando...',
+    savedBtn: 'Guardado',
+    test: 'Probar enlace',
+    loading: 'Cargando...',
+    byLine: 'Puesto por',
+    howItWorks: 'C\u00f3mo funciona',
+    howBody: 'Las clientas abren live.erendirasboutique.com y llegan a donde apunte esto. Pega el enlace nuevo despu\u00e9s de cada live y todo se actualiza solo.',
+    reminder: 'Importante',
+    reminderBody: 'El video tiene que estar en P\u00fablico en Facebook. Los videos solo para amigos les piden iniciar sesi\u00f3n a las clientas.',
+    fallback: 'Si no hay nada',
+    fallbackBody: 'Las visitas van a la p\u00e1gina de Facebook de la boutique en vez de ver un error.',
+    staleNote: 'Este enlace tiene m\u00e1s de una semana, seguramente es del live pasado.',
+    noneNote: 'A\u00fan no hay enlace. Pega uno abajo.',
+  },
+};
+
+const dateLocale = { en: 'en-US', es: 'es-MX' };
+
+const extraCss = '' +
+'.ebl-stat-stale b { color: #a8702f; }' +
+'.ebl-stat-none b { color: #a08a71; }' +
+'.ebl-host { font-size: 19px !important; }' +
+'.ebl-err { margin-top: 14px; background: #f7e3e0; border-radius: 12px; padding: 11px 15px; font-size: 12.5px; color: #a03535; }' +
+'.ebl-cells { margin-top: 24px; }' +
+'.ebl-by { margin: 14px 2px 0; font-size: 11px; color: #a08a71; }' +
+'@media (max-width: 760px) { .ebl-toolbar .eba-btn { flex: 1; text-align: center; } }';
+
+export default function LiveLinkAdmin({ admin }) {
+  const [lang, setLangState] = useState(admin?.language === 'es' ? 'es' : 'en');
+  const t = T[lang];
+
   const [value, setValue] = useState('');
   const [saved, setSaved] = useState(null);
   const [updatedAt, setUpdatedAt] = useState(null);
@@ -19,7 +90,18 @@ export default function LiveLinkAdmin() {
   const [error, setError] = useState(null);
   const [justSaved, setJustSaved] = useState(false);
 
-  const load = useCallback(async () => {
+  useEffect(function () {
+    const stored = localStorage.getItem('eb-lang');
+    if (stored === 'en' || stored === 'es') setLangState(stored);
+  }, []);
+
+  function setLang(l) {
+    setLangState(l);
+    localStorage.setItem('eb-lang', l);
+    document.documentElement.lang = l;
+  }
+
+  const load = useCallback(async function () {
     try {
       const res = await fetch('/api/live-link', { cache: 'no-store' });
       const data = await res.json();
@@ -37,9 +119,7 @@ export default function LiveLinkAdmin() {
     }
   }, []);
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  useEffect(function () { load(); }, [load]);
 
   async function save() {
     setSaving(true);
@@ -59,7 +139,7 @@ export default function LiveLinkAdmin() {
       setUpdatedAt(data.updated_at);
       setUpdatedBy(data.updated_by);
       setJustSaved(true);
-      setTimeout(() => setJustSaved(false), 2600);
+      setTimeout(function () { setJustSaved(false); }, 2600);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -67,287 +147,101 @@ export default function LiveLinkAdmin() {
     }
   }
 
-  const dirty = value.trim() !== (saved ?? '').trim();
-  const stale = isStale(updatedAt);
-  const age = describeAge(updatedAt);
-
-  function onKeyDown(event) {
-    if (event.key === 'Enter') {
-      event.preventDefault();
+  function onKeyDown(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
       if (!saving && dirty) save();
     }
   }
 
+  const dirty = value.trim() !== (saved ?? '').trim();
+  const stale = isStale(updatedAt);
+  const age = describeAge(updatedAt);
+  const todayLine = new Date().toLocaleDateString(dateLocale[lang], { weekday: 'long', month: 'long', day: 'numeric' });
+
+  let statusWord = t.statusFresh;
+  let statClass = '';
+  if (!updatedAt) { statusWord = t.statusNone; statClass = 'ebl-stat-none'; }
+  else if (stale) { statusWord = t.statusStale; statClass = 'ebl-stat-stale'; }
+
+  const notice = !updatedAt ? t.noneNote : (stale ? t.staleNote : null);
+
   return (
-    <section className="wrap">
-      <header className="head">
-        <p className="eyebrow">Live sales</p>
-        <h1 className="title">This week&rsquo;s link</h1>
-        <p className="sub">
-          Anyone who opens <strong>live.erendirasboutique.com</strong> lands wherever this
-          points. Paste the new video link after each live.
-        </p>
-      </header>
+    <AdminShell
+      admin={admin}
+      active="live-link"
+      lang={lang}
+      onLang={setLang}
+      title={t.title}
+      subtitle={todayLine}
+    >
+      <style>{extraCss}</style>
 
       {loading ? (
-        <p className="muted">Loading&hellip;</p>
+        <div className="eba-notice">{t.loading}</div>
       ) : (
         <>
-          <div className={`status ${stale ? 'is-stale' : 'is-fresh'}`}>
-            <span className="dot" aria-hidden="true" />
-            <span className="status-text">
-              {updatedAt ? (
-                <>
-                  Updated {age}
-                  {updatedBy ? ` by ${updatedBy}` : ''}
-                  {stale ? ' — probably last week\u2019s' : ''}
-                </>
-              ) : (
-                <>No link set. Visitors go to the boutique&rsquo;s Facebook page for now.</>
-              )}
-            </span>
-          </div>
+          <section className="eba-stats" aria-label="Live link summary">
+            <div className={'eba-stat ' + statClass}>
+              <b>{updatedAt ? age : t.never}</b>
+              <span>{t.lastUpdated}</span>
+            </div>
+            <div className={'eba-stat ' + statClass}>
+              <b>{statusWord}</b>
+              <span>{t.title}</span>
+            </div>
+            <div className="eba-stat">
+              <b className="ebl-host">live.erendirasboutique.com</b>
+              <span>{t.publicLink}</span>
+            </div>
+          </section>
 
-          <label className="label" htmlFor="live-url">
-            Facebook video link
-          </label>
-          <input
-            id="live-url"
-            className="input"
-            type="url"
-            inputMode="url"
-            autoComplete="off"
-            spellCheck="false"
-            placeholder="https://www.facebook.com/..."
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            onKeyDown={onKeyDown}
-            disabled={saving}
-          />
+          <div className="eba-toolbar ebl-toolbar">
+            <label className="eba-search">
+              <input
+                type="url"
+                inputMode="url"
+                autoComplete="off"
+                spellCheck="false"
+                aria-label={t.label}
+                placeholder={t.placeholder}
+                value={value}
+                onChange={function (e) { setValue(e.target.value); }}
+                onKeyDown={onKeyDown}
+                disabled={saving}
+              />
+            </label>
 
-          {error && <p className="error">{error}</p>}
-
-          <div className="actions">
-            <button className="save" onClick={save} disabled={saving || !dirty}>
-              {saving ? 'Saving…' : justSaved ? 'Saved' : 'Save link'}
+            <button className="eba-btn eba-btn-dark" onClick={save} disabled={saving || !dirty}>
+              {saving ? t.saving : justSaved ? t.savedBtn : t.save}
             </button>
 
             {saved && (
-              <a className="check" href="/live" target="_blank" rel="noreferrer">
-                Test the redirect
-              </a>
+              <a className="eba-btn" href="/live" target="_blank" rel="noreferrer">{t.test}</a>
             )}
           </div>
 
-          <p className="note">
-            The video has to be set to <strong>Public</strong> on Facebook, or customers who
-            aren&rsquo;t your friends will hit a login wall.
-          </p>
+          {error && <div className="ebl-err">{error}</div>}
+          {!error && notice && <div className="eba-notice">{notice}</div>}
+
+          {updatedBy && <p className="ebl-by">{t.byLine} {updatedBy}</p>}
+
+          <div className="eba-detail-grid ebl-cells">
+            <div className="eba-cell">
+              <span className="lb">{t.howItWorks}</span>
+              {t.howBody}
+            </div>
+            <div className="eba-cell">
+              <span className="lb">{t.reminder}</span>
+              {t.reminderBody}
+            </div>
+            <div className="eba-cell">
+              <span className="lb">{t.fallback}</span>
+              {t.fallbackBody}
+            </div>
+          </div>
         </>
       )}
-
-      <style jsx>{`
-        .wrap {
-          --cream: #f5f3ef;
-          --taupe: #806a52;
-          --sand: #bda891;
-          --ink: #3d3428;
-          --ink-soft: #4a3f33;
-          --amber: #a8702f;
-
-          max-width: 34rem;
-          margin: 0 auto;
-          padding: 3rem 1.5rem 4rem;
-          background: var(--cream);
-          color: var(--ink);
-          font-family: 'Recoleta', Georgia, serif;
-        }
-
-        .head {
-          margin-bottom: 2.25rem;
-        }
-
-        .eyebrow {
-          margin: 0 0 0.5rem;
-          font-size: 0.6875rem;
-          letter-spacing: 0.18em;
-          text-transform: uppercase;
-          color: var(--sand);
-        }
-
-        .title {
-          margin: 0 0 0.75rem;
-          font-family: 'La Luxes Serif', Georgia, serif;
-          font-size: clamp(1.75rem, 5vw, 2.375rem);
-          font-weight: 400;
-          line-height: 1.15;
-          color: var(--ink);
-        }
-
-        .sub {
-          margin: 0;
-          font-size: 0.9375rem;
-          line-height: 1.6;
-          color: var(--ink-soft);
-        }
-
-        .sub strong {
-          font-weight: 600;
-          color: var(--taupe);
-        }
-
-        .status {
-          display: flex;
-          align-items: center;
-          gap: 0.625rem;
-          margin-bottom: 1.75rem;
-          padding: 0.75rem 0.875rem;
-          border-radius: 2px;
-          background: rgba(189, 168, 145, 0.14);
-          font-size: 0.8125rem;
-          color: var(--ink-soft);
-        }
-
-        .dot {
-          flex: none;
-          width: 7px;
-          height: 7px;
-          border-radius: 50%;
-          background: var(--taupe);
-        }
-
-        .is-stale .dot {
-          background: var(--amber);
-        }
-
-        .is-stale {
-          background: rgba(168, 112, 47, 0.1);
-        }
-
-        .status-text {
-          line-height: 1.4;
-        }
-
-        .label {
-          display: block;
-          margin-bottom: 0.5rem;
-          font-size: 0.75rem;
-          letter-spacing: 0.1em;
-          text-transform: uppercase;
-          color: var(--taupe);
-        }
-
-        .input {
-          width: 100%;
-          padding: 0.8125rem 0.875rem;
-          border: 1px solid var(--sand);
-          border-radius: 2px;
-          background: #fff;
-          color: var(--ink);
-          font-family: inherit;
-          font-size: 0.9375rem;
-          transition: border-color 0.15s ease;
-        }
-
-        .input::placeholder {
-          color: rgba(61, 52, 40, 0.35);
-        }
-
-        .input:focus {
-          outline: 2px solid var(--taupe);
-          outline-offset: 2px;
-          border-color: var(--taupe);
-        }
-
-        .input:disabled {
-          opacity: 0.6;
-        }
-
-        .error {
-          margin: 0.75rem 0 0;
-          font-size: 0.8125rem;
-          line-height: 1.5;
-          color: #8c3a2b;
-        }
-
-        .actions {
-          display: flex;
-          align-items: center;
-          gap: 1.25rem;
-          margin-top: 1.5rem;
-        }
-
-        .save {
-          padding: 0.75rem 1.75rem;
-          border: none;
-          border-radius: 2px;
-          background: var(--taupe);
-          color: var(--cream);
-          font-family: inherit;
-          font-size: 0.875rem;
-          letter-spacing: 0.04em;
-          cursor: pointer;
-          transition: background 0.15s ease, opacity 0.15s ease;
-        }
-
-        .save:hover:not(:disabled) {
-          background: var(--ink-soft);
-        }
-
-        .save:focus-visible {
-          outline: 2px solid var(--ink);
-          outline-offset: 2px;
-        }
-
-        .save:disabled {
-          opacity: 0.4;
-          cursor: default;
-        }
-
-        .check {
-          font-size: 0.8125rem;
-          color: var(--taupe);
-          text-decoration: none;
-          border-bottom: 1px solid var(--sand);
-          padding-bottom: 1px;
-        }
-
-        .check:hover {
-          color: var(--ink);
-          border-color: var(--taupe);
-        }
-
-        .check:focus-visible {
-          outline: 2px solid var(--taupe);
-          outline-offset: 3px;
-        }
-
-        .note {
-          margin: 2.5rem 0 0;
-          padding-top: 1.25rem;
-          border-top: 1px solid rgba(189, 168, 145, 0.4);
-          font-size: 0.8125rem;
-          line-height: 1.6;
-          color: var(--ink-soft);
-        }
-
-        .note strong {
-          font-weight: 600;
-          color: var(--taupe);
-        }
-
-        .muted {
-          font-size: 0.875rem;
-          color: var(--sand);
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-          .save,
-          .input {
-            transition: none;
-          }
-        }
-      `}</style>
-    </section>
+    </AdminShell>
   );
 }
