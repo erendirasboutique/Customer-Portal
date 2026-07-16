@@ -15,5 +15,5 @@ export default async function LiveLinkPage() {
   const admin = await getAdminUser();
   if (!admin) redirect('/admin/login');
 
-  return <LiveLinkAdmin />;
+  return <LiveLinkAdmin admin={admin} />;
 }
