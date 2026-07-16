@@ -2,7 +2,9 @@
 
 // components/LiveLinkAdmin.js
 // One field. Paste the link after the live ends, hit save, done.
-import { getSupabaseBrowser } from '@/lib/supabaseClient';
+//
+// No auth plumbing here — /api/live-link checks the Supabase session cookie
+// server-side, and cookies ride along with fetch automatically.
 
 import { useCallback, useEffect, useState } from 'react';
 import { describeAge, isStale } from '@/lib/liveLink';
@@ -17,30 +19,9 @@ export default function LiveLinkAdmin() {
   const [error, setError] = useState(null);
   const [justSaved, setJustSaved] = useState(false);
 
-  // Grabs the current access token to send to our API.
-  async function authHeaders() {
-    const supabase = getSupabaseBrowser();
-
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    if (!session?.access_token) {
-      throw new Error('You need to sign in again.');
-    }
-
-    return {
-      Authorization: `Bearer ${session.access_token}`,
-      'Content-Type': 'application/json',
-    };
-  }
-
   const load = useCallback(async () => {
     try {
-      const res = await fetch('/api/live-link', {
-        cache: 'no-store',
-        headers: await authHeaders(),
-      });
+      const res = await fetch('/api/live-link', { cache: 'no-store' });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Could not load the current link.');
 
@@ -67,7 +48,7 @@ export default function LiveLinkAdmin() {
     try {
       const res = await fetch('/api/live-link', {
         method: 'POST',
-        headers: await authHeaders(),
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url: value }),
       });
       const data = await res.json();
