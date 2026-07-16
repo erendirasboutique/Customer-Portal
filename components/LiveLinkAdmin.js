@@ -2,12 +2,7 @@
 
 // components/LiveLinkAdmin.js
 // One field. Paste the link after the live ends, hit save, done.
-//
-// ⚠️  CHECK THIS IMPORT. It assumes your Supabase browser client is exported from
-//     lib/supabaseClient.js as a named export called `supabase`. If yours lives
-//     somewhere else (lib/supabase.js, utils/supabase.js, a default export...),
-//     change this one line to match. Everything else works as-is.
-import { supabase } from '@/lib/supabaseClient';
+import { getSupabaseBrowser } from '@/lib/supabaseClient';
 
 import { useCallback, useEffect, useState } from 'react';
 import { describeAge, isStale } from '@/lib/liveLink';
@@ -24,6 +19,8 @@ export default function LiveLinkAdmin() {
 
   // Grabs the current access token to send to our API.
   async function authHeaders() {
+    const supabase = getSupabaseBrowser();
+
     const {
       data: { session },
     } = await supabase.auth.getSession();
