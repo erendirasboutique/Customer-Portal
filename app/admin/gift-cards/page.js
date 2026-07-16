@@ -1,20 +1,12 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import AdminShell from '@/components/AdminShell';
 
 /* ============================================================
    Erendira's Boutique — Admin Studio · Gift cards
-   "Atelier" design: espresso sidebar, ruled ledger content.
    Same endpoints: /api/admin/gift-cards/list, /create,
-   /deactivate, /redeem, POST /api/auth/logout.
-   Requires /public/logo2.png (light logo, shown on espresso).
-
-   PALETTE: three colors only.
-     #F5F3EF  background
-     #957f67  buttons / text
-     #cfbda9  accents / lines
-   rgba() values below are those same colors at reduced opacity —
-   no fourth color is introduced anywhere in this file.
+   /deactivate, /redeem.
    ============================================================ */
 
 function money(value) {
@@ -24,36 +16,39 @@ function money(value) {
 /* ---------------- Translations ---------------- */
 const T = {
   en: {
-    adminStudio: 'ADMIN STUDIO',
-    overview: 'Overview',
-    paymentLinks: 'Payment links',
-    giftCards: 'Gift cards',
-    liveLink: 'Live link',
-    orders: 'Orders',
-    shipping: 'Shipping',
-    logOut: 'Log out',
-    title: 'Gift cards',
-    sumCards: 'cards',
-    sumActive: 'active',
-    sumRedemptions: 'redemptions',
-    sumRedeemed: 'redeemed',
-    newCard: 'NEW GIFT CARD',
+    eyebrow: 'ADMIN STUDIO',
+    title: 'Gift Cards',
+    sub: 'Issue codes, print the PDF, and mark them redeemed in store.',
+    heroLabel: 'Active',
+    heroCap: 'codes ready to use',
+    statCards: 'Cards',
+    statCardsCap: 'Issued all-time',
+    statActive: 'Active',
+    statActiveCap: 'Still usable',
+    statRedemptions: 'Redemptions',
+    statRedemptionsCap: 'Times used',
+    statRedeemed: 'Redeemed',
+    statRedeemedCap: 'Value used up',
+    newCard: 'START HERE',
+    newCardTitle: 'New Gift Card',
     amount: 'Amount',
     customCode: 'Custom code (optional)',
     customerName: 'Customer name',
     customerEmail: 'Customer email',
     messageLabel: 'Message (printed on the PDF)',
     create: 'Create gift card',
-    hint: 'Gift cards work as Stripe promotion codes \u2014 payment links must have \u201cAllow promotion codes\u201d enabled.',
-    latest: 'LATEST GIFT CARD',
-    latestPlaceholder: 'Create a gift card to see its code, portal link, and PDF here.',
+    hint: 'Gift cards work as Stripe promotion codes \u2014 payment links must have \u201cAllow promotion codes\u201d turned on.',
+    latest: 'JUST CREATED',
+    latestTitle: 'Latest Card',
+    latestPlaceholder: 'Create a gift card and its code, portal link, and PDF land here.',
     copyCode: 'Copy code',
-    copied: 'Copied!',
+    copied: 'Copied',
     openPortal: 'Open portal',
     viewPdf: 'View PDF',
-    saved: 'Saved cards',
+    saved: 'LIBRARY',
+    savedTitle: 'Saved Cards',
     refresh: 'Refresh',
-    noCards: 'No gift cards yet.',
+    noCards: 'No gift cards yet. Create the first one above.',
     createdWord: 'Created',
     redeemedWord: 'Redeemed',
     totalWord: 'Total',
@@ -82,38 +77,43 @@ const T = {
     confirmRedeem3: 'as redeemed? This deactivates the code so it cannot be used again.',
     promptNote: 'Optional note (e.g. "Redeemed in store 7/10"):',
     giftCardWord: 'Gift card',
+    tipLabel: 'Quick tip',
+    tipBody: 'Marking a card redeemed turns the code off for good. Use Deactivate if you only need to pause it.',
   },
   es: {
-    adminStudio: 'ADMIN STUDIO',
-    overview: 'Resumen',
-    paymentLinks: 'Enlaces de pago',
-    giftCards: 'Tarjetas de regalo',
-    liveLink: 'Enlace en vivo',
-    orders: 'Pedidos',
-    shipping: 'Env\u00edos',
-    logOut: 'Cerrar sesi\u00f3n',
-    title: 'Tarjetas de regalo',
-    sumCards: 'tarjetas',
-    sumActive: 'activas',
-    sumRedemptions: 'canjes',
-    sumRedeemed: 'canjeado',
-    newCard: 'NUEVA TARJETA DE REGALO',
+    eyebrow: 'ADMIN STUDIO',
+    title: 'Tarjetas de Regalo',
+    sub: 'Crea c\u00f3digos, imprime el PDF y m\u00e1rcalos canjeados en tienda.',
+    heroLabel: 'Activas',
+    heroCap: 'c\u00f3digos listos',
+    statCards: 'Tarjetas',
+    statCardsCap: 'Creadas en total',
+    statActive: 'Activas',
+    statActiveCap: 'A\u00fan se pueden usar',
+    statRedemptions: 'Canjes',
+    statRedemptionsCap: 'Veces usadas',
+    statRedeemed: 'Canjeado',
+    statRedeemedCap: 'Valor consumido',
+    newCard: 'EMPIEZA AQU\u00cd',
+    newCardTitle: 'Nueva Tarjeta',
     amount: 'Monto',
     customCode: 'C\u00f3digo personalizado (opcional)',
     customerName: 'Nombre de la clienta',
     customerEmail: 'Correo de la clienta',
     messageLabel: 'Mensaje (impreso en el PDF)',
     create: 'Crear tarjeta de regalo',
-    hint: 'Las tarjetas de regalo funcionan como c\u00f3digos promocionales de Stripe \u2014 los enlaces de pago deben tener \u201cPermitir c\u00f3digos promocionales\u201d activado.',
-    latest: '\u00daLTIMA TARJETA DE REGALO',
-    latestPlaceholder: 'Crea una tarjeta de regalo para ver su c\u00f3digo, enlace del portal y PDF aqu\u00ed.',
+    hint: 'Las tarjetas funcionan como c\u00f3digos promocionales de Stripe \u2014 los enlaces de pago deben tener \u201cPermitir c\u00f3digos promocionales\u201d activado.',
+    latest: 'REC\u00c9N CREADA',
+    latestTitle: '\u00daltima Tarjeta',
+    latestPlaceholder: 'Crea una tarjeta y aqu\u00ed aparecen su c\u00f3digo, enlace del portal y PDF.',
     copyCode: 'Copiar c\u00f3digo',
-    copied: '\u00a1Copiado!',
+    copied: 'Copiado',
     openPortal: 'Abrir portal',
     viewPdf: 'Ver PDF',
-    saved: 'Tarjetas guardadas',
+    saved: 'BIBLIOTECA',
+    savedTitle: 'Tarjetas Guardadas',
     refresh: 'Actualizar',
-    noCards: 'A\u00fan no hay tarjetas de regalo.',
+    noCards: 'A\u00fan no hay tarjetas. Crea la primera arriba.',
     createdWord: 'Creada',
     redeemedWord: 'Canjeada',
     totalWord: 'Total',
@@ -142,125 +142,29 @@ const T = {
     confirmRedeem3: 'como canjeada? Esto desactiva el c\u00f3digo para que no pueda usarse otra vez.',
     promptNote: 'Nota opcional (ej. "Canjeada en tienda 7/10"):',
     giftCardWord: 'Tarjeta de regalo',
+    tipLabel: 'Tip r\u00e1pido',
+    tipBody: 'Marcar canjeada apaga el c\u00f3digo para siempre. Usa Desactivar si solo quieres pausarlo.',
   },
 };
 
 const dateLocale = { en: 'en-US', es: 'es-MX' };
 
-/* ---------------- Icons ---------------- */
-function Icon(props) {
-  return (
-    <svg width={props.size || 17} height={props.size || 17} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      {props.children}
-    </svg>
-  );
-}
-const IconHome = function () { return (<Icon><path d="M5 12l7-8 7 8" /><path d="M6 10v9a1 1 0 001 1h10a1 1 0 001-1v-9" /></Icon>); };
-const IconLink = function () { return (<Icon><path d="M9 15l6-6" /><path d="M11 6l.5-.5a4.95 4.95 0 017 7L18 13" /><path d="M13 18l-.5.5a4.95 4.95 0 01-7-7L6 11" /></Icon>); };
-const IconGift = function () { return (<Icon><path d="M3 9h18v3H3z" /><path d="M12 9v12" /><path d="M19 12v7a2 2 0 01-2 2H7a2 2 0 01-2-2v-7" /><path d="M7.5 9a2.5 2.5 0 010-5C11 4 12 9 12 9s1-5 4.5-5a2.5 2.5 0 010 5" /></Icon>); };
-const IconBroadcast = function () { return (<Icon><circle cx="12" cy="12" r="2" /><path d="M16.24 7.76a6 6 0 010 8.49" /><path d="M7.76 16.24a6 6 0 010-8.49" /><path d="M19.07 4.93a10 10 0 010 14.14" /><path d="M4.93 19.07a10 10 0 010-14.14" /></Icon>); };
-const IconBox = function () { return (<Icon><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z" /><path d="M12 12l8-4.5" /><path d="M12 12v9" /><path d="M12 12L4 7.5" /></Icon>); };
-const IconTruck = function () { return (<Icon><circle cx="7" cy="17" r="2" /><circle cx="17" cy="17" r="2" /><path d="M5 17H3V6a1 1 0 011-1h9v12M9 17h6M15 8h4l2 3v6h-2" /></Icon>); };
-const IconExternal = function () { return (<Icon size={11}><path d="M7 17L17 7" /><path d="M8 7h9v9" /></Icon>); };
-const IconLogout = function () { return (<Icon><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" /><path d="M16 17l5-5-5-5" /><path d="M21 12H9" /></Icon>); };
-
-/* ---------------- Styles ---------------- */
-var css = '' +
-'.eba { min-height: 100vh; background: #F5F3EF; color: #957f67; }' +
-'.eba * { box-sizing: border-box; }' +
-'.eba a { color: inherit; text-decoration: none; }' +
-'.eba button, .eba input, .eba select, .eba textarea { font-family: inherit; }' +
-'.eba button { cursor: pointer; }' +
-'.eba-shell { min-height: 100vh; display: grid; grid-template-columns: 236px minmax(0,1fr); }' +
-'.eba-side { position: sticky; top: 0; height: 100vh; background: #957f67; padding: 26px 16px 18px; display: flex; flex-direction: column; z-index: 30; }' +
-'.eba-logo { width: 138px; height: auto; display: block; object-fit: contain; }' +
-'.eba-side-eyebrow { margin: 14px 0 20px; font-size: 9px; letter-spacing: 0.3em; color: #cfbda9; }' +
-'.eba-nav { display: grid; gap: 4px; }' +
-'.eba-nav a, .eba-nav button { display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 10px; color: #F5F3EF; font-size: 13.5px; border: 0; background: transparent; width: 100%; text-align: left; transition: background .15s ease, color .15s ease; }' +
-'.eba-nav a:hover, .eba-nav button:hover { background: rgba(245,243,239,0.14); color: #F5F3EF; }' +
-'.eba-nav a.on { background: #F5F3EF; color: #957f67; }' +
-'.eba-nav .ic { width: 18px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }' +
-'.eba-nav .ext { margin-left: auto; opacity: .7; display: inline-flex; }' +
-'.eba-side-div { border-top: 1px solid rgba(245,243,239,0.28); margin: 12px 4px; }' +
-'.eba-side-spacer { flex: 1; }' +
-'.eba-side-bottom { border-top: 1px solid rgba(245,243,239,0.28); padding-top: 10px; }' +
-'.eba-main { min-width: 0; }' +
-'.eba-content { max-width: 1240px; margin: 0 auto; padding: 30px 36px 72px; }' +
-'.eba-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }' +
-'.eba-head h1 { margin: 0; font-size: 34px; font-weight: 400; font-style: italic; color: #957f67; line-height: 1.1; }' +
-'.eba-head .sub { margin: 5px 0 0; font-size: 12px; color: #957f67; }' +
-'.eba-langs { display: flex; border: 1px solid #cfbda9; border-radius: 999px; overflow: hidden; flex-shrink: 0; }' +
-'.eba-langs button { border: 0; background: transparent; padding: 7px 14px; font-size: 10px; letter-spacing: 1.5px; color: #957f67; }' +
-'.eba-langs button.on { background: #957f67; color: #F5F3EF; }' +
-'.eba-rule { border-top: 2px solid #957f67; margin-top: 16px; }' +
-
-/* form + latest */
-'.eba-grid2 { display: grid; grid-template-columns: 1fr; gap: 14px; margin-top: 20px; }' +
-'@media (min-width: 940px) { .eba-grid2 { grid-template-columns: 1.55fr 1fr; } }' +
-'.eba-eyebrow { font-size: 10px; text-transform: uppercase; letter-spacing: 0.24em; color: #957f67; margin: 0; }' +
-'.eba-panel { background: rgba(207,189,169,0.32); border-radius: 16px; padding: 20px; }' +
-'.eba-panel.self { align-self: start; background: #F5F3EF; border: 1px solid #cfbda9; }' +
-'.eba-formrow { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }' +
-'@media (max-width: 560px) { .eba-formrow { grid-template-columns: 1fr; } }' +
-'.eba-lb { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 0.18em; color: #957f67; margin: 0 0 4px; }' +
-'.eba-in { border: 1px solid #cfbda9; border-radius: 12px; background: #F5F3EF; padding: 10px 14px; font-size: 13px; color: #957f67; outline: none; width: 100%; }' +
-'.eba-in:focus { border-color: #957f67; }' +
-'.eba-in::placeholder { color: rgba(149,127,103,0.6); }' +
-'textarea.eba-in { resize: vertical; }' +
-'.eba-btn { border: 1px solid #cfbda9; border-radius: 999px; padding: 10px 18px; font-size: 12.5px; background: #F5F3EF; color: #957f67; text-decoration: none; display: inline-block; }' +
-'.eba-btn:hover { background: #cfbda9; }' +
-'.eba-btn-dark { background: #957f67; border-color: #957f67; color: #F5F3EF; }' +
-'.eba-btn-dark:hover { background: #cfbda9; border-color: #cfbda9; color: #957f67; }' +
-'.eba-btn.mini { padding: 6px 13px; font-size: 11px; }' +
-'.eba-notice { margin-top: 12px; background: #F5F3EF; border: 1px solid #cfbda9; border-radius: 12px; padding: 10px 15px; font-size: 12.5px; color: #957f67; }' +
-'.eba-hint { margin: 14px 0 0; padding-top: 12px; border-top: 1px dotted #cfbda9; font-size: 12px; color: #957f67; }' +
-'.eba-sum-amt { font-size: 30px; color: #957f67; margin: 8px 0 0; font-weight: 400; }' +
-'.eba-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; letter-spacing: 0.08em; }' +
-'.eba-codechip { display: inline-block; background: rgba(207,189,169,0.45); border-radius: 8px; padding: 3px 8px; margin-top: 4px; }' +
-'.eba-panel.self .eba-codechip { background: rgba(207,189,169,0.45); }' +
-'.eba-linkbox { border: 1px dashed #cfbda9; border-radius: 12px; padding: 14px; margin-top: 14px; font-size: 12px; color: #957f67; text-align: center; }' +
-'.eba-linkbox.ready { text-align: left; border-style: solid; border-color: #957f67; color: #957f67; background: rgba(207,189,169,0.32); }' +
-
-/* saved list */
-'.eba-listhead { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 10px; margin-top: 30px; border-bottom: 1px solid #cfbda9; padding-bottom: 10px; }' +
-'.eba-listhead h2 { margin: 0; font-size: 19px; font-weight: 400; font-style: italic; color: #957f67; }' +
-'.eba-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 14px 4px; border-bottom: 1px dotted #cfbda9; }' +
-'.eba-row.off { opacity: 0.55; }' +
-'.eba-who { min-width: 220px; flex: 1; }' +
-'.eba-who .n { display: block; font-size: 14.5px; color: #957f67; }' +
-'.eba-who .s { display: block; margin-top: 2px; font-size: 11px; color: #957f67; }' +
-'.eba-pill { border-radius: 999px; padding: 3px 10px; font-size: 9px; letter-spacing: .12em; text-transform: uppercase; white-space: nowrap; }' +
-'.eba-pill.ok { background: #957f67; color: #F5F3EF; }' +
-'.eba-pill.off { background: #F5F3EF; border: 1px solid #cfbda9; color: #957f67; }' +
-'.eba-pill.used { background: #cfbda9; color: #957f67; }' +
-'.eba-rowbtns { display: flex; flex-wrap: wrap; gap: 6px; }' +
-'.eba-empty { padding: 44px 18px; text-align: center; font-size: 13.5px; color: #957f67; border-bottom: 1px dotted #cfbda9; }' +
-
-/* responsive */
-'@media (max-width: 1050px) { .eba-shell { grid-template-columns: 200px minmax(0,1fr); } .eba-content { padding: 24px 20px 60px; } .eba-head h1 { font-size: 28px; } }' +
-'@media (max-width: 760px) {' +
-' .eba-shell { display: block; }' +
-' .eba-side { position: static; height: auto; padding: 14px 12px; }' +
-' .eba-logo { width: 108px; }' +
-' .eba-side-eyebrow { margin: 8px 0 10px; }' +
-' .eba-nav { display: flex; overflow-x: auto; padding-bottom: 3px; }' +
-' .eba-nav a, .eba-nav button { white-space: nowrap; padding: 8px 11px; width: auto; }' +
-' .eba-side-div, .eba-side-spacer { display: none; }' +
-' .eba-side-bottom { border-top: 0; padding-top: 6px; }' +
-' .eba-content { padding: 18px 14px 52px; }' +
-' .eba-head h1 { font-size: 25px; }' +
-' .eba-panel { padding: 16px; }' +
-' .eba-row { padding: 12px 2px; row-gap: 8px; }' +
-' .eba-who { flex: 1 1 100%; min-width: 0; }' +
-' .eba-rowbtns { flex: 1 1 100%; }' +
-' .eba-rowbtns .eba-btn { flex: 1; text-align: center; }' +
-'}';
+const pageCss = '' +
+'.ebg-amt { font-size:46px; line-height:1.05; color:#806a52; margin:14px 0 10px;' +
+'  font-family:"La Luxes Serif","Recoleta",Georgia,serif; font-weight:400; }' +
+'.ebg-code { font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12.5px; letter-spacing:.08em;' +
+'  display:inline-block; background:rgba(189,168,145,.22); color:#806a52; border-radius:10px; padding:5px 10px; margin-top:4px; }' +
+'.ebg-box { border:1px dashed #e8e2d8; border-radius:20px; padding:16px; margin-top:16px; font-size:12.5px;' +
+'  color:#bda891; text-align:center; }' +
+'.ebg-btnrow { display:flex; flex-wrap:wrap; gap:8px; margin-top:16px; }' +
+'.ebg-hint { margin:16px 0 0; padding-top:14px; border-top:1px solid #e8e2d8; font-size:12.5px; color:#8b7a64; }';
 
 /* ============================================================ */
 export default function GiftCardsAdminPage() {
-  const [lang, setLangState] = useState('en');
+  const [lang, setLang] = useState('en');
   const t = T[lang];
 
+  const [admin, setAdmin] = useState(null);
   const [form, setForm] = useState({
     amount: '',
     customerName: '',
@@ -275,13 +179,18 @@ export default function GiftCardsAdminPage() {
 
   useEffect(function () {
     const saved = localStorage.getItem('eb-lang');
-    if (saved === 'en' || saved === 'es') setLangState(saved);
+    if (saved === 'en' || saved === 'es') setLang(saved);
   }, []);
-  function setLang(l) {
-    setLangState(l);
-    localStorage.setItem('eb-lang', l);
-    document.documentElement.lang = l;
-  }
+
+  // Optional: fills the sidebar profile if you expose the signed-in admin.
+  useEffect(function () {
+    let cancelled = false;
+    fetch('/api/admin/me', { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) { if (!cancelled && d) setAdmin(d.admin || d); })
+      .catch(function () {});
+    return function () { cancelled = true; };
+  }, []);
 
   function formatDate(value) {
     if (!value) return '\u2014';
@@ -291,9 +200,7 @@ export default function GiftCardsAdminPage() {
   }
 
   function updateForm(field, value) {
-    setForm(function (current) {
-      return { ...current, [field]: value };
-    });
+    setForm(function (current) { return { ...current, [field]: value }; });
   }
 
   const stats = useMemo(function () {
@@ -306,12 +213,7 @@ export default function GiftCardsAdminPage() {
   async function loadGiftCards() {
     const res = await fetch('/api/admin/gift-cards/list', { cache: 'no-store' });
     const data = await res.json();
-
-    if (!res.ok) {
-      setMessage(data.error || t.msgLoadFailed);
-      return;
-    }
-
+    if (!res.ok) { setMessage(data.error || t.msgLoadFailed); return; }
     setGiftCards(data.giftCards || []);
   }
 
@@ -324,10 +226,7 @@ export default function GiftCardsAdminPage() {
     e.preventDefault();
 
     const amount = Number(form.amount);
-    if (!form.amount || Number.isNaN(amount) || amount < 1) {
-      setMessage(t.msgAmount);
-      return;
-    }
+    if (!form.amount || Number.isNaN(amount) || amount < 1) { setMessage(t.msgAmount); return; }
 
     setMessage(t.msgCreating);
     setCreatedGiftCard(null);
@@ -339,11 +238,7 @@ export default function GiftCardsAdminPage() {
     });
 
     const data = await res.json();
-
-    if (!res.ok) {
-      setMessage(data.error || t.msgCreateFailed);
-      return;
-    }
+    if (!res.ok) { setMessage(data.error || t.msgCreateFailed); return; }
 
     setCreatedGiftCard(data.giftCard);
     setMessage(t.msgCreated);
@@ -365,11 +260,7 @@ export default function GiftCardsAdminPage() {
     });
 
     const data = await res.json();
-
-    if (!res.ok) {
-      setMessage(data.error || t.msgUpdateFailed);
-      return;
-    }
+    if (!res.ok) { setMessage(data.error || t.msgUpdateFailed); return; }
 
     setMessage(nextActive ? t.msgActivated : t.msgDeactivated);
     await loadGiftCards();
@@ -390,11 +281,7 @@ export default function GiftCardsAdminPage() {
     });
 
     const data = await res.json();
-
-    if (!res.ok) {
-      setMessage(data.error || t.msgRedeemFailed);
-      return;
-    }
+    if (!res.ok) { setMessage(data.error || t.msgRedeemFailed); return; }
 
     setMessage(t.giftCardWord + ' ' + card.code + ' ' + t.msgRedeemed);
     await loadGiftCards();
@@ -407,188 +294,160 @@ export default function GiftCardsAdminPage() {
     setTimeout(function () { setCopiedId(''); }, 1800);
   }
 
-  async function logout() {
-    await fetch('/api/auth/logout', { method: 'POST' });
-    window.location.href = '/admin/login';
-  }
-
-  const SHIP = 'https://ship.erendirasboutique.com';
-
   /* ============================================================ */
   return (
-    <main className="eba">
-      <style>{css}</style>
+    <AdminShell
+      admin={admin}
+      active="gift-cards"
+      lang={lang}
+      onLang={setLang}
+      eyebrow={t.eyebrow}
+      title={t.title}
+      subtitle={t.sub}
+      heroStat={{ label: t.heroLabel, value: stats.active, caption: t.heroCap }}
+      tip={{ label: t.tipLabel, body: t.tipBody }}
+    >
+      <style>{pageCss}</style>
 
-      <div className="eba-shell">
-        <aside className="eba-side no-print">
-          <a href="/admin" aria-label="Erendira's Boutique admin home">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo2.png" alt="Erendira&#8217;s Boutique" className="eba-logo" />
-          </a>
-          <p className="eba-side-eyebrow">{t.adminStudio}</p>
+      <section className="eba-stats" aria-label="Summary">
+        <div className="eba-stat">
+          <span className="lb">{t.statCards}</span>
+          <b>{stats.count}</b>
+          <span className="cap">{t.statCardsCap}</span>
+        </div>
+        <div className="eba-stat">
+          <span className="lb">{t.statActive}</span>
+          <b>{stats.active}</b>
+          <span className="cap">{t.statActiveCap}</span>
+        </div>
+        <div className="eba-stat">
+          <span className="lb">{t.statRedemptions}</span>
+          <b>{stats.redeemed}</b>
+          <span className="cap">{t.statRedemptionsCap}</span>
+        </div>
+        <div className="eba-stat">
+          <span className="lb">{t.statRedeemed}</span>
+          <b>{money(stats.total)}</b>
+          <span className="cap">{t.statRedeemedCap}</span>
+        </div>
+      </section>
 
-          <nav className="eba-nav" aria-label="Admin navigation">
-            <a href="/admin"><span className="ic"><IconHome /></span><span>{t.overview}</span></a>
-            <a href="/admin/payment-links"><span className="ic"><IconLink /></span><span>{t.paymentLinks}</span></a>
-            <a className="on" href="/admin/gift-cards"><span className="ic"><IconGift /></span><span>{t.giftCards}</span></a>
-            <a href="/admin/live-link"><span className="ic"><IconBroadcast /></span><span>{t.liveLink}</span></a>
-          </nav>
-          <div className="eba-side-div" />
-          <nav className="eba-nav" aria-label="Shipping portal">
-            <a href={SHIP + '/orders'} target="_blank" rel="noopener noreferrer"><span className="ic"><IconBox /></span><span>{t.orders}</span><span className="ext"><IconExternal /></span></a>
-            <a href={SHIP} target="_blank" rel="noopener noreferrer"><span className="ic"><IconTruck /></span><span>{t.shipping}</span><span className="ext"><IconExternal /></span></a>
-          </nav>
+      <div className="eba-cols wide-left">
+        <form className="eba-panel" onSubmit={createGiftCard}>
+          <p className="eba-eyebrow">{t.newCard}</p>
+          <h2>{t.newCardTitle}</h2>
 
-          <div className="eba-side-spacer" />
-
-          <div className="eba-side-bottom">
-            <nav className="eba-nav">
-              <button onClick={logout}><span className="ic"><IconLogout /></span><span>{t.logOut}</span></button>
-            </nav>
-          </div>
-        </aside>
-
-        <section className="eba-main">
-          <div className="eba-content">
-            <div className="eba-head">
-              <div>
-                <h1>{t.title}</h1>
-                <p className="sub">
-                  {stats.count} {t.sumCards}{' \u00b7 '}{stats.active} {t.sumActive}{' \u00b7 '}{stats.redeemed} {t.sumRedemptions}{' \u00b7 '}{money(stats.total)} {t.sumRedeemed}
-                </p>
-              </div>
-              <div className="eba-langs" role="group" aria-label="Language">
-                {['en', 'es'].map(function (l) {
-                  return (
-                    <button key={l} className={lang === l ? 'on' : ''} onClick={function () { setLang(l); }}>
-                      {l.toUpperCase()}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="eba-rule" />
-
-            <div className="eba-grid2">
-              <form className="eba-panel" onSubmit={createGiftCard}>
-                <p className="eba-eyebrow" style={{ marginBottom: 14 }}>{t.newCard}</p>
-
-                <div className="eba-formrow">
-                  <div>
-                    <span className="eba-lb">{t.amount}</span>
-                    <input className="eba-in" type="number" min="1" step="0.01" value={form.amount} onChange={function (e) { updateForm('amount', e.target.value); }} required />
-                  </div>
-                  <div>
-                    <span className="eba-lb">{t.customCode}</span>
-                    <input className="eba-in" value={form.customCode} onChange={function (e) { updateForm('customCode', e.target.value.toUpperCase()); }} placeholder="EB-XXXX-XXXX" />
-                  </div>
-                </div>
-
-                <div className="eba-formrow" style={{ marginTop: 10 }}>
-                  <div>
-                    <span className="eba-lb">{t.customerName}</span>
-                    <input className="eba-in" value={form.customerName} onChange={function (e) { updateForm('customerName', e.target.value); }} />
-                  </div>
-                  <div>
-                    <span className="eba-lb">{t.customerEmail}</span>
-                    <input className="eba-in" type="email" value={form.customerEmail} onChange={function (e) { updateForm('customerEmail', e.target.value); }} />
-                  </div>
-                </div>
-
-                <div style={{ marginTop: 10 }}>
-                  <span className="eba-lb">{t.messageLabel}</span>
-                  <textarea className="eba-in" rows={2} value={form.message} onChange={function (e) { updateForm('message', e.target.value); }} />
-                </div>
-
-                <div style={{ marginTop: 16 }}>
-                  <button className="eba-btn eba-btn-dark" type="submit">{t.create}</button>
-                </div>
-
-                {message && <div className="eba-notice">{message}</div>}
-
-                <p className="eba-hint">{t.hint}</p>
-              </form>
-
-              <aside className="eba-panel self">
-                <p className="eba-eyebrow">{t.latest}</p>
-
-                {createdGiftCard ? (
-                  <div>
-                    <p className="eba-sum-amt">{money(createdGiftCard.amount)}</p>
-                    <span className="eba-code eba-codechip">{createdGiftCard.code}</span>
-                    <div className="eba-linkbox ready">
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                        <button className="eba-btn eba-btn-dark mini" type="button" onClick={function () { copyText(createdGiftCard.code, 'created-code'); }}>
-                          {copiedId === 'created-code' ? t.copied : t.copyCode}
-                        </button>
-                        <a className="eba-btn mini" href={createdGiftCard.gift_card_url} target="_blank" rel="noopener noreferrer">{t.openPortal}</a>
-                        <a className="eba-btn mini" href={createdGiftCard.pdf_url} target="_blank" rel="noopener noreferrer">{t.viewPdf}</a>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="eba-linkbox">{t.latestPlaceholder}</div>
-                )}
-              </aside>
-            </div>
-
-            <div className="eba-listhead">
-              <h2>{t.saved}</h2>
-              <button className="eba-btn" type="button" onClick={loadGiftCards}>{t.refresh}</button>
-            </div>
-
+          <div className="eba-formrow even">
             <div>
-              {giftCards.map(function (card) {
-                const active = card.status === 'active';
-                const redeemed = card.status === 'redeemed';
-                const subParts = [];
-                if (card.customer_name) subParts.push(card.customer_name);
-                if (card.customer_email) subParts.push(card.customer_email);
-                subParts.push(t.createdWord + ' ' + formatDate(card.created_at));
-                if (redeemed && card.redeemed_at) {
-                  subParts.push(t.redeemedWord + ' ' + formatDate(card.redeemed_at));
-                } else {
-                  subParts.push(t.redeemedWord + ' ' + (card.redeemed_count || 0));
-                }
-                subParts.push(t.totalWord + ' ' + money(card.total_redeemed || 0));
-                if (card.redeemed_note) subParts.push(card.redeemed_note);
-                return (
-                  <div className={active ? 'eba-row' : 'eba-row off'} key={card.id}>
-                    <span className="eba-who">
-                      <span className="n">{money(card.amount)} {t.giftCardWord}</span>
-                      <span className="s">{subParts.join(' \u00b7 ')}</span>
-                      <span className="eba-code eba-codechip">{card.code}</span>
-                    </span>
-                    <span className={redeemed ? 'eba-pill used' : active ? 'eba-pill ok' : 'eba-pill off'}>
-                      {redeemed ? t.redeemed : active ? t.active : t.deactivated}
-                    </span>
-                    <span className="eba-rowbtns">
-                      <button className="eba-btn eba-btn-dark mini" onClick={function () { copyText(card.code, card.id + '-code'); }}>
-                        {copiedId === card.id + '-code' ? t.copied : t.codeBtn}
-                      </button>
-                      <button className="eba-btn mini" onClick={function () { copyText(card.gift_card_url, card.id + '-url'); }}>
-                        {copiedId === card.id + '-url' ? t.copied : t.portalBtn}
-                      </button>
-                      <a className="eba-btn mini" href={card.gift_card_url} target="_blank" rel="noopener noreferrer">{t.openBtn}</a>
-                      <a className="eba-btn mini" href={card.pdf_url} target="_blank" rel="noopener noreferrer">{t.pdfBtn}</a>
-                      {active && (
-                        <button className="eba-btn mini" onClick={function () { redeemGiftCard(card); }}>{t.markRedeemed}</button>
-                      )}
-                      {!redeemed && (
-                        <button className="eba-btn mini" onClick={function () { toggleGiftCard(card); }}>
-                          {active ? t.deactivate : t.activate}
-                        </button>
-                      )}
-                    </span>
-                  </div>
-                );
-              })}
-              {giftCards.length === 0 && <div className="eba-empty">{t.noCards}</div>}
+              <span className="eba-lb">{t.amount}</span>
+              <input className="eba-in" type="number" min="1" step="0.01" value={form.amount} onChange={function (e) { updateForm('amount', e.target.value); }} required />
+            </div>
+            <div>
+              <span className="eba-lb">{t.customCode}</span>
+              <input className="eba-in" value={form.customCode} onChange={function (e) { updateForm('customCode', e.target.value.toUpperCase()); }} placeholder="EB-XXXX-XXXX" />
             </div>
           </div>
-        </section>
+
+          <div className="eba-formrow even" style={{ marginTop: 12 }}>
+            <div>
+              <span className="eba-lb">{t.customerName}</span>
+              <input className="eba-in" value={form.customerName} onChange={function (e) { updateForm('customerName', e.target.value); }} />
+            </div>
+            <div>
+              <span className="eba-lb">{t.customerEmail}</span>
+              <input className="eba-in" type="email" value={form.customerEmail} onChange={function (e) { updateForm('customerEmail', e.target.value); }} />
+            </div>
+          </div>
+
+          <div className="eba-field" style={{ marginTop: 12 }}>
+            <span className="eba-lb">{t.messageLabel}</span>
+            <textarea className="eba-in" rows={2} value={form.message} onChange={function (e) { updateForm('message', e.target.value); }} />
+          </div>
+
+          <div className="eba-actions">
+            <button className="eba-btn eba-btn-dark" type="submit">{t.create}</button>
+          </div>
+
+          {message && <div className="eba-notice">{message}</div>}
+
+          <p className="ebg-hint">{t.hint}</p>
+        </form>
+
+        <aside className="eba-panel">
+          <p className="eba-eyebrow">{t.latest}</p>
+          <h2>{t.latestTitle}</h2>
+
+          {createdGiftCard ? (
+            <div>
+              <p className="ebg-amt">{money(createdGiftCard.amount)}</p>
+              <span className="ebg-code">{createdGiftCard.code}</span>
+              <div className="ebg-btnrow">
+                <button className="eba-btn eba-btn-dark mini" type="button" onClick={function () { copyText(createdGiftCard.code, 'created-code'); }}>
+                  {copiedId === 'created-code' ? t.copied : t.copyCode}
+                </button>
+                <a className="eba-btn mini" href={createdGiftCard.gift_card_url} target="_blank" rel="noopener noreferrer">{t.openPortal}</a>
+                <a className="eba-btn mini" href={createdGiftCard.pdf_url} target="_blank" rel="noopener noreferrer">{t.viewPdf}</a>
+              </div>
+            </div>
+          ) : (
+            <div className="ebg-box">{t.latestPlaceholder}</div>
+          )}
+        </aside>
       </div>
-    </main>
+
+      <div className="eba-panel">
+        <div className="eba-panelhead">
+          <div>
+            <p className="eba-eyebrow">{t.saved}</p>
+            <h2>{t.savedTitle}</h2>
+          </div>
+          <button className="eba-btn" type="button" onClick={loadGiftCards}>{t.refresh}</button>
+        </div>
+
+        <div className="eba-rows">
+          {giftCards.map(function (card) {
+            const active = card.status === 'active';
+            const redeemed = card.status === 'redeemed';
+            const subParts = [];
+            if (card.customer_name) subParts.push(card.customer_name);
+            if (card.customer_email) subParts.push(card.customer_email);
+            subParts.push(t.createdWord + ' ' + formatDate(card.created_at));
+            if (redeemed && card.redeemed_at) subParts.push(t.redeemedWord + ' ' + formatDate(card.redeemed_at));
+            else subParts.push(t.redeemedWord + ' ' + (card.redeemed_count || 0));
+            subParts.push(t.totalWord + ' ' + money(card.total_redeemed || 0));
+            if (card.redeemed_note) subParts.push(card.redeemed_note);
+            return (
+              <div className={active ? 'eba-row' : 'eba-row off'} key={card.id}>
+                <span className="eba-who">
+                  <span className="n">{money(card.amount)} {t.giftCardWord}</span>
+                  <span className="s">{subParts.join(' \u00b7 ')}</span>
+                  <span className="ebg-code">{card.code}</span>
+                </span>
+                <span className={redeemed ? 'eba-pill mid' : active ? 'eba-pill ok' : 'eba-pill off'}>
+                  {redeemed ? t.redeemed : active ? t.active : t.deactivated}
+                </span>
+                <span className="eba-rowbtns">
+                  <button className="eba-btn eba-btn-dark mini" onClick={function () { copyText(card.code, card.id + '-code'); }}>
+                    {copiedId === card.id + '-code' ? t.copied : t.codeBtn}
+                  </button>
+                  <button className="eba-btn mini" onClick={function () { copyText(card.gift_card_url, card.id + '-url'); }}>
+                    {copiedId === card.id + '-url' ? t.copied : t.portalBtn}
+                  </button>
+                  <a className="eba-btn mini" href={card.gift_card_url} target="_blank" rel="noopener noreferrer">{t.openBtn}</a>
+                  <a className="eba-btn mini" href={card.pdf_url} target="_blank" rel="noopener noreferrer">{t.pdfBtn}</a>
+                  {active && <button className="eba-btn mini" onClick={function () { redeemGiftCard(card); }}>{t.markRedeemed}</button>}
+                  {!redeemed && (
+                    <button className="eba-btn mini" onClick={function () { toggleGiftCard(card); }}>
+                      {active ? t.deactivate : t.activate}
+                    </button>
+                  )}
+                </span>
+              </div>
+            );
+          })}
+          {giftCards.length === 0 && <div className="eba-empty">{t.noCards}</div>}
+        </div>
+      </div>
+    </AdminShell>
   );
 }
