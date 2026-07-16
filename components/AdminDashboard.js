@@ -45,6 +45,7 @@ const T = {
     overview: 'Overview',
     paymentLinks: 'Payment links',
     giftCards: 'Gift cards',
+    liveLink: 'Live link',
     orders: 'Orders',
     shipping: 'Shipping',
     welcome: 'Welcome back',
@@ -99,6 +100,7 @@ const T = {
     overview: 'Resumen',
     paymentLinks: 'Enlaces de pago',
     giftCards: 'Tarjetas de regalo',
+    liveLink: 'Enlace en vivo',
     orders: 'Pedidos',
     shipping: 'Env\u00edos',
     welcome: 'Bienvenida de nuevo',
@@ -163,6 +165,7 @@ function Icon(props) {
 const IconHome = function () { return (<Icon><path d="M5 12l7-8 7 8" /><path d="M6 10v9a1 1 0 001 1h10a1 1 0 001-1v-9" /></Icon>); };
 const IconLink = function () { return (<Icon><path d="M9 15l6-6" /><path d="M11 6l.5-.5a4.95 4.95 0 017 7L18 13" /><path d="M13 18l-.5.5a4.95 4.95 0 01-7-7L6 11" /></Icon>); };
 const IconGift = function () { return (<Icon><path d="M3 9h18v3H3z" /><path d="M12 9v12" /><path d="M19 12v7a2 2 0 01-2 2H7a2 2 0 01-2-2v-7" /><path d="M7.5 9a2.5 2.5 0 010-5C11 4 12 9 12 9s1-5 4.5-5a2.5 2.5 0 010 5" /></Icon>); };
+const IconBroadcast = function () { return (<Icon><circle cx="12" cy="12" r="2" /><path d="M16.24 7.76a6 6 0 010 8.49" /><path d="M7.76 16.24a6 6 0 010-8.49" /><path d="M19.07 4.93a10 10 0 010 14.14" /><path d="M4.93 19.07a10 10 0 010-14.14" /></Icon>); };
 const IconBox = function () { return (<Icon><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z" /><path d="M12 12l8-4.5" /><path d="M12 12v9" /><path d="M12 12L4 7.5" /></Icon>); };
 const IconTruck = function () { return (<Icon><circle cx="7" cy="17" r="2" /><circle cx="17" cy="17" r="2" /><path d="M5 17H3V6a1 1 0 011-1h9v12M9 17h6M15 8h4l2 3v6h-2" /></Icon>); };
 const IconExternal = function () { return (<Icon size={11}><path d="M7 17L17 7" /><path d="M8 7h9v9" /></Icon>); };
@@ -472,6 +475,7 @@ export default function AdminDashboard({ payments, admin }) {
             <a className="on" href="/admin"><span className="ic"><IconHome /></span><span>{t.overview}</span></a>
             <a href="/admin/payment-links"><span className="ic"><IconLink /></span><span>{t.paymentLinks}</span></a>
             <a href="/admin/gift-cards"><span className="ic"><IconGift /></span><span>{t.giftCards}</span></a>
+            <a href="/admin/live-link"><span className="ic"><IconBroadcast /></span><span>{t.liveLink}</span></a>
           </nav>
           <div className="eba-side-div" />
           <nav className="eba-nav" aria-label="Shipping portal">
