@@ -2,7 +2,7 @@
 // Public redirect. This is what live.erendirasboutique.com hits.
 
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { FALLBACK_URL, normalizeLiveUrl } from '@/lib/liveLink';
 
 // Never let Next cache this — the whole point is that it changes weekly.
@@ -14,13 +14,7 @@ export async function GET() {
   let target = FALLBACK_URL;
 
   try {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY,
-      { auth: { persistSession: false, autoRefreshToken: false } }
-    );
-
-    const { data, error } = await supabase
+    const { data, error } = await getSupabaseAdmin()
       .from('live_link')
       .select('url')
       .eq('id', 1)
@@ -33,8 +27,8 @@ export async function GET() {
       if (checked.ok) target = checked.url;
     }
   } catch {
-    // Any failure falls through to the boutique's Facebook page.
-    // A customer tapping "Watch the live" should never see an error screen.
+    // Any failure falls through to the boutique's Facebook page. A customer
+    // tapping "Watch the live" should never see an error screen.
   }
 
   // 302, not 301. A 301 gets cached by browsers permanently and you would be
