@@ -2,6 +2,12 @@
 
 // components/LiveLinkAdmin.js
 // One field. Paste the link after the live ends, hit save, done.
+//
+// ⚠️  CHECK THIS IMPORT. It assumes your Supabase browser client is exported from
+//     lib/supabaseClient.js as a named export called `supabase`. If yours lives
+//     somewhere else (lib/supabase.js, utils/supabase.js, a default export...),
+//     change this one line to match. Everything else works as-is.
+import { supabase } from '@/lib/supabaseClient';
 
 import { useCallback, useEffect, useState } from 'react';
 import { describeAge, isStale } from '@/lib/liveLink';
@@ -16,9 +22,28 @@ export default function LiveLinkAdmin() {
   const [error, setError] = useState(null);
   const [justSaved, setJustSaved] = useState(false);
 
+  // Grabs the current access token to send to our API.
+  async function authHeaders() {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session?.access_token) {
+      throw new Error('You need to sign in again.');
+    }
+
+    return {
+      Authorization: `Bearer ${session.access_token}`,
+      'Content-Type': 'application/json',
+    };
+  }
+
   const load = useCallback(async () => {
     try {
-      const res = await fetch('/api/live-link', { cache: 'no-store' });
+      const res = await fetch('/api/live-link', {
+        cache: 'no-store',
+        headers: await authHeaders(),
+      });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Could not load the current link.');
 
@@ -45,7 +70,7 @@ export default function LiveLinkAdmin() {
     try {
       const res = await fetch('/api/live-link', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: await authHeaders(),
         body: JSON.stringify({ url: value }),
       });
       const data = await res.json();
@@ -64,16 +89,16 @@ export default function LiveLinkAdmin() {
     }
   }
 
+  const dirty = value.trim() !== (saved ?? '').trim();
+  const stale = isStale(updatedAt);
+  const age = describeAge(updatedAt);
+
   function onKeyDown(event) {
     if (event.key === 'Enter') {
       event.preventDefault();
       if (!saving && dirty) save();
     }
   }
-
-  const dirty = value.trim() !== (saved ?? '').trim();
-  const stale = isStale(updatedAt);
-  const age = describeAge(updatedAt);
 
   return (
     <section className="wrap">
@@ -97,7 +122,7 @@ export default function LiveLinkAdmin() {
                 <>
                   Updated {age}
                   {updatedBy ? ` by ${updatedBy}` : ''}
-                  {stale ? ' — probably last week&rsquo;s' : ''}
+                  {stale ? ' — probably last week\u2019s' : ''}
                 </>
               ) : (
                 <>No link set. Visitors go to the boutique&rsquo;s Facebook page for now.</>
