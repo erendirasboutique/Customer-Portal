@@ -1,15 +1,14 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import AdminShell from '@/components/AdminShell';
 import { money, formatDate, formatAddress, paymentMethodLabel } from '@/lib/format';
 
 /* ============================================================
-   Erendira's Boutique — Admin Studio · Billing dashboard
-   "Atelier" design: espresso sidebar, ruled ledger content.
+   Erendira's Boutique — Admin Studio · Dashboard
+   "Studio" design: floating cream canvas, white rounded cards.
    Same props: <AdminDashboard payments={...} admin={...} />
-   Same endpoints: /api/admin/clover-sync, /api/admin/payment-notes,
-   /api/auth/logout. Fonts inherit from the global stylesheet.
-   Requires /public/logo2.png (light logo, shown on espresso).
+   Same endpoints: /api/admin/clover-sync, /api/admin/payment-notes.
    ============================================================ */
 
 function stripeUrl(kind, id) {
@@ -28,33 +27,34 @@ function orderStatus(payment) {
   return payment.payment_status || 'unknown';
 }
 
-function initials(name) {
-  return (name || '?')
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map(function (w) { return w[0]; })
-    .join('')
-    .toUpperCase();
-}
-
 /* ---------------- Translations ---------------- */
 const T = {
   en: {
-    adminStudio: 'ADMIN STUDIO',
-    overview: 'Overview',
-    paymentLinks: 'Payment links',
-    giftCards: 'Gift cards',
-    liveLink: 'Live link',
-    orders: 'Orders',
-    shipping: 'Shipping',
-    welcome: 'Welcome back',
+    eyebrow: 'ADMIN STUDIO',
+    title: 'Billing Portal',
+    sub: 'Review payments, sync Clover, and keep notes on every order.',
+    todayLabel: 'Today',
+    todayCaption: 'payments taken',
     revenue: 'Revenue',
+    revenueCap: 'All-time collected',
     filteredRevenue: 'Filtered revenue',
+    filteredCap: 'Matching these filters',
     payments: 'Payments',
-    paymentsLower: 'payments',
+    paymentsCap: 'Records shown',
     customers: 'Customers',
+    customersCap: 'Unique emails',
     sources: 'Stripe / Clover',
+    sourcesCap: 'Payments by source',
+    startHere: 'START HERE',
+    quickActions: 'Quick Actions',
+    ctaSync: 'Sync Clover',
+    ctaSyncSub: 'Pull in the latest in-store payments',
+    ctaSyncGo: 'Run',
+    ctaLink: 'New payment link',
+    ctaLinkSub: 'Create a Stripe link for a customer',
+    ctaLinkGo: 'Open',
+    ledger: 'PAYMENT LEDGER',
+    ledgerTitle: 'Recent Payments',
     search: 'Search name, email, phone, amount...',
     allStatuses: 'All statuses',
     allSources: 'All sources',
@@ -64,7 +64,6 @@ const T = {
     refunded: 'Refunded',
     unpaid: 'Unpaid',
     unknown: 'Unknown',
-    syncClover: 'Sync Clover',
     syncingClover: 'Syncing Clover payments...',
     syncedClover: 'Clover synced: ',
     syncFailed: 'Could not sync Clover.',
@@ -74,8 +73,7 @@ const T = {
     today: 'Today',
     order: 'order',
     ordersWord: 'orders',
-    noPayments: 'No payments match these filters.',
-    logOut: 'Log out',
+    noPayments: 'No payments match these filters. Clear the search to see everything.',
     customer: 'Customer',
     shippingAddress: 'Shipping address',
     payment: 'Payment',
@@ -94,22 +92,35 @@ const T = {
     saveFailed: 'Could not save note.',
     boutiquePurchase: 'Boutique purchase',
     noEmail: 'No email',
+    tipLabel: 'Quick tip',
+    tipBody: 'Clover payments only appear after a sync. Run it once at the end of the day.',
   },
   es: {
-    adminStudio: 'ADMIN STUDIO',
-    overview: 'Resumen',
-    paymentLinks: 'Enlaces de pago',
-    giftCards: 'Tarjetas de regalo',
-    liveLink: 'Enlace en vivo',
-    orders: 'Pedidos',
-    shipping: 'Env\u00edos',
-    welcome: 'Bienvenida de nuevo',
+    eyebrow: 'ADMIN STUDIO',
+    title: 'Portal de Pagos',
+    sub: 'Revisa pagos, sincroniza Clover y guarda notas de cada pedido.',
+    todayLabel: 'Hoy',
+    todayCaption: 'pagos recibidos',
     revenue: 'Ingresos',
+    revenueCap: 'Cobrado hist\u00f3rico',
     filteredRevenue: 'Ingresos filtrados',
+    filteredCap: 'Seg\u00fan los filtros',
     payments: 'Pagos',
-    paymentsLower: 'pagos',
+    paymentsCap: 'Registros mostrados',
     customers: 'Clientas',
+    customersCap: 'Correos \u00fanicos',
     sources: 'Stripe / Clover',
+    sourcesCap: 'Pagos por fuente',
+    startHere: 'EMPIEZA AQU\u00cd',
+    quickActions: 'Acciones R\u00e1pidas',
+    ctaSync: 'Sincronizar Clover',
+    ctaSyncSub: 'Trae los \u00faltimos pagos de la tienda',
+    ctaSyncGo: 'Correr',
+    ctaLink: 'Nuevo enlace de pago',
+    ctaLinkSub: 'Crea un enlace de Stripe para una clienta',
+    ctaLinkGo: 'Abrir',
+    ledger: 'LIBRO DE PAGOS',
+    ledgerTitle: 'Pagos Recientes',
     search: 'Buscar nombre, correo, tel\u00e9fono, monto...',
     allStatuses: 'Todos los estados',
     allSources: 'Todas las fuentes',
@@ -119,7 +130,6 @@ const T = {
     refunded: 'Reembolsado',
     unpaid: 'Sin pagar',
     unknown: 'Desconocido',
-    syncClover: 'Sincronizar Clover',
     syncingClover: 'Sincronizando pagos de Clover...',
     syncedClover: 'Clover sincronizado: ',
     syncFailed: 'No se pudo sincronizar Clover.',
@@ -129,8 +139,7 @@ const T = {
     today: 'Hoy',
     order: 'pedido',
     ordersWord: 'pedidos',
-    noPayments: 'Ning\u00fan pago coincide con estos filtros.',
-    logOut: 'Cerrar sesi\u00f3n',
+    noPayments: 'Ning\u00fan pago coincide. Borra la b\u00fasqueda para ver todo.',
     customer: 'Clienta',
     shippingAddress: 'Direcci\u00f3n de env\u00edo',
     payment: 'Pago',
@@ -149,153 +158,28 @@ const T = {
     saveFailed: 'No se pudo guardar la nota.',
     boutiquePurchase: 'Compra de boutique',
     noEmail: 'Sin correo',
+    tipLabel: 'Tip r\u00e1pido',
+    tipBody: 'Los pagos de Clover aparecen solo despu\u00e9s de sincronizar. Corre la sincronizaci\u00f3n al final del d\u00eda.',
   },
 };
 
 const dateLocale = { en: 'en-US', es: 'es-MX' };
 
-/* ---------------- Icons (inline SVG) ---------------- */
 function Icon(props) {
   return (
-    <svg width={props.size || 17} height={props.size || 17} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <svg width={props.size || 15} height={props.size || 15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       {props.children}
     </svg>
   );
 }
-const IconHome = function () { return (<Icon><path d="M5 12l7-8 7 8" /><path d="M6 10v9a1 1 0 001 1h10a1 1 0 001-1v-9" /></Icon>); };
-const IconLink = function () { return (<Icon><path d="M9 15l6-6" /><path d="M11 6l.5-.5a4.95 4.95 0 017 7L18 13" /><path d="M13 18l-.5.5a4.95 4.95 0 01-7-7L6 11" /></Icon>); };
-const IconGift = function () { return (<Icon><path d="M3 9h18v3H3z" /><path d="M12 9v12" /><path d="M19 12v7a2 2 0 01-2 2H7a2 2 0 01-2-2v-7" /><path d="M7.5 9a2.5 2.5 0 010-5C11 4 12 9 12 9s1-5 4.5-5a2.5 2.5 0 010 5" /></Icon>); };
-const IconBroadcast = function () { return (<Icon><circle cx="12" cy="12" r="2" /><path d="M16.24 7.76a6 6 0 010 8.49" /><path d="M7.76 16.24a6 6 0 010-8.49" /><path d="M19.07 4.93a10 10 0 010 14.14" /><path d="M4.93 19.07a10 10 0 010-14.14" /></Icon>); };
-const IconBox = function () { return (<Icon><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z" /><path d="M12 12l8-4.5" /><path d="M12 12v9" /><path d="M12 12L4 7.5" /></Icon>); };
-const IconTruck = function () { return (<Icon><circle cx="7" cy="17" r="2" /><circle cx="17" cy="17" r="2" /><path d="M5 17H3V6a1 1 0 011-1h9v12M9 17h6M15 8h4l2 3v6h-2" /></Icon>); };
-const IconExternal = function () { return (<Icon size={11}><path d="M7 17L17 7" /><path d="M8 7h9v9" /></Icon>); };
-const IconSearch = function () { return (<Icon size={15}><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.35-4.35" /></Icon>); };
-const IconChevronDown = function () { return (<Icon size={13}><path d="M6 9l6 6 6-6" /></Icon>); };
+const IconSearch = function () { return (<Icon><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.35-4.35" /></Icon>); };
 
-/* ---------------- Styles ---------------- */
-var css = '' +
-'.eba { min-height: 100vh; background: #F5F3EF; color: #957f67; }' +
-'.eba * { box-sizing: border-box; }' +
-'.eba a { color: inherit; text-decoration: none; }' +
-'.eba button, .eba input, .eba select, .eba textarea { font-family: inherit; }' +
-'.eba button { cursor: pointer; }' +
-'.eba-shell { min-height: 100vh; display: grid; grid-template-columns: 236px minmax(0,1fr); }' +
-
-/* sidebar */
-'.eba-side { position: sticky; top: 0; height: 100vh; background: #957f67; padding: 26px 16px 18px; display: flex; flex-direction: column; z-index: 30; }' +
-'.eba-logo { width: 138px; height: auto; display: block; object-fit: contain; }' +
-'.eba-side-eyebrow { margin: 14px 0 20px; font-size: 9px; letter-spacing: 0.3em; color: #cfbda9; }' +
-'.eba-nav { display: grid; gap: 4px; }' +
-'.eba-nav a { display: flex; align-items: center; gap: 11px; padding: 10px 12px; border-radius: 10px; color: #F5F3EF; font-size: 13.5px; transition: background .15s ease, color .15s ease; }' +
-'.eba-nav a:hover { background: rgba(245,243,239,0.14); color: #F5F3EF; }' +
-'.eba-nav a.on { background: #F5F3EF; color: #957f67; }' +
-'.eba-nav .ic { width: 18px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }' +
-'.eba-nav .ext { margin-left: auto; opacity: .7; display: inline-flex; }' +
-'.eba-side-div { border-top: 1px solid rgba(245,243,239,0.28); margin: 12px 4px; }' +
-'.eba-side-spacer { flex: 1; }' +
-'.eba-side-user { border-top: 1px solid rgba(245,243,239,0.28); padding-top: 12px; position: relative; }' +
-'.eba-userpill { width: 100%; display: flex; align-items: center; gap: 10px; border: 0; background: transparent; padding: 8px; border-radius: 10px; text-align: left; color: #F5F3EF; }' +
-'.eba-userpill:hover { background: rgba(245,243,239,0.14); }' +
-'.eba-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; display: block; flex-shrink: 0; }' +
-'.eba-avatar-fb { width: 32px; height: 32px; border-radius: 50%; background: #cfbda9; color: #957f67; font-size: 11px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }' +
-'.eba-usertext { min-width: 0; flex: 1; }' +
-'.eba-username, .eba-useremail { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }' +
-'.eba-username { font-size: 12.5px; color: #F5F3EF; }' +
-'.eba-useremail { font-size: 10px; color: #cfbda9; margin-top: 1px; }' +
-'.eba-menu { position: absolute; left: 0; bottom: calc(100% + 8px); z-index: 40; width: 100%; background: #F5F3EF; border: 1px solid #cfbda9; border-radius: 12px; overflow: hidden; box-shadow: 0 14px 35px rgba(149,127,103,.3); }' +
-'.eba-menu-head { padding: 11px 13px; border-bottom: 1px solid #cfbda9; }' +
-'.eba-menu-head p { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }' +
-'.eba-menu-name { font-size: 13px; color: #957f67; }' +
-'.eba-menu-email { font-size: 11px; color: #957f67; margin-top: 2px !important; }' +
-'.eba-menu button { width: 100%; border: 0; background: transparent; padding: 11px 13px; text-align: left; color: #957f67; font-size: 13px; }' +
-'.eba-menu button:hover { background: #cfbda9; }' +
-
-/* content */
-'.eba-main { min-width: 0; }' +
-'.eba-content { max-width: 1240px; margin: 0 auto; padding: 30px 36px 72px; }' +
-'.eba-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }' +
-'.eba-head h1 { margin: 0; font-size: 34px; font-weight: 400; font-style: italic; color: #957f67; line-height: 1.1; }' +
-'.eba-head .sub { margin: 5px 0 0; font-size: 12px; color: #957f67; }' +
-'.eba-langs { display: flex; border: 1px solid #cfbda9; border-radius: 999px; overflow: hidden; flex-shrink: 0; }' +
-'.eba-langs button { border: 0; background: transparent; padding: 7px 14px; font-size: 10px; letter-spacing: 1.5px; color: #957f67; }' +
-'.eba-langs button.on { background: #957f67; color: #F5F3EF; }' +
-
-/* ruled stat strip */
-'.eba-rule { border-top: 2px solid #957f67; margin-top: 16px; }' +
-'.eba-stats { display: flex; flex-wrap: wrap; gap: 14px 40px; padding: 16px 2px; border-bottom: 1px solid #cfbda9; }' +
-'.eba-stat { border: 0; background: none; text-align: left; padding: 0; }' +
-'.eba-stat b { display: block; font-size: 27px; font-weight: 400; color: #957f67; line-height: 1.1; }' +
-'.eba-stat span { display: block; margin-top: 3px; font-size: 9.5px; text-transform: uppercase; letter-spacing: .2em; color: #957f67; }' +
-'.eba-stat:hover span { color: #957f67; }' +
-
-/* toolbar */
-'.eba-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; margin-top: 18px; }' +
-'.eba-search { flex: 1; min-width: 230px; display: flex; align-items: center; gap: 9px; border: 1px solid #cfbda9; border-radius: 999px; padding: 10px 15px; background: #F5F3EF; }' +
-'.eba-search svg { color: #957f67; flex-shrink: 0; }' +
-'.eba-search input { width: 100%; border: 0; outline: 0; background: transparent; color: #957f67; font-size: 13px; }' +
-'.eba-search input::placeholder { color: rgba(149,127,103,0.6); }' +
-'.eba-select { appearance: none; border: 1px solid #cfbda9; border-radius: 999px; padding: 10px 32px 10px 15px; background: #F5F3EF url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'11\' height=\'11\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23957f67\' stroke-width=\'2\'%3E%3Cpath d=\'M6 9l6 6 6-6\'/%3E%3C/svg%3E") no-repeat right 13px center; color: #957f67; font-size: 12px; outline: 0; }' +
-'.eba-btn { border: 1px solid #cfbda9; border-radius: 999px; padding: 10px 17px; font-size: 12.5px; background: #F5F3EF; color: #957f67; text-decoration: none; display: inline-block; }' +
-'.eba-btn:hover { background: #cfbda9; }' +
-'.eba-btn-dark { background: #957f67; border-color: #957f67; color: #F5F3EF; }' +
-'.eba-btn-dark:hover { background: #cfbda9; border-color: #cfbda9; color: #957f67; }' +
-'.eba-notice { margin-top: 14px; background: rgba(207,189,169,0.32); border-radius: 12px; padding: 11px 15px; font-size: 12.5px; color: #957f67; }' +
-
-/* ledger */
-'.eba-daylabel { margin: 26px 0 4px; font-size: 15px; font-style: italic; color: #957f67; }' +
-'.eba-rowwrap { border-bottom: 1px dotted #cfbda9; }' +
-'.eba-row { width: 100%; display: flex; align-items: center; gap: 14px; border: 0; background: transparent; padding: 13px 4px; text-align: left; }' +
-'.eba-row:hover { background: rgba(207,189,169,0.25); }' +
-'.eba-row-main { flex: 1; min-width: 0; }' +
-'.eba-row-name { display: block; font-size: 14.5px; color: #957f67; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }' +
-'.eba-row-meta { display: block; margin-top: 2px; font-size: 11px; color: #957f67; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }' +
-'.eba-pill { border-radius: 999px; padding: 3px 10px; font-size: 9px; letter-spacing: .12em; text-transform: uppercase; flex-shrink: 0; white-space: nowrap; }' +
-'.eba-pill-src { border: 1px solid #cfbda9; color: #957f67; background: #F5F3EF; }' +
-'.eba-pill-ok { background: #957f67; color: #F5F3EF; }' +
-'.eba-pill-bad { background: #F5F3EF; border: 1px solid #957f67; color: #957f67; }' +
-'.eba-pill-mid { background: #cfbda9; color: #957f67; }' +
-'.eba-amt { min-width: 90px; text-align: right; font-size: 16.5px; color: #957f67; flex-shrink: 0; }' +
-'.eba-chev { color: #957f67; flex-shrink: 0; }' +
-
-/* expanded detail */
-'.eba-detail { padding: 4px 4px 18px; }' +
-'.eba-detail-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); gap: 10px; }' +
-'.eba-cell { background: rgba(207,189,169,0.32); border-radius: 12px; padding: 12px 13px; font-size: 12px; line-height: 1.55; }' +
-'.eba-cell .lb { display: block; font-size: 9px; text-transform: uppercase; letter-spacing: .16em; color: #957f67; margin-bottom: 4px; }' +
-'.eba-detail-links { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }' +
-'.eba-detail-links a { border: 1px solid #cfbda9; color: #957f67; border-radius: 999px; padding: 6px 12px; font-size: 10.5px; background: #F5F3EF; }' +
-'.eba-detail-links a:hover { background: #cfbda9; }' +
-'.eba-notes { margin-top: 10px; }' +
-'.eba-notes textarea { width: 100%; border: 1px solid #cfbda9; border-radius: 12px; padding: 11px 12px; font-size: 12px; color: #957f67; background: #F5F3EF; resize: vertical; outline: 0; }' +
-'.eba-notes textarea:focus { border-color: #957f67; }' +
-'.eba-notes .eba-btn { margin-top: 8px; }' +
-'.eba-empty { padding: 52px 20px; text-align: center; font-size: 13.5px; color: #957f67; border-bottom: 1px dotted #cfbda9; }' +
-
-/* responsive */
-'@media (max-width: 1050px) { .eba-shell { grid-template-columns: 200px minmax(0,1fr); } .eba-content { padding: 24px 20px 60px; } .eba-head h1 { font-size: 28px; } }' +
-'@media (max-width: 760px) {' +
-' .eba-shell { display: block; }' +
-' .eba-side { position: static; height: auto; padding: 14px 12px; }' +
-' .eba-logo { width: 108px; }' +
-' .eba-side-eyebrow { margin: 8px 0 10px; }' +
-' .eba-nav { display: flex; overflow-x: auto; padding-bottom: 3px; }' +
-' .eba-nav a { white-space: nowrap; padding: 8px 11px; }' +
-' .eba-side-div, .eba-side-spacer { display: none; }' +
-' .eba-side-user { border-top: 0; padding-top: 8px; }' +
-' .eba-menu { bottom: auto; top: calc(100% + 6px); }' +
-' .eba-content { padding: 18px 14px 52px; }' +
-' .eba-head h1 { font-size: 25px; }' +
-' .eba-stats { gap: 12px 26px; }' +
-' .eba-stat b { font-size: 22px; }' +
-' .eba-toolbar .eba-btn { flex: 1; text-align: center; }' +
-' .eba-select { flex: 1; min-width: 130px; }' +
-' .eba-row { flex-wrap: wrap; row-gap: 7px; padding: 12px 2px; }' +
-' .eba-row-main { flex: 1 1 100%; }' +
-' .eba-amt { margin-left: auto; min-width: 0; font-size: 15px; }' +
-' .eba-detail { padding: 4px 2px 15px; }' +
-'}' +
-'@media (max-width: 460px) { .eba-pill-src { display: none; } }' +
-'@media print { .no-print { display: none !important; } .eba-shell { display: block; } .eba { background: #F5F3EF; } .eba-content { padding: 0; max-width: none; } }';
+const pageCss = '' +
+'.ebd-daylabel { margin:22px 2px 10px; font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:#bda891; }' +
+'.ebd-daylabel:first-of-type { margin-top:6px; }' +
+'.ebd-detail { padding:4px 4px 8px; display:grid; gap:12px; }' +
+'.ebd-links { display:flex; flex-wrap:wrap; gap:7px; }' +
+'.ebd-open { background:#FFFFFF !important; border-color:#e8e2d8 !important; }';
 
 /* ============================================================ */
 export default function AdminDashboard({ payments, admin }) {
@@ -308,34 +192,15 @@ export default function AdminDashboard({ payments, admin }) {
   const [expandedId, setExpandedId] = useState(null);
   const [notes, setNotes] = useState({});
   const [notice, setNotice] = useState('');
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef(null);
 
   useEffect(function () {
     const saved = localStorage.getItem('eb-lang');
     if (saved === 'en' || saved === 'es') setLangState(saved);
   }, []);
-  function setLang(l) {
-    setLangState(l);
-    localStorage.setItem('eb-lang', l);
-    document.documentElement.lang = l;
-  }
-
-  useEffect(function () {
-    function close(e) {
-      if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false);
-    }
-    document.addEventListener('mousedown', close);
-    return function () { document.removeEventListener('mousedown', close); };
-  }, []);
-
-  const avatarUrl = admin?.avatar_url || admin?.picture || admin?.avatar || null;
 
   /* -------- data derivations -------- */
   const enriched = useMemo(function () {
-    return (payments || []).map(function (p) {
-      return { ...p, _status: orderStatus(p) };
-    });
+    return (payments || []).map(function (p) { return { ...p, _status: orderStatus(p) }; });
   }, [payments]);
 
   const filtered = useMemo(function () {
@@ -353,6 +218,17 @@ export default function AdminDashboard({ payments, admin }) {
   const stripeCount = (payments || []).filter(function (p) { return (p.payment_source || 'stripe') === 'stripe'; }).length;
   const cloverCount = (payments || []).filter(function (p) { return p.payment_source === 'clover'; }).length;
   const isFiltered = q.trim() !== '' || status !== 'all' || source !== 'all';
+
+  function dayKeyLocalized(dt) {
+    if (!dt) return 'Unknown date';
+    return new Date(dt).toLocaleDateString(dateLocale[lang], { year: 'numeric', month: 'long', day: 'numeric' });
+  }
+
+  const todayCount = useMemo(function () {
+    const todayKey = dayKeyLocalized(new Date().toISOString());
+    return (payments || []).filter(function (p) { return dayKeyLocalized(p.created_at) === todayKey; }).length;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [payments, lang]);
 
   const customerTotals = useMemo(function () {
     const map = new Map();
@@ -372,11 +248,6 @@ export default function AdminDashboard({ payments, admin }) {
     return map;
   }, [payments]);
 
-  function dayKeyLocalized(dt) {
-    if (!dt) return 'Unknown date';
-    return new Date(dt).toLocaleDateString(dateLocale[lang], { year: 'numeric', month: 'long', day: 'numeric' });
-  }
-
   const groups = useMemo(function () {
     const g = [];
     const todayKey = dayKeyLocalized(new Date().toISOString());
@@ -391,18 +262,12 @@ export default function AdminDashboard({ payments, admin }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filtered, lang]);
 
-  function rowKey(p) {
-    return p.id || p.stripe_session_id || p.clover_payment_id;
-  }
-
-  function statusText(s) {
-    return t[s] || s;
-  }
-
+  function rowKey(p) { return p.id || p.stripe_session_id || p.clover_payment_id; }
+  function statusText(s) { return t[s] || s; }
   function pillClass(s) {
-    if (s === 'paid' || s === 'delivered') return 'eba-pill eba-pill-ok';
-    if (s === 'refunded' || s === 'unpaid') return 'eba-pill eba-pill-bad';
-    return 'eba-pill eba-pill-mid';
+    if (s === 'paid' || s === 'delivered') return 'eba-pill ok';
+    if (s === 'refunded' || s === 'unpaid') return 'eba-pill off';
+    return 'eba-pill mid';
   }
 
   /* -------- actions (same endpoints) -------- */
@@ -450,224 +315,188 @@ export default function AdminDashboard({ payments, admin }) {
     setTimeout(function () { setNotice(''); }, 2500);
   }
 
-  async function logout() {
-    await fetch('/api/auth/logout', { method: 'POST' });
-    window.location.href = '/admin/login';
-  }
-
-  const SHIP = 'https://ship.erendirasboutique.com';
-  const todayLine = new Date().toLocaleDateString(dateLocale[lang], { weekday: 'long', month: 'long', day: 'numeric' });
+  function clearFilters() { setQ(''); setStatus('all'); setSource('all'); }
 
   /* ============================================================ */
   return (
-    <main className="eba">
-      <style>{css}</style>
+    <AdminShell
+      admin={admin}
+      active="overview"
+      lang={lang}
+      onLang={setLangState}
+      eyebrow={t.eyebrow}
+      title={t.title}
+      subtitle={t.sub}
+      heroStat={{ label: t.todayLabel, value: todayCount, caption: t.todayCaption }}
+      tip={{ label: t.tipLabel, body: t.tipBody }}
+    >
+      <style>{pageCss}</style>
 
-      <div className="eba-shell">
-        <aside className="eba-side no-print">
-          <a href="/admin" aria-label="Erendira's Boutique admin home">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo2.png" alt="Erendira&#8217;s Boutique" className="eba-logo" />
+      <section className="eba-stats no-print" aria-label="Summary">
+        <button className="eba-stat" type="button" onClick={clearFilters}>
+          <span className="lb">{isFiltered ? t.filteredRevenue : t.revenue}</span>
+          <b>{money(total)}</b>
+          <span className="cap">{isFiltered ? t.filteredCap : t.revenueCap}</span>
+        </button>
+        <button className="eba-stat" type="button" onClick={clearFilters}>
+          <span className="lb">{t.payments}</span>
+          <b>{filtered.length}</b>
+          <span className="cap">{t.paymentsCap}</span>
+        </button>
+        <button className="eba-stat" type="button" onClick={function () { setStatus('all'); }}>
+          <span className="lb">{t.customers}</span>
+          <b>{customers}</b>
+          <span className="cap">{t.customersCap}</span>
+        </button>
+        <button className="eba-stat" type="button" onClick={function () { setSource(source === 'stripe' ? 'clover' : 'stripe'); }}>
+          <span className="lb">{t.sources}</span>
+          <b>{stripeCount} / {cloverCount}</b>
+          <span className="cap">{t.sourcesCap}</span>
+        </button>
+      </section>
+
+      <div className="eba-cols wide-left">
+        <div className="eba-panel no-print">
+          <p className="eba-eyebrow">{t.startHere}</p>
+          <h2>{t.quickActions}</h2>
+
+          <button className="eba-cta" type="button" onClick={syncCloverPayments}>
+            <span>
+              <h3>{t.ctaSync}</h3>
+              <p>{t.ctaSyncSub}</p>
+            </span>
+            <span className="go">{t.ctaSyncGo} &rarr;</span>
+          </button>
+
+          <a className="eba-cta eba-cta-quiet" href="/admin/payment-links">
+            <span>
+              <h3>{t.ctaLink}</h3>
+              <p>{t.ctaLinkSub}</p>
+            </span>
+            <span className="go">{t.ctaLinkGo} &rarr;</span>
           </a>
-          <p className="eba-side-eyebrow">{t.adminStudio}</p>
 
-          <nav className="eba-nav" aria-label="Admin navigation">
-            <a className="on" href="/admin"><span className="ic"><IconHome /></span><span>{t.overview}</span></a>
-            <a href="/admin/payment-links"><span className="ic"><IconLink /></span><span>{t.paymentLinks}</span></a>
-            <a href="/admin/gift-cards"><span className="ic"><IconGift /></span><span>{t.giftCards}</span></a>
-            <a href="/admin/live-link"><span className="ic"><IconBroadcast /></span><span>{t.liveLink}</span></a>
-          </nav>
-          <div className="eba-side-div" />
-          <nav className="eba-nav" aria-label="Shipping portal">
-            <a href={SHIP + '/orders'} target="_blank" rel="noopener noreferrer"><span className="ic"><IconBox /></span><span>{t.orders}</span><span className="ext"><IconExternal /></span></a>
-            <a href={SHIP} target="_blank" rel="noopener noreferrer"><span className="ic"><IconTruck /></span><span>{t.shipping}</span><span className="ext"><IconExternal /></span></a>
-          </nav>
-
-          <div className="eba-side-spacer" />
-
-          <div className="eba-side-user" ref={menuRef}>
-            <button
-              className="eba-userpill"
-              onClick={function () { setMenuOpen(function (v) { return !v; }); }}
-              aria-haspopup="menu"
-              aria-expanded={menuOpen}
-            >
-              {avatarUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={avatarUrl} alt="" referrerPolicy="no-referrer" className="eba-avatar" />
-              ) : (
-                <span className="eba-avatar-fb">{initials(admin?.name || admin?.email)}</span>
-              )}
-              <span className="eba-usertext">
-                <span className="eba-username">{admin?.name || 'Admin Studio'}</span>
-                <span className="eba-useremail">{admin?.email || '...'}</span>
-              </span>
-              <IconChevronDown />
-            </button>
-
-            {menuOpen && (
-              <div className="eba-menu" role="menu">
-                <div className="eba-menu-head">
-                  <p className="eba-menu-name">{admin?.name || 'Admin Studio'}</p>
-                  <p className="eba-menu-email">{admin?.email}{admin?.role ? ' \u00b7 ' + admin.role : ''}</p>
-                </div>
-                <button role="menuitem" onClick={logout}>{t.logOut}</button>
-              </div>
-            )}
+          <div className="eba-actions">
+            <button className="eba-btn" onClick={exportCsv}>{t.exportCsv}</button>
+            <button className="eba-btn" onClick={function () { window.print(); }}>{t.print}</button>
           </div>
-        </aside>
 
-        <section className="eba-main">
-          <div className="eba-content">
-            <div className="eba-head no-print">
-              <div>
-                <h1>{t.welcome}, {admin?.name?.split(' ')[0] || 'Erendira'}</h1>
-                <p className="sub">{todayLine}</p>
-              </div>
-              <div className="eba-langs" role="group" aria-label="Language">
-                {['en', 'es'].map(function (l) {
-                  return (
-                    <button key={l} className={lang === l ? 'on' : ''} onClick={function () { setLang(l); }}>
-                      {l.toUpperCase()}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+          {notice && <div className="eba-notice">{notice}</div>}
+        </div>
 
-            <div className="eba-rule" />
+        <div className="eba-panel">
+          <p className="eba-eyebrow">{t.ledger}</p>
+          <h2>{t.ledgerTitle}</h2>
 
-            <section className="eba-stats" aria-label="Dashboard summary">
-              <button className="eba-stat" type="button" onClick={function () { setQ(''); setStatus('all'); setSource('all'); }}>
-                <b>{money(total)}</b>
-                <span>{isFiltered ? t.filteredRevenue : t.revenue}</span>
-              </button>
-              <button className="eba-stat" type="button" onClick={function () { setQ(''); setStatus('all'); setSource('all'); }}>
-                <b>{filtered.length}</b>
-                <span>{t.payments}</span>
-              </button>
-              <button className="eba-stat" type="button" onClick={function () { setStatus('all'); }}>
-                <b>{customers}</b>
-                <span>{t.customers}</span>
-              </button>
-              <button className="eba-stat" type="button" onClick={function () { setSource(source === 'stripe' ? 'clover' : 'stripe'); }}>
-                <b>{stripeCount} / {cloverCount}</b>
-                <span>{t.sources}</span>
-              </button>
-            </section>
+          <div className="eba-toolbar no-print">
+            <label className="eba-search">
+              <IconSearch />
+              <input value={q} onChange={function (e) { setQ(e.target.value); }} placeholder={t.search} />
+            </label>
+            <select className="eba-select" value={status} onChange={function (e) { setStatus(e.target.value); }}>
+              <option value="all">{t.allStatuses}</option>
+              <option value="paid">{t.paid}</option>
+              <option value="shipped">{t.shipped}</option>
+              <option value="delivered">{t.delivered}</option>
+              <option value="refunded">{t.refunded}</option>
+              <option value="unpaid">{t.unpaid}</option>
+            </select>
+            <select className="eba-select" value={source} onChange={function (e) { setSource(e.target.value); }}>
+              <option value="all">{t.allSources}</option>
+              <option value="stripe">Stripe</option>
+              <option value="clover">Clover</option>
+            </select>
+          </div>
 
-            <div className="eba-toolbar no-print">
-              <label className="eba-search">
-                <IconSearch />
-                <input value={q} onChange={function (e) { setQ(e.target.value); }} placeholder={t.search} />
-              </label>
+          {groups.map(function (g) {
+            return (
+              <div key={g.label}>
+                <p className="ebd-daylabel">{g.label}</p>
+                <div className="eba-rows">
+                  {g.items.map(function (p) {
+                    const key = rowKey(p);
+                    const open = expandedId === key;
+                    const orders = customerOrderCounts.get(p.customer_email || 'unknown') || 1;
+                    const sub = [
+                      p.customer_email || t.noEmail,
+                      paymentMethodLabel(p),
+                      orders + ' ' + (orders === 1 ? t.order : t.ordersWord),
+                    ].join(' \u00b7 ');
+                    return (
+                      <div key={key}>
+                        <button
+                          className={open ? 'eba-row ebd-open' : 'eba-row'}
+                          onClick={function () { setExpandedId(open ? null : key); }}
+                          aria-expanded={open}
+                        >
+                          <span className="eba-who">
+                            <span className="n">{p.customer_name || t.customer}</span>
+                            <span className="s">{sub}</span>
+                          </span>
+                          <span className="eba-pill off">{p.payment_source || 'stripe'}</span>
+                          <span className={pillClass(p._status)}>{statusText(p._status)}</span>
+                          <span className="eba-amt">{money(p.amount_total, p.currency)}</span>
+                        </button>
 
-              <select className="eba-select" value={status} onChange={function (e) { setStatus(e.target.value); }}>
-                <option value="all">{t.allStatuses}</option>
-                <option value="paid">{t.paid}</option>
-                <option value="shipped">{t.shipped}</option>
-                <option value="delivered">{t.delivered}</option>
-                <option value="refunded">{t.refunded}</option>
-                <option value="unpaid">{t.unpaid}</option>
-              </select>
-
-              <select className="eba-select" value={source} onChange={function (e) { setSource(e.target.value); }}>
-                <option value="all">{t.allSources}</option>
-                <option value="stripe">Stripe</option>
-                <option value="clover">Clover</option>
-              </select>
-
-              <button className="eba-btn eba-btn-dark" onClick={syncCloverPayments}>{t.syncClover}</button>
-              <button className="eba-btn" onClick={exportCsv}>{t.exportCsv}</button>
-              <button className="eba-btn" onClick={function () { window.print(); }}>{t.print}</button>
-            </div>
-
-            {notice && <div className="eba-notice no-print">{notice}</div>}
-
-            {groups.map(function (g) {
-              return (
-                <div key={g.label}>
-                  <p className="eba-daylabel">{g.label}</p>
-                  <div>
-                    {g.items.map(function (p) {
-                      const key = rowKey(p);
-                      const open = expandedId === key;
-                      const orders = customerOrderCounts.get(p.customer_email || 'unknown') || 1;
-                      const sub = [
-                        p.customer_email || t.noEmail,
-                        paymentMethodLabel(p),
-                        orders + ' ' + (orders === 1 ? t.order : t.ordersWord),
-                      ].join(' \u00b7 ');
-                      return (
-                        <div className="eba-rowwrap" key={key}>
-                          <button className="eba-row" onClick={function () { setExpandedId(open ? null : key); }}>
-                            <span className="eba-row-main">
-                              <span className="eba-row-name">{p.customer_name || t.customer}</span>
-                              <span className="eba-row-meta">{sub}</span>
-                            </span>
-                            <span className="eba-pill eba-pill-src">{p.payment_source || 'stripe'}</span>
-                            <span className={pillClass(p._status)}>{statusText(p._status)}</span>
-                            <span className="eba-amt">{money(p.amount_total, p.currency)}</span>
-                            <span className="eba-chev">{open ? '\u2304' : '\u203a'}</span>
-                          </button>
-
-                          {open && (
-                            <div className="eba-detail no-print">
-                              <div className="eba-detail-grid">
-                                <div className="eba-cell">
-                                  <span className="lb">{t.customer}</span>
-                                  <b>{p.customer_name || t.customer}</b><br />
-                                  {p.customer_email || '\u2014'}<br />
-                                  {p.customer_phone || '\u2014'}
-                                </div>
-                                <div className="eba-cell">
-                                  <span className="lb">{t.shippingAddress}</span>
-                                  {formatAddress(p.shipping_address) || '\u2014'}
-                                </div>
-                                <div className="eba-cell">
-                                  <span className="lb">{t.payment}</span>
-                                  {formatDate(p.created_at)}<br />
-                                  {paymentMethodLabel(p)}<br />
-                                  {t.statusWord}: {p.payment_status || '\u2014'} {p.refund_status ? ' \u00b7 ' + t.refundWord + ': ' + p.refund_status : ''}
-                                </div>
-                                <div className="eba-cell">
-                                  <span className="lb">{t.customerTotals}</span>
-                                  {t.ordersWord}: {orders}<br />
-                                  {t.lifetime}: {money(customerTotals.get(p.customer_email || 'unknown') || 0, p.currency)}<br />
-                                  {p.description || t.boutiquePurchase}
-                                </div>
+                        {open && (
+                          <div className="ebd-detail no-print">
+                            <div className="eba-cells">
+                              <div className="eba-cell">
+                                <span className="lb">{t.customer}</span>
+                                <b>{p.customer_name || t.customer}</b><br />
+                                {p.customer_email || '\u2014'}<br />
+                                {p.customer_phone || '\u2014'}
                               </div>
-
-                              <div className="eba-detail-links">
-                                {p.receipt_url && <a target="_blank" rel="noopener noreferrer" href={p.receipt_url}>{t.openReceipt}</a>}
-                                {p.stripe_customer_id && <a target="_blank" rel="noopener noreferrer" href={stripeUrl('customer', p.stripe_customer_id)}>{t.stripeCustomer}</a>}
-                                {p.stripe_payment_intent && <a target="_blank" rel="noopener noreferrer" href={stripeUrl('payment', p.stripe_payment_intent)}>{t.stripePayment}</a>}
-                                {p.payment_link && <a target="_blank" rel="noopener noreferrer" href={stripeUrl('link', p.payment_link)}>{t.paymentLink}</a>}
+                              <div className="eba-cell">
+                                <span className="lb">{t.shippingAddress}</span>
+                                {formatAddress(p.shipping_address) || '\u2014'}
                               </div>
+                              <div className="eba-cell">
+                                <span className="lb">{t.payment}</span>
+                                {formatDate(p.created_at)}<br />
+                                {paymentMethodLabel(p)}<br />
+                                {t.statusWord}: {p.payment_status || '\u2014'}{p.refund_status ? ' \u00b7 ' + t.refundWord + ': ' + p.refund_status : ''}
+                              </div>
+                              <div className="eba-cell">
+                                <span className="lb">{t.customerTotals}</span>
+                                {t.ordersWord}: {orders}<br />
+                                {t.lifetime}: {money(customerTotals.get(p.customer_email || 'unknown') || 0, p.currency)}<br />
+                                {p.description || t.boutiquePurchase}
+                              </div>
+                            </div>
 
-                              <div className="eba-notes">
-                                <textarea
-                                  rows={4}
-                                  value={notes[p.id] ?? p.admin_notes ?? ''}
-                                  onChange={function (e) { setNotes({ ...notes, [p.id]: e.target.value }); }}
-                                  placeholder={t.notesPlaceholder}
-                                />
+                            <div className="ebd-links">
+                              {p.receipt_url && <a className="eba-btn mini" target="_blank" rel="noopener noreferrer" href={p.receipt_url}>{t.openReceipt}</a>}
+                              {p.stripe_customer_id && <a className="eba-btn mini" target="_blank" rel="noopener noreferrer" href={stripeUrl('customer', p.stripe_customer_id)}>{t.stripeCustomer}</a>}
+                              {p.stripe_payment_intent && <a className="eba-btn mini" target="_blank" rel="noopener noreferrer" href={stripeUrl('payment', p.stripe_payment_intent)}>{t.stripePayment}</a>}
+                              {p.payment_link && <a className="eba-btn mini" target="_blank" rel="noopener noreferrer" href={stripeUrl('link', p.payment_link)}>{t.paymentLink}</a>}
+                            </div>
+
+                            <div>
+                              <textarea
+                                className="eba-in"
+                                rows={4}
+                                value={notes[p.id] ?? p.admin_notes ?? ''}
+                                onChange={function (e) { setNotes({ ...notes, [p.id]: e.target.value }); }}
+                                placeholder={t.notesPlaceholder}
+                              />
+                              <div className="eba-actions">
                                 <button className="eba-btn" onClick={function () { saveNote(p.id); }}>{t.saveNotes}</button>
                               </div>
                             </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
-              );
-            })}
+              </div>
+            );
+          })}
 
-            {filtered.length === 0 && <div className="eba-empty">{t.noPayments}</div>}
-          </div>
-        </section>
+          {filtered.length === 0 && <div className="eba-empty">{t.noPayments}</div>}
+        </div>
       </div>
-    </main>
+    </AdminShell>
   );
 }
