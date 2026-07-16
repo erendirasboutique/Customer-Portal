@@ -230,9 +230,9 @@
 }
 
 .printPage {
-  background: white;
-  color: #111;
-  font-family: Arial, Helvetica, sans-serif;
+  background: #fff;
+  color: #25211f;
+  font-family: Georgia, "Times New Roman", serif;
   height: 11in;
   margin: 0 auto;
   overflow: hidden;
@@ -241,211 +241,430 @@
 }
 
 .checkSection {
+  background:
+    radial-gradient(circle at 10% 10%, rgba(207, 189, 169, 0.13), transparent 26%),
+    linear-gradient(180deg, #fffefd 0%, #fffaf6 100%);
+  box-sizing: border-box;
   height: 3.5in;
   overflow: hidden;
   position: relative;
   width: 8.5in;
 }
 
-.stubOne {
-  box-sizing: border-box;
-  height: 3.5in;
-  padding: 0.3in 0.45in;
-  width: 8.5in;
+.checkBorder {
+  border: 1.5px solid #b59aae;
+  box-shadow:
+    inset 0 0 0 4px rgba(181, 154, 174, 0.08),
+    inset 0 0 0 6px rgba(207, 189, 169, 0.10);
+  inset: 0.08in;
+  pointer-events: none;
+  position: absolute;
+  z-index: 2;
 }
 
-.stubTwo {
-  box-sizing: border-box;
-  height: 4in;
-  padding: 0.3in 0.45in;
-  width: 8.5in;
+.floralCorner {
+  height: 1.42in;
+  opacity: 0.68;
+  pointer-events: none;
+  position: absolute;
+  width: 1.42in;
+  z-index: 1;
+}
+
+.topLeftFlower {
+  left: -0.05in;
+  top: -0.03in;
+}
+
+.bottomRightFlower {
+  bottom: -0.14in;
+  right: -0.08in;
+}
+
+.flowerStem {
+  fill: none;
+  stroke: #8f9279;
+  stroke-linecap: round;
+  stroke-width: 5;
+}
+
+.flowerLeaf {
+  fill: #aeb39a;
+  opacity: 0.74;
+}
+
+.flowerPetal {
+  fill: #b98aaf;
+  opacity: 0.8;
+}
+
+.flowerPetalLight {
+  fill: #d8bfd3;
+  opacity: 0.9;
+}
+
+.flowerCenter {
+  fill: #b79b61;
 }
 
 .businessBlock {
-  left: 0.55in;
+  left: 0.78in;
   position: absolute;
-  top: 0.28in;
+  top: 0.25in;
+  z-index: 3;
+}
+
+.ownerName {
+  color: #6e4768;
+  font-size: 17px;
+  font-style: italic;
+  font-weight: 700;
+  line-height: 1.05;
 }
 
 .businessName {
-  font-size: 16px;
-  font-weight: 800;
+  color: #3e3631;
+  font-size: 11px;
+  font-weight: 700;
+  margin-top: 3px;
 }
 
 .businessAddress {
-  font-size: 10px;
+  color: #514942;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 8.2px;
   line-height: 1.35;
-  white-space: pre-line;
+  margin-top: 2px;
+}
+
+.bankBlock {
+  left: 3.4in;
+  position: absolute;
+  text-align: center;
+  top: 0.26in;
+  width: 2.1in;
+  z-index: 3;
 }
 
 .bankName {
-  font-size: 11px;
-  left: 3.65in;
-  position: absolute;
-  text-align: center;
-  top: 0.33in;
-  width: 2.3in;
+  font-size: 10px;
+  font-weight: 700;
 }
 
 .checkNumber {
-  font-size: 13px;
-  font-weight: 700;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 11px;
+  font-weight: 800;
   position: absolute;
-  right: 0.55in;
-  top: 0.25in;
+  right: 0.42in;
+  top: 0.22in;
+  z-index: 3;
 }
 
-.dateLabel {
+.dateRow {
+  align-items: center;
+  display: flex;
+  font-family: Arial, Helvetica, sans-serif;
+  gap: 0.12in;
+  position: absolute;
+  right: 0.43in;
+  top: 0.64in;
+  z-index: 3;
+}
+
+.dateRow > span {
+  color: #7b4e74;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.dateRow > div {
+  border-bottom: 1px solid #4d4741;
   font-size: 10px;
-  position: absolute;
-  right: 2.05in;
-  top: 0.78in;
-}
-
-.checkDate {
-  border-bottom: 1px solid #222;
-  font-size: 12px;
-  position: absolute;
-  right: 0.55in;
+  padding: 0 0.08in 0.03in;
   text-align: center;
-  top: 0.72in;
-  width: 1.35in;
+  width: 1.15in;
 }
 
-.payLabel {
-  font-size: 9px;
+.payeeRow {
+  align-items: end;
+  display: grid;
+  grid-template-columns: 0.8in 1fr 1.15in;
   left: 0.55in;
   position: absolute;
-  top: 1.25in;
+  right: 0.43in;
+  top: 1.08in;
+  z-index: 3;
 }
 
-.payee {
-  border-bottom: 1px solid #222;
-  font-size: 13px;
+.payeeLabel {
+  color: #7b4e74;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 7.6px;
+  font-weight: 800;
+  line-height: 1.08;
+}
+
+.payeeValue {
+  border-bottom: 1px solid #4d4741;
+  font-size: 12px;
   font-weight: 700;
-  left: 1.28in;
+  min-width: 0;
   overflow: hidden;
-  position: absolute;
-  right: 1.7in;
+  padding: 0 0.08in 0.055in;
   text-overflow: ellipsis;
-  top: 1.17in;
   white-space: nowrap;
 }
 
 .numericAmount {
-  border: 1px solid #222;
-  font-size: 13px;
-  font-weight: 700;
-  padding: 4px 7px;
-  position: absolute;
-  right: 0.55in;
+  border: 1.2px solid #8d5d84;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  margin-left: 0.12in;
+  padding: 0.08in 0.08in;
   text-align: right;
-  top: 1.08in;
-  width: 1.15in;
+}
+
+.wordsRow {
+  align-items: end;
+  display: grid;
+  grid-template-columns: 1fr 0.56in;
+  left: 0.55in;
+  position: absolute;
+  right: 0.43in;
+  top: 1.70in;
+  z-index: 3;
 }
 
 .amountWords {
-  border-bottom: 1px solid #222;
-  font-size: 11px;
-  left: 0.55in;
+  border-bottom: 1px solid #4d4741;
+  font-size: 10.3px;
   overflow: hidden;
-  position: absolute;
-  right: 0.55in;
+  padding: 0 0.08in 0.045in;
   text-transform: capitalize;
-  top: 1.72in;
   white-space: nowrap;
 }
 
-.memoLabel {
-  font-size: 9px;
+.wordsRow > span {
+  color: #7b4e74;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 7.4px;
+  font-weight: 800;
+  padding: 0 0 0.055in 0.08in;
+}
+
+.memoRow {
+  align-items: end;
+  display: grid;
+  grid-template-columns: 0.43in 2.7in;
   left: 0.55in;
   position: absolute;
-  top: 2.45in;
+  top: 2.39in;
+  z-index: 3;
 }
 
-.memo {
-  border-bottom: 1px solid #222;
-  font-size: 10px;
-  left: 0.95in;
+.memoRow > span {
+  color: #7b4e74;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 7.6px;
+  font-weight: 800;
+}
+
+.memoRow > div {
+  border-bottom: 1px solid #4d4741;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 9px;
   overflow: hidden;
-  position: absolute;
+  padding: 0 0.06in 0.045in;
   text-overflow: ellipsis;
-  top: 2.37in;
   white-space: nowrap;
-  width: 3.25in;
+}
+
+.signatureArea {
+  bottom: 0.57in;
+  position: absolute;
+  right: 0.72in;
+  text-align: center;
+  width: 2.05in;
+  z-index: 3;
 }
 
 .signatureLine {
-  border-top: 1px solid #222;
-  font-size: 9px;
-  position: absolute;
-  right: 0.55in;
-  text-align: center;
-  top: 2.55in;
-  width: 2.2in;
+  border-top: 1px solid #4d4741;
+}
+
+.signatureArea > span {
+  color: #7b4e74;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 .micrLine {
-  bottom: 0.13in;
+  bottom: 0.16in;
   font-family: "MICR", "Courier New", monospace;
-  font-size: 16px;
-  left: 0.65in;
-  letter-spacing: 0.04em;
+  font-size: 15px;
+  left: 0.7in;
+  letter-spacing: 0.035em;
   position: absolute;
   white-space: nowrap;
+  z-index: 4;
 }
 
 .micrWarning {
-  bottom: 0.04in;
-  color: #900;
-  font-size: 7px;
+  bottom: 0.07in;
+  color: #8d2c2c;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 6.4px;
   position: absolute;
-  right: 0.3in;
-}
-
-.stubHeader {
-  align-items: flex-start;
-  border-bottom: 1px solid #999;
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 18px;
-  padding-bottom: 8px;
-}
-
-.stubTitle {
-  font-size: 15px;
-  font-weight: 800;
-  margin: 0;
-}
-
-.stubTable {
-  border-collapse: collapse;
-  width: 100%;
-}
-
-.stubTable td {
-  border-bottom: 1px solid #ddd;
-  font-size: 11px;
-  padding: 7px 4px;
-}
-
-.stubTable td:first-child {
-  font-weight: 700;
-  width: 1.35in;
+  right: 0.30in;
+  z-index: 4;
 }
 
 .voidOverlay {
-  color: rgba(145, 0, 0, 0.22);
-  font-size: 72px;
+  color: rgba(145, 0, 0, 0.24);
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 70px;
   font-weight: 900;
   left: 0;
   letter-spacing: 0.08em;
   position: absolute;
   right: 0;
   text-align: center;
-  top: 1.15in;
+  top: 1.12in;
   transform: rotate(-12deg);
-  z-index: 5;
+  z-index: 8;
+}
+
+.stubOne {
+  box-sizing: border-box;
+  height: 3.5in;
+  padding: 0.18in 0.28in;
+  width: 8.5in;
+}
+
+.stubTwo {
+  box-sizing: border-box;
+  height: 4in;
+  padding: 0.18in 0.28in;
+  width: 8.5in;
+}
+
+.stubCard {
+  background:
+    linear-gradient(180deg, rgba(207, 189, 169, 0.12), rgba(255, 255, 255, 0.88));
+  border: 1px solid #c9b2c3;
+  box-sizing: border-box;
+  height: 100%;
+  overflow: hidden;
+  padding: 0.18in 0.22in;
+  position: relative;
+}
+
+.stubHeader {
+  align-items: flex-start;
+  border-bottom: 1px solid #d6c6d1;
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 0.1in;
+  position: relative;
+  z-index: 2;
+}
+
+.stubEyebrow {
+  color: #8d5d84;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 6.7px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  margin: 0 0 0.03in;
+}
+
+.stubTitle {
+  color: #4d3c49;
+  font-size: 13px;
+  margin: 0;
+}
+
+.stubNumberBlock {
+  display: grid;
+  font-family: Arial, Helvetica, sans-serif;
+  gap: 1px;
+  text-align: right;
+}
+
+.stubNumberBlock span {
+  color: #8d5d84;
+  font-size: 6.7px;
+  font-weight: 800;
+}
+
+.stubNumberBlock strong {
+  font-size: 10px;
+}
+
+.stubDetails {
+  display: grid;
+  gap: 0.08in 0.18in;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 0.15in;
+  position: relative;
+  z-index: 2;
+}
+
+.stubDetails > div {
+  min-width: 0;
+}
+
+.stubDetails span,
+.stubNotes > span {
+  color: #8d5d84;
+  display: block;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 6.6px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  margin-bottom: 0.025in;
+  text-transform: uppercase;
+}
+
+.stubDetails strong {
+  color: #3f3733;
+  display: block;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 8.4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.preLine {
+  white-space: pre-line !important;
+}
+
+.stubNotes {
+  margin-top: 0.14in;
+  position: relative;
+  z-index: 2;
+}
+
+.stubNotes > div {
+  border: 1px solid #e0d4dc;
+  min-height: 0.46in;
+  padding: 0.07in;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 8px;
+}
+
+.stubFlower {
+  bottom: -0.22in;
+  height: 1.28in;
+  opacity: 0.28;
+  right: -0.08in;
+  width: 1.28in;
 }
 
 @font-face {
@@ -494,5 +713,10 @@
 
   .printPage {
     margin: 0 !important;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 }
