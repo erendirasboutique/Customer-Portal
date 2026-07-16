@@ -1,43 +1,19 @@
 // app/api/live-link/route.js
 // Admin-only read/write for the current live link.
+//
+// Auth: the client sends its Supabase access token as a Bearer token. This works
+// whether the session lives in cookies or localStorage, so it doesn't depend on
+// middleware or @supabase/ssr.
 
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { normalizeLiveUrl } from '@/lib/liveLink';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-// Confirms there's a signed-in Supabase user on this request.
-async function getUser() {
-  const cookieStore = await cookies();
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll() {
-          // Read-only here; the session is refreshed by middleware.
-        },
-      },
-    }
-  );
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  return user;
-}
-
-// Service-role client. Bypasses RLS. Server-side only — never import this
-// anywhere that ships to the browser.
+// Service-role client. Bypasses RLS. Server-side only — never import anywhere
+// that ships to the browser.
 function adminClient() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -46,8 +22,29 @@ function adminClient() {
   );
 }
 
-export async function GET() {
-  const user = await getUser();
+// Verifies the Bearer token against Supabase and returns the user, or null.
+async function getUser(request) {
+  const header = request.headers.get('authorization') || '';
+  const token = header.startsWith('Bearer ') ? header.slice(7) : null;
+  if (!token) return null;
+
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    { auth: { persistSession: false, autoRefreshToken: false } }
+  );
+
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser(token);
+
+  if (error) return null;
+  return user;
+}
+
+export async function GET(request) {
+  const user = await getUser(request);
   if (!user) {
     return NextResponse.json({ error: 'Sign in to view this.' }, { status: 401 });
   }
@@ -70,7 +67,7 @@ export async function GET() {
 }
 
 export async function POST(request) {
-  const user = await getUser();
+  const user = await getUser(request);
   if (!user) {
     return NextResponse.json({ error: 'Sign in to save changes.' }, { status: 401 });
   }
