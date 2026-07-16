@@ -1,55 +1,25 @@
 // app/api/live-link/route.js
 // Admin-only read/write for the current live link.
 //
-// Auth: the client sends its Supabase access token as a Bearer token. This works
-// whether the session lives in cookies or localStorage, so it doesn't depend on
-// middleware or @supabase/ssr.
+// Auth matches app/admin/page.js: Supabase session cookie + an active row in the
+// `admins` table. Cookies ride along with fetch automatically, so the client
+// doesn't send anything special.
 
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import { getAdminUser } from '@/lib/requireAdmin';
 import { normalizeLiveUrl } from '@/lib/liveLink';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-// Service-role client. Bypasses RLS. Server-side only — never import anywhere
-// that ships to the browser.
-function adminClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY,
-    { auth: { persistSession: false, autoRefreshToken: false } }
-  );
-}
-
-// Verifies the Bearer token against Supabase and returns the user, or null.
-async function getUser(request) {
-  const header = request.headers.get('authorization') || '';
-  const token = header.startsWith('Bearer ') ? header.slice(7) : null;
-  if (!token) return null;
-
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    { auth: { persistSession: false, autoRefreshToken: false } }
-  );
-
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser(token);
-
-  if (error) return null;
-  return user;
-}
-
-export async function GET(request) {
-  const user = await getUser(request);
-  if (!user) {
+export async function GET() {
+  const admin = await getAdminUser();
+  if (!admin) {
     return NextResponse.json({ error: 'Sign in to view this.' }, { status: 401 });
   }
 
-  const { data, error } = await adminClient()
+  const { data, error } = await getSupabaseAdmin()
     .from('live_link')
     .select('url, updated_at, updated_by')
     .eq('id', 1)
@@ -67,8 +37,8 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
-  const user = await getUser(request);
-  if (!user) {
+  const admin = await getAdminUser();
+  if (!admin) {
     return NextResponse.json({ error: 'Sign in to save changes.' }, { status: 401 });
   }
 
@@ -79,14 +49,14 @@ export async function POST(request) {
     return NextResponse.json({ error: checked.error }, { status: 400 });
   }
 
-  const { data, error } = await adminClient()
+  const { data, error } = await getSupabaseAdmin()
     .from('live_link')
     .upsert(
       {
         id: 1,
         url: checked.url,
         updated_at: new Date().toISOString(),
-        updated_by: user.email ?? null,
+        updated_by: admin.email ?? null,
       },
       { onConflict: 'id' }
     )
