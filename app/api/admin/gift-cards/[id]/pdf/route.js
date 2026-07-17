@@ -27,8 +27,8 @@ export const runtime = 'nodejs';
    ============================================================ */
 
 const FONT_FILES = {
-  display: ['LaLuxesSerif.otf', 'La-Luxes-Serif.otf', 'LaLuxes-Serif.otf', 'LaLuxesSerif.ttf'],
-  body: ['Recoleta-Regular.otf', 'Recoleta.otf', 'Recoleta-Regular.ttf', 'Recoleta.ttf'],
+  display: ['LaLuxesSerif.otf', 'la-luxes-serif.otf', 'LaLuxes-Serif.otf', 'LaLuxesSerif.ttf'],
+  body: ['recoleta-regular.otf', 'Recoleta.otf', 'Recoleta-Regular.ttf', 'Recoleta.ttf'],
   bodyItalic: ['Recoleta-RegularItalic.otf', 'Recoleta-Italic.otf', 'Recoleta-Italic.ttf'],
 };
 
