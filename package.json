@@ -12,6 +12,7 @@
     "react-dom": "latest",
     "stripe": "latest",
     "pdf-lib": "latest",
+    "@pdf-lib/fontkit": "^1.1.1",
     "@pdf-lib/fontkit": "latest",
     "qrcode": "latest"
   },
