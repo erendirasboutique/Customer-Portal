@@ -1,7 +1,25 @@
+/* ============================================================
+   Erendira's Boutique — checks
+   Fonts: La Luxes Serif (display) and Recoleta (body), pulled from
+   the global @font-face declarations. Nothing to re-declare here.
+
+   MICR is the one exception and must stay MICR E-13B — a scanner
+   reads the magnetic shapes, not the letterforms.
+
+   NOTE ON WEIGHTS: if public/fonts only holds Regular cuts, the
+   browser fakes bold by smearing the outlines, which prints badly.
+   Weights below are kept conservative for that reason. If you do
+   have real bold cuts, raise them.
+   ============================================================ */
+
 .shell {
+  --check-display: "La Luxes Serif", Georgia, "Times New Roman", serif;
+  --check-body: "Recoleta", Georgia, serif;
+
   min-height: 100vh;
   background: #f6f4f1;
   color: #957f67;
+  font-family: var(--check-body);
   padding: 32px;
 }
 
@@ -15,7 +33,9 @@
 
 .title {
   margin: 0;
+  font-family: var(--check-display);
   font-size: clamp(30px, 4vw, 48px);
+  font-weight: 400;
   line-height: 1;
   color: #957f67;
 }
@@ -43,7 +63,7 @@
   align-items: center;
   justify-content: center;
   font: inherit;
-  font-weight: 700;
+  font-weight: 400;
   min-height: 44px;
   padding: 0 20px;
   text-decoration: none;
@@ -92,6 +112,7 @@
 .table th {
   color: #6e5a48;
   font-size: 13px;
+  font-weight: 400;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
@@ -106,7 +127,8 @@
   border-radius: 999px;
   display: inline-flex;
   font-size: 12px;
-  font-weight: 800;
+  font-weight: 400;
+  letter-spacing: 0.06em;
   padding: 6px 10px;
   text-transform: uppercase;
 }
@@ -136,8 +158,10 @@
 
 .field label {
   color: #5f4d3e;
-  font-size: 14px;
-  font-weight: 800;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .field input,
@@ -202,15 +226,16 @@
 .detailLabel {
   color: #7b6755;
   display: block;
-  font-size: 12px;
-  font-weight: 800;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.1em;
   margin-bottom: 6px;
   text-transform: uppercase;
 }
 
 .detailValue {
   color: #3f352c;
-  font-weight: 700;
+  font-weight: 400;
   overflow-wrap: anywhere;
 }
 
@@ -229,10 +254,15 @@
   padding: 16px;
 }
 
+/* ---------------- The printed sheet ---------------- */
+
 .printPage {
+  --check-display: "La Luxes Serif", Georgia, "Times New Roman", serif;
+  --check-body: "Recoleta", Georgia, serif;
+
   background: #fff;
   color: #25211f;
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--check-body);
   height: 11in;
   margin: 0 auto;
   overflow: hidden;
@@ -316,24 +346,26 @@
 
 .ownerName {
   color: #6e4768;
-  font-size: 17px;
-  font-style: italic;
-  font-weight: 700;
+  font-family: var(--check-display);
+  font-size: 19px;
+  font-weight: 400;
   line-height: 1.05;
 }
 
 .businessName {
   color: #3e3631;
+  font-family: var(--check-body);
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 400;
+  letter-spacing: 0.04em;
   margin-top: 3px;
 }
 
 .businessAddress {
   color: #514942;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 8.2px;
-  line-height: 1.35;
+  font-family: var(--check-body);
+  font-size: 8.4px;
+  line-height: 1.4;
   margin-top: 2px;
 }
 
@@ -347,14 +379,16 @@
 }
 
 .bankName {
+  font-family: var(--check-body);
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 400;
+  letter-spacing: 0.03em;
 }
 
 .checkNumber {
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 11px;
-  font-weight: 800;
+  font-family: var(--check-body);
+  font-size: 11.5px;
+  font-weight: 400;
   position: absolute;
   right: 0.42in;
   top: 0.22in;
@@ -364,7 +398,7 @@
 .dateRow {
   align-items: center;
   display: flex;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--check-body);
   gap: 0.12in;
   position: absolute;
   right: 0.43in;
@@ -374,14 +408,14 @@
 
 .dateRow > span {
   color: #7b4e74;
-  font-size: 8px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
+  font-size: 7.6px;
+  font-weight: 400;
+  letter-spacing: 0.1em;
 }
 
 .dateRow > div {
   border-bottom: 1px solid #4d4741;
-  font-size: 10px;
+  font-size: 10.5px;
   padding: 0 0.08in 0.03in;
   text-align: center;
   width: 1.15in;
@@ -400,16 +434,18 @@
 
 .payeeLabel {
   color: #7b4e74;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 7.6px;
-  font-weight: 800;
-  line-height: 1.08;
+  font-family: var(--check-body);
+  font-size: 7.4px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  line-height: 1.18;
 }
 
 .payeeValue {
   border-bottom: 1px solid #4d4741;
-  font-size: 12px;
-  font-weight: 700;
+  font-family: var(--check-body);
+  font-size: 12.5px;
+  font-weight: 400;
   min-width: 0;
   overflow: hidden;
   padding: 0 0.08in 0.055in;
@@ -419,9 +455,9 @@
 
 .numericAmount {
   border: 1.2px solid #8d5d84;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 12px;
-  font-weight: 800;
+  font-family: var(--check-body);
+  font-size: 12.5px;
+  font-weight: 400;
   margin-left: 0.12in;
   padding: 0.08in 0.08in;
   text-align: right;
@@ -440,6 +476,7 @@
 
 .amountWords {
   border-bottom: 1px solid #4d4741;
+  font-family: var(--check-body);
   font-size: 10.3px;
   overflow: hidden;
   padding: 0 0.08in 0.045in;
@@ -449,9 +486,10 @@
 
 .wordsRow > span {
   color: #7b4e74;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 7.4px;
-  font-weight: 800;
+  font-family: var(--check-body);
+  font-size: 7.2px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
   padding: 0 0 0.055in 0.08in;
 }
 
@@ -467,15 +505,16 @@
 
 .memoRow > span {
   color: #7b4e74;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 7.6px;
-  font-weight: 800;
+  font-family: var(--check-body);
+  font-size: 7.4px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
 }
 
 .memoRow > div {
   border-bottom: 1px solid #4d4741;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 9px;
+  font-family: var(--check-body);
+  font-size: 9.4px;
   overflow: hidden;
   padding: 0 0.06in 0.045in;
   text-overflow: ellipsis;
@@ -497,12 +536,13 @@
 
 .signatureArea > span {
   color: #7b4e74;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--check-body);
   font-size: 7px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  font-weight: 400;
+  letter-spacing: 0.08em;
 }
 
+/* Do not touch: the bank reads these shapes magnetically. */
 .micrLine {
   bottom: 0.16in;
   font-family: "MICR", "Courier New", monospace;
@@ -517,13 +557,14 @@
 .micrWarning {
   bottom: 0.07in;
   color: #8d2c2c;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 6.4px;
+  font-family: var(--check-body);
+  font-size: 6.6px;
   position: absolute;
   right: 0.30in;
   z-index: 4;
 }
 
+/* Stays a blunt sans on purpose — this is a stamp, not brand type. */
 .voidOverlay {
   color: rgba(145, 0, 0, 0.24);
   font-family: Arial, Helvetica, sans-serif;
@@ -576,34 +617,38 @@
 
 .stubEyebrow {
   color: #8d5d84;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 6.7px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
+  font-family: var(--check-body);
+  font-size: 6.8px;
+  font-weight: 400;
+  letter-spacing: 0.14em;
   margin: 0 0 0.03in;
 }
 
 .stubTitle {
   color: #4d3c49;
-  font-size: 13px;
+  font-family: var(--check-display);
+  font-size: 15px;
+  font-weight: 400;
   margin: 0;
 }
 
 .stubNumberBlock {
   display: grid;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--check-body);
   gap: 1px;
   text-align: right;
 }
 
 .stubNumberBlock span {
   color: #8d5d84;
-  font-size: 6.7px;
-  font-weight: 800;
+  font-size: 6.8px;
+  font-weight: 400;
+  letter-spacing: 0.1em;
 }
 
 .stubNumberBlock strong {
-  font-size: 10px;
+  font-size: 10.5px;
+  font-weight: 400;
 }
 
 .stubDetails {
@@ -623,10 +668,10 @@
 .stubNotes > span {
   color: #8d5d84;
   display: block;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 6.6px;
-  font-weight: 800;
-  letter-spacing: 0.03em;
+  font-family: var(--check-body);
+  font-size: 6.8px;
+  font-weight: 400;
+  letter-spacing: 0.1em;
   margin-bottom: 0.025in;
   text-transform: uppercase;
 }
@@ -634,8 +679,9 @@
 .stubDetails strong {
   color: #3f3733;
   display: block;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 8.4px;
+  font-family: var(--check-body);
+  font-size: 8.6px;
+  font-weight: 400;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -655,8 +701,8 @@
   border: 1px solid #e0d4dc;
   min-height: 0.46in;
   padding: 0.07in;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 8px;
+  font-family: var(--check-body);
+  font-size: 8.2px;
 }
 
 .stubFlower {
