@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
-import fontkit from '@pdf-lib/fontkit';
 import QRCode from 'qrcode';
 import fs from 'fs/promises';
 import path from 'path';
@@ -9,56 +8,183 @@ import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const COLORS = {
-  bg: rgb(0.965, 0.957, 0.945),
-  card: rgb(1, 0.992, 0.976),
-  primary: rgb(0.584, 0.498, 0.404),
-  dark: rgb(0.33, 0.275, 0.22),
-  accent: rgb(0.812, 0.741, 0.663),
-  soft: rgb(0.925, 0.89, 0.85),
-  muted: rgb(0.55, 0.49, 0.41),
+/* ============================================================
+   Erendira's Boutique — gift card PDF
+   Renders on demand, so design changes hit every card at once.
+
+   The card at the top is built to stand on its own: brand, amount,
+   and code all inside one frame, so a screenshot of just that
+   rectangle is a complete, usable gift card. Everything below it
+   is for the person holding it — the note, and how to spend it.
+
+   FONTS: drop the .otf/.ttf files in public/fonts/ and list the
+   filenames in FONT_FILES below. Names are tried in order and the
+   first one found wins; if none load, it falls back to Times and
+   Helvetica so the route never breaks.
+
+   Requires "@pdf-lib/fontkit" in package.json. If it's missing the
+   route still renders, just with the fallback fonts.
+   ============================================================ */
+
+const FONT_FILES = {
+  display: ['LaLuxesSerif.otf', 'La-Luxes-Serif.otf', 'LaLuxes-Serif.otf', 'LaLuxesSerif.ttf'],
+  body: ['Recoleta-Regular.otf', 'Recoleta.otf', 'Recoleta-Regular.ttf', 'Recoleta.ttf'],
+  bodyItalic: ['Recoleta-RegularItalic.otf', 'Recoleta-Italic.otf', 'Recoleta-Italic.ttf'],
 };
 
+const COLORS = {
+  bg: rgb(0.961, 0.953, 0.937),      // #F5F3EF cream
+  taupe: rgb(0.502, 0.416, 0.322),   // #806a52
+  sand: rgb(0.741, 0.659, 0.569),    // #bda891
+  ink: rgb(0.239, 0.204, 0.157),     // #3d3428
+  cream: rgb(0.961, 0.953, 0.937),   // card text
+  white: rgb(1, 1, 1),
+};
+
+const PAGE_W = 612;
+const PAGE_H = 792;
+const MARGIN = 54;
+const CONTENT_W = PAGE_W - MARGIN * 2;
+
+/* ---------------- Copy ---------------- */
+const T = {
+  en: {
+    giftCard: 'GIFT CARD',
+    brand: "Erendira's Boutique",
+    neverExpires: 'NEVER EXPIRES',
+    forWord: 'For',
+    redeemTitle: 'How to redeem',
+    redeemBody:
+      'Send a screenshot of the card above through Messenger, bring it with you in person, or enter the code at checkout when promotion codes are allowed.',
+    scanBody: 'Scan the square to open this gift card online.',
+    footerNever: 'This gift card never expires.',
+    footerExpires: "Use before the expiration date shown by Erendira's Boutique.",
+  },
+  es: {
+    giftCard: 'TARJETA DE REGALO',
+    brand: "Erendira's Boutique",
+    neverExpires: 'NUNCA VENCE',
+    forWord: 'Para',
+    redeemTitle: 'C\u00f3mo canjearla',
+    redeemBody:
+      'Manda una captura de la tarjeta de arriba por Messenger, tr\u00e1ela contigo en persona, o escribe el c\u00f3digo al pagar cuando se permitan c\u00f3digos promocionales.',
+    scanBody: 'Escanea el cuadro para abrir tu tarjeta en l\u00ednea.',
+    footerNever: 'Esta tarjeta de regalo nunca vence.',
+    footerExpires: "\u00dasala antes de la fecha de vencimiento que indique Erendira's Boutique.",
+  },
+};
+
+/* ---------------- Text helpers ---------------- */
+
+// Strips control characters and emoji — the brand fonts can't encode them
+// and pdf-lib throws rather than skipping.
+function clean(value) {
+  return String(value == null ? '' : value)
+    .replace(/[\u0000-\u001F\u007F]/g, '')
+    .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{2190}-\u{21FF}]/gu, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// pdf-lib has no letter-spacing, so wide caps get spaced by hand.
+function spaced(value) {
+  return String(value).split('').join('\u2009\u2009');
+}
+
+function wrap(text, font, size, maxWidth) {
+  const words = clean(text).split(' ').filter(Boolean);
+  const lines = [];
+  let line = '';
+  for (const word of words) {
+    const next = line ? line + ' ' + word : word;
+    if (font.widthOfTextAtSize(next, size) > maxWidth && line) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = next;
+    }
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+
+function drawCenter(page, text, y, font, size, color, opacity, centerX) {
+  const value = clean(text);
+  if (!value) return;
+  const cx = centerX == null ? PAGE_W / 2 : centerX;
+  const w = font.widthOfTextAtSize(value, size);
+  page.drawText(value, {
+    x: cx - w / 2,
+    y: y,
+    size: size,
+    font: font,
+    color: color || COLORS.ink,
+    opacity: opacity == null ? 1 : opacity,
+  });
+}
+
+function drawParagraph(page, text, x, y, font, size, color, maxWidth, leading, centerX) {
+  let cursor = y;
+  for (const line of wrap(text, font, size, maxWidth)) {
+    if (centerX != null) drawCenter(page, line, cursor, font, size, color, 1, centerX);
+    else page.drawText(line, { x: x, y: cursor, size: size, font: font, color: color });
+    cursor -= leading;
+  }
+  return cursor;
+}
+
+// Rounded pill — pdf-lib rectangles have square corners, so the ends
+// are circles. Same pill language as the admin UI.
+function drawPill(page, x, y, w, h, opts) {
+  const r = h / 2;
+  const options = opts || {};
+  const fill = { color: options.color, opacity: options.opacity };
+  page.drawRectangle({ x: x + r, y: y, width: w - h, height: h, ...fill });
+  page.drawCircle({ x: x + r, y: y + r, size: r, ...fill });
+  page.drawCircle({ x: x + w - r, y: y + r, size: r, ...fill });
+}
+
+// Four-petal flower mark, same as the portal card art.
+function drawFlower(page, cx, cy, scale, color, opacity) {
+  const long = 9 * scale;
+  const short = 4.5 * scale;
+  const off = 8 * scale;
+  page.drawEllipse({ x: cx, y: cy + off, xScale: short, yScale: long, color: color, opacity: opacity });
+  page.drawEllipse({ x: cx, y: cy - off, xScale: short, yScale: long, color: color, opacity: opacity });
+  page.drawEllipse({ x: cx + off, y: cy, xScale: long, yScale: short, color: color, opacity: opacity });
+  page.drawEllipse({ x: cx - off, y: cy, xScale: long, yScale: short, color: color, opacity: opacity });
+  page.drawEllipse({ x: cx, y: cy, xScale: 3.5 * scale, yScale: 3.5 * scale, color: color, opacity: opacity });
+}
+
 function money(value) {
-  return `$${Number(value || 0).toFixed(0)}`;
+  const n = Number(value || 0);
+  return n % 1 === 0 ? '$' + n.toFixed(0) : '$' + n.toFixed(2);
 }
 
-function safeText(value = '') {
-  return String(value || '').replace(/[^\x20-\x7EÀ-ÿ]/g, '');
-}
-
-function centerText(page, text, y, font, size, color = COLORS.dark) {
-  const w = font.widthOfTextAtSize(String(text || ''), size);
-  page.drawText(String(text || ''), { x: (page.getWidth() - w) / 2, y, size, font, color });
-}
-
-async function tryFont(pdfDoc, filePath, fallback) {
-  try {
-    const bytes = await fs.readFile(filePath);
-    return await pdfDoc.embedFont(bytes);
-  } catch {
-    return fallback;
+/* ---------------- Font loading ---------------- */
+async function loadFont(pdfDoc, candidates) {
+  for (const name of candidates) {
+    let bytes;
+    try {
+      bytes = await fs.readFile(path.join(process.cwd(), 'public', 'fonts', name));
+    } catch {
+      continue;
+    }
+    try {
+      return await pdfDoc.embedFont(bytes, { subset: true });
+    } catch {
+      try {
+        return await pdfDoc.embedFont(bytes);
+      } catch {
+        continue;
+      }
+    }
   }
+  return null;
 }
 
-function roundRect(page, x, y, w, h, r, color, borderColor, borderWidth = 1) {
-  page.drawRectangle({ x: x + r, y, width: w - r * 2, height: h, color });
-  page.drawRectangle({ x, y: y + r, width: w, height: h - r * 2, color });
-  page.drawCircle({ x: x + r, y: y + r, size: r, color });
-  page.drawCircle({ x: x + w - r, y: y + r, size: r, color });
-  page.drawCircle({ x: x + r, y: y + h - r, size: r, color });
-  page.drawCircle({ x: x + w - r, y: y + h - r, size: r, color });
-  if (borderColor) {
-    page.drawRectangle({ x: x + r, y, width: w - r * 2, height: h, borderColor, borderWidth });
-    page.drawRectangle({ x, y: y + r, width: w, height: h - r * 2, borderColor, borderWidth });
-    page.drawCircle({ x: x + r, y: y + r, size: r, borderColor, borderWidth });
-    page.drawCircle({ x: x + w - r, y: y + r, size: r, borderColor, borderWidth });
-    page.drawCircle({ x: x + r, y: y + h - r, size: r, borderColor, borderWidth });
-    page.drawCircle({ x: x + w - r, y: y + h - r, size: r, borderColor, borderWidth });
-  }
-}
-
-export async function GET(_req, { params }) {
+/* ============================================================ */
+export async function GET(req, { params }) {
   try {
     const { id } = await params;
     const supabase = getSupabaseAdmin();
@@ -73,92 +199,139 @@ export async function GET(_req, { params }) {
       return NextResponse.json({ error: error?.message || 'Gift card not found.' }, { status: 404 });
     }
 
+    const requested = new URL(req.url).searchParams.get('lang');
+    const lang = requested === 'es' || (!requested && giftCard.language === 'es') ? 'es' : 'en';
+    const t = T[lang];
+
     const pdfDoc = await PDFDocument.create();
-    pdfDoc.registerFontkit(fontkit);
 
-    const page = pdfDoc.addPage([612, 792]);
-    const width = page.getWidth();
-    const height = page.getHeight();
-
-    const times = await pdfDoc.embedFont(StandardFonts.TimesRoman);
-    const helvetica = await pdfDoc.embedFont(StandardFonts.Helvetica);
-    const helveticaBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-
-    const heading = await tryFont(pdfDoc, path.join(process.cwd(), 'public/fonts/la_luxes_serif.otf'), times);
-    const body = await tryFont(pdfDoc, path.join(process.cwd(), 'public/fonts/recoleta-regular.otf'), helvetica);
-
-    const code = safeText(giftCard.code);
-    const amount = money(giftCard.amount);
-    const recipient = safeText(giftCard.recipient_name || giftCard.customer_name || '');
-    const note = safeText(giftCard.message || giftCard.note || '');
-    const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || '').replace(/\/$/, '');
-    const portalUrl = giftCard.gift_card_url || `${siteUrl}/gift-card/${encodeURIComponent(giftCard.code)}`;
-
-    page.drawRectangle({ x: 0, y: 0, width, height, color: COLORS.bg });
-
+    let fontkit = null;
     try {
-      const logoBytes = await fs.readFile(path.join(process.cwd(), 'public/logo2.png'));
-      let logoImage;
-      try { logoImage = await pdfDoc.embedPng(logoBytes); } catch { logoImage = await pdfDoc.embedJpg(logoBytes); }
-      const maxW = 185, maxH = 55;
-      const scale = Math.min(maxW / logoImage.width, maxH / logoImage.height);
-      const logoW = logoImage.width * scale;
-      const logoH = logoImage.height * scale;
-      page.drawImage(logoImage, { x: (width - logoW) / 2, y: height - 82, width: logoW, height: logoH });
+      fontkit = (await import('@pdf-lib/fontkit')).default;
     } catch {
-      centerText(page, "Erendira's Boutique", height - 72, helveticaBold, 18, COLORS.primary);
+      // package not installed — fall through to the standard fonts
+    }
+    if (fontkit) pdfDoc.registerFontkit(fontkit);
+
+    const fallbackSerif = await pdfDoc.embedFont(StandardFonts.TimesRoman);
+    const fallbackItalic = await pdfDoc.embedFont(StandardFonts.TimesRomanItalic);
+    const sans = await pdfDoc.embedFont(StandardFonts.Helvetica);
+
+    const display = (fontkit && (await loadFont(pdfDoc, FONT_FILES.display))) || fallbackSerif;
+    const body = (fontkit && (await loadFont(pdfDoc, FONT_FILES.body))) || fallbackSerif;
+    const bodyItalic = (fontkit && (await loadFont(pdfDoc, FONT_FILES.bodyItalic))) || body || fallbackItalic;
+
+    const page = pdfDoc.addPage([PAGE_W, PAGE_H]);
+    page.drawRectangle({ x: 0, y: 0, width: PAGE_W, height: PAGE_H, color: COLORS.bg });
+
+    let y = PAGE_H - MARGIN;
+
+    /* ---- logo ---- */
+    let logoDrawn = false;
+    try {
+      const logoBytes = await fs.readFile(path.join(process.cwd(), 'public', 'logo.png'));
+      const logo = await pdfDoc.embedPng(logoBytes);
+      const w = 108;
+      const h = (logo.height / logo.width) * w;
+      page.drawImage(logo, { x: (PAGE_W - w) / 2, y: y - h, width: w, height: h });
+      y -= h + 30;
+      logoDrawn = true;
+    } catch {
+      // no logo file — the card carries the brand name anyway
+    }
+    if (!logoDrawn) {
+      drawCenter(page, t.brand, y - 20, display, 22, COLORS.taupe);
+      y -= 48;
     }
 
-    centerText(page, 'A Gift For You', height - 132, heading, 34, COLORS.primary);
-    centerText(page, 'Redeem online or in person at Erendira’s Boutique.', height - 158, body, 12, COLORS.muted);
+    /* ---- the card ---- */
+    const cardW = CONTENT_W;
+    const cardH = 300;
+    const cardX = MARGIN;
+    const cardY = y - cardH;
 
-    const cardX = 74, cardY = 412, cardW = 464, cardH = 234;
-    roundRect(page, cardX, cardY, cardW, cardH, 24, COLORS.card, COLORS.primary, 1.1);
-    page.drawRectangle({ x: cardX + 22, y: cardY + 22, width: cardW - 44, height: cardH - 44, color: COLORS.card, borderColor: COLORS.accent, borderWidth: 0.65 });
+    page.drawRectangle({ x: cardX + 5, y: cardY - 6, width: cardW, height: cardH, color: COLORS.ink, opacity: 0.16 });
+    page.drawRectangle({ x: cardX, y: cardY, width: cardW, height: cardH, color: COLORS.taupe });
+    page.drawRectangle({
+      x: cardX + 14, y: cardY + 14, width: cardW - 28, height: cardH - 28,
+      borderColor: COLORS.cream, borderWidth: 1, borderOpacity: 0.45,
+      borderDashArray: [4, 5],
+    });
+    drawFlower(page, cardX + 62, cardY + cardH - 60, 2.1, COLORS.cream, 0.16);
+    drawFlower(page, cardX + cardW - 58, cardY + 56, 1.5, COLORS.cream, 0.14);
 
-    page.drawRectangle({ x: cardX + 32, y: cardY + 36, width: 170, height: cardH - 72, color: COLORS.soft });
-    page.drawText("Erendira's", { x: cardX + 50, y: cardY + cardH - 70, size: 15, font: helveticaBold, color: COLORS.dark });
-    page.drawText("Boutique", { x: cardX + 50, y: cardY + cardH - 90, size: 15, font: helveticaBold, color: COLORS.dark });
-    page.drawText(amount, { x: cardX + 50, y: cardY + 76, size: 34, font: helveticaBold, color: COLORS.primary });
-    page.drawText("E-GIFT CARD", { x: cardX + 51, y: cardY + 52, size: 8.5, font: helveticaBold, color: COLORS.muted });
+    drawCenter(page, t.brand, cardY + cardH - 56, display, 19, COLORS.cream);
+    drawCenter(page, spaced(t.giftCard), cardY + cardH - 76, sans, 7, COLORS.cream, 0.7);
 
-    page.drawRectangle({ x: cardX + 216, y: cardY + 32, width: 22, height: cardH - 64, color: COLORS.accent });
-    page.drawRectangle({ x: cardX + 208, y: cardY + 124, width: cardW - 246, height: 22, color: COLORS.accent });
-    page.drawEllipse({ x: cardX + cardW - 84, y: cardY + 135, xScale: 24, yScale: 16, borderColor: COLORS.primary, borderWidth: 2 });
-    page.drawEllipse({ x: cardX + cardW - 34, y: cardY + 135, xScale: 24, yScale: 16, borderColor: COLORS.primary, borderWidth: 2 });
-    page.drawCircle({ x: cardX + cardW - 59, y: cardY + 135, size: 7, color: COLORS.primary });
+    drawCenter(page, money(giftCard.amount), cardY + 132, display, 68, COLORS.cream);
 
-    page.drawText('Gift', { x: cardX + 264, y: cardY + 125, size: 56, font: heading, color: COLORS.dark });
-    page.drawText('Card', { x: cardX + 248, y: cardY + 76, size: 56, font: heading, color: COLORS.dark });
+    const code = clean(giftCard.code);
+    const codeSize = 15;
+    const codeW = sans.widthOfTextAtSize(code, codeSize) + 52;
+    drawPill(page, (PAGE_W - codeW) / 2, cardY + 66, codeW, 34, { color: COLORS.cream, opacity: 0.95 });
+    drawCenter(page, code, cardY + 77, sans, codeSize, COLORS.taupe);
 
-    if (recipient) centerText(page, `For ${recipient}`, 382, body, 13, COLORS.primary);
-    if (note) centerText(page, note.length > 82 ? `${note.slice(0, 79)}...` : note, 360, body, 11, COLORS.muted);
+    if (giftCard.never_expires) {
+      drawCenter(page, spaced(t.neverExpires), cardY + 38, sans, 6.5, COLORS.cream, 0.55);
+    }
 
-    roundRect(page, 120, 311, 372, 46, 18, COLORS.card, COLORS.primary, 1);
-    centerText(page, code, 326, body, 18, COLORS.dark);
+    y = cardY - 40;
 
-    const qrDataUrl = await QRCode.toDataURL(portalUrl, { margin: 1, width: 220, color: { dark: '#5f4e3d', light: '#fffdf9' } });
+    /* ---- the note ---- */
+    const recipient = clean(giftCard.customer_name);
+    const message = clean(giftCard.message);
+
+    if (recipient) {
+      drawCenter(page, t.forWord + ' ' + recipient, y, display, 20, COLORS.taupe);
+      y -= message ? 26 : 20;
+    }
+    if (message) {
+      y = drawParagraph(page, '\u201c' + message + '\u201d', 0, y, bodyItalic, 12.5, COLORS.ink, 380, 18, PAGE_W / 2);
+      y -= 6;
+    }
+    if (!recipient && !message) y += 12;
+
+    /* ---- divider ---- */
+    y -= 12;
+    page.drawLine({
+      start: { x: MARGIN, y: y },
+      end: { x: PAGE_W - MARGIN, y: y },
+      thickness: 1,
+      color: COLORS.sand,
+      opacity: 0.8,
+      dashArray: [3, 5],
+    });
+    y -= 34;
+
+    /* ---- redeem block: QR left, copy right ---- */
+    const qrTarget = giftCard.gift_card_url || code;
+    const qrDataUrl = await QRCode.toDataURL(qrTarget, { margin: 1, width: 300 });
     const qrImage = await pdfDoc.embedPng(Buffer.from(qrDataUrl.split(',')[1], 'base64'));
+    const qrSize = 104;
+    const qrY = y - qrSize;
+    page.drawImage(qrImage, { x: MARGIN, y: qrY, width: qrSize, height: qrSize });
 
-    roundRect(page, 241, 178, 130, 130, 14, COLORS.card, COLORS.accent, 0.8);
-    page.drawImage(qrImage, { x: 253, y: 190, width: 106, height: 106 });
+    const copyX = MARGIN + qrSize + 26;
+    const copyW = PAGE_W - MARGIN - copyX;
+    let copyY = y - 14;
 
-    centerText(page, 'How to Redeem', 145, heading, 19, COLORS.primary);
-
-    const steps = [
-      'Scan the QR code or open your private gift card page.',
-      'Enter the code at checkout as a promo code.',
-      'Show this gift card in person or send a screenshot through Messenger.',
-    ];
-    let y = 113;
-    for (let i = 0; i < steps.length; i++) {
-      page.drawCircle({ x: 86, y: y + 4, size: 8, color: COLORS.primary });
-      centerText(page, String(i + 1), y, helveticaBold, 8, COLORS.card);
-      page.drawText(steps[i], { x: 106, y, size: 11, font: body, color: COLORS.dark });
-      y -= 21;
+    page.drawText(clean(t.redeemTitle), { x: copyX, y: copyY, size: 16, font: display, color: COLORS.taupe });
+    copyY -= 22;
+    copyY = drawParagraph(page, t.redeemBody, copyX, copyY, body, 11, COLORS.ink, copyW, 16);
+    if (giftCard.gift_card_url) {
+      copyY -= 4;
+      drawParagraph(page, t.scanBody, copyX, copyY, body, 11, COLORS.sand, copyW, 16);
     }
 
-    centerText(page, giftCard.never_expires === false ? 'Use before the expiration date shown by Erendira’s Boutique' : 'This gift card never expires', 34, helveticaBold, 11, COLORS.primary);
+    /* ---- footer ---- */
+    drawCenter(
+      page,
+      giftCard.never_expires ? t.footerNever : t.footerExpires,
+      MARGIN - 12,
+      bodyItalic,
+      10.5,
+      COLORS.sand
+    );
 
     const pdfBytes = await pdfDoc.save();
 
@@ -166,7 +339,8 @@ export async function GET(_req, { params }) {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `inline; filename="${giftCard.code}.pdf"`,
+        'Content-Disposition': 'inline; filename="' + code + '.pdf"',
+        'Cache-Control': 'no-store, max-age=0, must-revalidate',
       },
     });
   } catch (error) {
