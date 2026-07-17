@@ -129,12 +129,12 @@ export default async function ChecksPage() {
                 {rows.map(function (check) {
                   return (
                     <tr key={check.id}>
-                      <td>#{check.check_number}</td>
-                      <td><div className="eba-clip">{check.payee}</div></td>
-                      <td>{check.check_date}</td>
-                      <td><div className="eba-clip">{check.memo || "\u2014"}</div></td>
-                      <td>{formatMoney(check.amount_cents)}</td>
-                      <td><span className={statusPill(check.status)}>{check.status}</span></td>
+                      <td data-label="Check">#{check.check_number}</td>
+                      <td data-label="Payee"><div className="eba-clip">{check.payee}</div></td>
+                      <td data-label="Date">{check.check_date}</td>
+                      <td data-label="Memo"><div className="eba-clip">{check.memo || "\u2014"}</div></td>
+                      <td data-label="Amount">{formatMoney(check.amount_cents)}</td>
+                      <td data-label="Status"><span className={statusPill(check.status)}>{check.status}</span></td>
                       <td>
                         <Link className="eba-btn mini" href={`/admin/checks/${check.id}`}>
                           View
