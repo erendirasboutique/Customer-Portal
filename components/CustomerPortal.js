@@ -4,8 +4,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { getSupabaseBrowser } from '@/lib/supabaseBrowser';
 import { money, formatDate, formatAddress, paymentMethodLabel } from '@/lib/format';
 import LanguageToggle from './LanguageToggle';
+import LiveBaskets from './LiveBaskets';          // ← add
 import styles from './CustomerPortal.module.css';
-
 const RETURNS_URL = 'https://returns.erendirasboutique.com';
 const CONTACT_PHONE_DISPLAY = '909.401.7221';
 const CONTACT_PHONE_TEL = 'tel:+19094017221';
