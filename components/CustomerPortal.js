@@ -4,8 +4,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { getSupabaseBrowser } from '@/lib/supabaseBrowser';
 import { money, formatDate, formatAddress, paymentMethodLabel } from '@/lib/format';
 import LanguageToggle from './LanguageToggle';
-import LiveBaskets from './LiveBaskets';          // ← add
+import LiveBaskets from './LiveBaskets';
 import styles from './CustomerPortal.module.css';
+
 const RETURNS_URL = 'https://returns.erendirasboutique.com';
 const CONTACT_PHONE_DISPLAY = '909.401.7221';
 const CONTACT_PHONE_TEL = 'tel:+19094017221';
@@ -414,8 +415,6 @@ export default function CustomerPortal({ initialUser, initialPayments }) {
         {shipmentsLoading && <div className={styles.empty}>{t.loadingShipments}</div>}
         {!shipmentsLoading && shipments.length === 0 && <div className={styles.empty}>{t.noShipments}</div>}
         {!shipmentsLoading && shipments.map(function (s, i) {
-                  <LiveBaskets lang={lang} />          {/* ← add */}
-
           const state = shipmentState(s);
           const shippedDone = state === 'shipped';
           return (
@@ -464,6 +463,8 @@ export default function CustomerPortal({ initialUser, initialPayments }) {
             </div>
           );
         })}
+
+        <LiveBaskets lang={lang} />
 
         {giftCards.length > 0 && (
           <>
