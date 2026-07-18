@@ -1,152 +1,212 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { getSupabaseBrowser } from '@/lib/supabaseBrowser';
+import { money, formatDate } from '@/lib/format';
+import styles from './CustomerPortal.module.css';
 
 /**
- * Live sale baskets, for the BILLING portal (my.erendirasboutique.com).
+ * Live sale baskets, inside the customer portal.
  *
- * JavaScript, matching that repo's convention.
+ * Imports CustomerPortal.module.css rather than carrying its own styles —
+ * CSS modules can be shared, and this way the section can't drift from the
+ * shipments and gift cards it sits between.
  *
- * The billing portal can't read the shipping portal's Supabase — different
- * project. So it asks the shipping portal over HTTP, through a server
- * route that holds the shared secret.
+ * Same shape as the shipments fetch: get the session token, send it as a
+ * Bearer header, let the server work out who that is. The email is never
+ * sent from here — that's the security of the whole thing.
  *
- * Usage on a page where the customer is already signed in:
- *
- *   import LiveBaskets from '@/components/LiveBaskets';
- *   <LiveBaskets />
- *
- * It reads the session's email from your own /api/live-baskets route —
- * see the file this ships next to.
+ * Renders nothing when there are no baskets, so it's safe on the page of a
+ * customer who has never shopped a live.
  */
-export default function LiveBaskets() {
+
+const T = {
+  en: {
+    title: 'My live sale baskets',
+    basket: 'Basket',
+    from: 'From the live on',
+    order: 'Order',
+    subtotal: 'Subtotal',
+    shipping: 'Shipping',
+    total: 'Total',
+    track: 'Track package',
+    payCard: 'Pay by card',
+    each: 'each',
+    statusOpen: 'Still adding',
+    statusFinalized: 'Ready to pay',
+    statusPaid: 'Paid',
+    statusShipped: 'Shipped',
+  },
+  es: {
+    title: 'Mis canastas del live',
+    basket: 'Canasta',
+    from: 'Del live del',
+    order: 'Pedido',
+    subtotal: 'Subtotal',
+    shipping: 'Envío',
+    total: 'Total',
+    track: 'Rastrear paquete',
+    payCard: 'Pagar con tarjeta',
+    each: 'c/u',
+    statusOpen: 'Todavía agregando',
+    statusFinalized: 'Lista para pagar',
+    statusPaid: 'Pagada',
+    statusShipped: 'Enviada',
+  },
+};
+
+export default function LiveBaskets({ lang }) {
   const [baskets, setBaskets] = useState(null);
-  const [error, setError] = useState(null);
+  const supabase = getSupabaseBrowser();
+  const t = T[lang] || T.en;
 
   useEffect(() => {
     let cancelled = false;
 
     (async () => {
       try {
-        const res = await fetch('/api/live-baskets', { cache: 'no-store' });
-        const json = await res.json();
-        if (cancelled) return;
-        if (!res.ok) {
-          setError(json.error ?? 'Could not load your baskets.');
+        const { data } = await supabase.auth.getSession();
+        const token = data?.session?.access_token;
+        if (!token) {
+          if (!cancelled) setBaskets([]);
           return;
         }
-        setBaskets(json.baskets ?? []);
+
+        const res = await fetch('/api/live-baskets', {
+          headers: { Authorization: 'Bearer ' + token },
+          cache: 'no-store',
+        });
+        const json = await res.json();
+        if (!cancelled) setBaskets(json.baskets || []);
       } catch {
-        if (!cancelled) setError('Could not load your baskets.');
+        if (!cancelled) setBaskets([]);
       }
     })();
 
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Nothing to show is nothing to show — don't put an empty card on the
-  // page of a customer who has never shopped a live.
-  if (error || !baskets || baskets.length === 0) return null;
+  // Nothing yet, or nothing at all — say nothing. A customer who's never
+  // been on a live shouldn't see an empty "baskets" card.
+  if (!baskets || baskets.length === 0) return null;
 
-  const money = (cents) =>
-    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(cents / 100);
+  function statusPill(status) {
+    if (status === 'paid' || status === 'shipped') {
+      return (
+        <span className={styles.pill + ' ' + styles.pillGreen}>
+          {status === 'paid' ? t.statusPaid : t.statusShipped}
+        </span>
+      );
+    }
+    if (status === 'finalized') return <span className={styles.pill}>{t.statusFinalized}</span>;
+    return <span className={styles.pill}>{t.statusOpen}</span>;
+  }
 
   return (
-    <section style={{ display: 'grid', gap: 16 }}>
-      <h2 style={{ fontFamily: "'La Luxes Serif', Georgia, serif", fontWeight: 400, margin: 0 }}>
-        Live sale baskets
-      </h2>
+    <>
+      <p className={styles.sectionTitle}>{t.title}</p>
 
-      {baskets.map((b) => (
-        <article
-          key={b.id}
-          style={{
-            border: '1px solid rgba(128,106,82,0.16)',
-            borderRadius: 4,
-            overflow: 'hidden',
-            background: '#fffdfa',
-          }}
-        >
-          {b.photo_url && (
-            <img
-              src={b.photo_url}
-              alt=""
-              style={{ width: '100%', aspectRatio: '4 / 3', objectFit: 'cover', display: 'block' }}
-            />
-          )}
-
-          <div style={{ padding: 16, display: 'grid', gap: 8 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-              <strong style={{ fontWeight: 400 }}>Basket #{b.basket_number}</strong>
-              {b.order_number && (
-                <span style={{ fontFamily: 'ui-monospace, monospace', color: '#806a52' }}>
-                  {b.order_number}
-                </span>
-              )}
-            </div>
-
-            {b.items.map((i) => (
-              <div key={i.id} style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-                <span style={{ fontSize: '0.9375rem' }}>{i.description}</span>
-                <span style={{ fontFamily: 'ui-monospace, monospace' }}>
-                  {money(i.unit_price_cents * i.quantity)}
-                </span>
-              </div>
-            ))}
-
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                borderTop: '1px solid rgba(128,106,82,0.16)',
-                paddingTop: 10,
-                marginTop: 4,
-                fontSize: '1.125rem',
-              }}
-            >
-              <span>Total</span>
-              <span style={{ fontFamily: 'ui-monospace, monospace' }}>{money(b.total_cents)}</span>
-            </div>
-
-            {b.tracking_number && (
-              <a
-                href={
-                  b.tracking_url ||
-                  `https://track.erendirasboutique.com/?tracking=${encodeURIComponent(
-                    b.tracking_number
-                  )}`
-                }
-                target="_blank"
-                rel="noreferrer"
-                style={{ fontSize: '0.875rem', color: '#806a52' }}
-              >
-                {b.carrier ? `${b.carrier} · ` : ''}
-                {b.tracking_number} — track
-              </a>
+      {baskets.map(function (b) {
+        return (
+          <div className={styles.card} key={b.id}>
+            {/* Their own basket, photographed on the night. It's what they
+                recognise — not a catalog shot. */}
+            {b.photo_url && (
+              <img
+                src={b.photo_url}
+                alt=""
+                style={{
+                  width: '100%',
+                  aspectRatio: '4 / 3',
+                  objectFit: 'cover',
+                  borderRadius: 8,
+                  display: 'block',
+                  marginBottom: 14,
+                }}
+              />
             )}
 
-            {b.pay_url && (
-              <a
-                href={b.pay_url}
-                style={{
-                  display: 'block',
-                  textAlign: 'center',
-                  padding: 11,
-                  background: '#3d3428',
-                  color: '#f5f3ef',
-                  borderRadius: 4,
-                  textDecoration: 'none',
-                  marginTop: 6,
-                }}
-              >
-                Pay by card
-              </a>
+            <div className={styles.shipTop}>
+              <div>
+                <h3 className={styles.shipTitle}>
+                  {b.order_number
+                    ? t.order + ' #' + b.order_number
+                    : t.basket + ' #' + b.basket_number}
+                </h3>
+                <p className={styles.shipMeta}>
+                  {t.basket} #{b.basket_number}
+                  {b.paid_at ? ' · ' + formatDate(b.paid_at) : ''}
+                </p>
+              </div>
+              {statusPill(b.status)}
+            </div>
+
+            <div className={styles.list} style={{ marginTop: 12 }}>
+              {b.items.map(function (i) {
+                return (
+                  <div className={styles.row} key={i.id}>
+                    <div>
+                      <p className={styles.rowTitle}>
+                        {lang === 'es' && i.description_es ? i.description_es : i.description}
+                      </p>
+                      {i.quantity > 1 && (
+                        <p className={styles.rowMeta}>
+                          ×{i.quantity} · {money(i.unit_price_cents / 100)} {t.each}
+                        </p>
+                      )}
+                    </div>
+                    <div className={styles.rowRight}>
+                      <span>{money((i.unit_price_cents * i.quantity) / 100)}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className={styles.row} style={{ borderTop: '1px solid rgba(128,106,82,0.16)' }}>
+              <div>
+                <p className={styles.rowTitle}>{t.total}</p>
+                {b.shipping_cents > 0 && (
+                  <p className={styles.rowMeta}>
+                    {t.subtotal} {money(b.subtotal_cents / 100)} · {t.shipping}{' '}
+                    {money(b.shipping_cents / 100)}
+                  </p>
+                )}
+              </div>
+              <div className={styles.rowRight}>
+                <strong>{money(b.total_cents / 100)}</strong>
+              </div>
+            </div>
+
+            {(b.tracking_number || b.pay_url) && (
+              <div className={styles.btnRow}>
+                {b.pay_url && (
+                  <a className={styles.btnSolid} href={b.pay_url}>
+                    {t.payCard}
+                  </a>
+                )}
+                {b.tracking_number && (
+                  <a
+                    className={styles.btnGhost}
+                    href={
+                      b.tracking_url ||
+                      'https://track.erendirasboutique.com/?tracking=' +
+                        encodeURIComponent(b.tracking_number)
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {t.track}
+                  </a>
+                )}
+              </div>
             )}
           </div>
-        </article>
-      ))}
-    </section>
+        );
+      })}
+    </>
   );
 }
