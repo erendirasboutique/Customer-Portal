@@ -13,10 +13,8 @@ export const dynamic = 'force-dynamic';
  * shared secret used for the baskets bridge.
  *
  * Buy-now-pay-later needs NO code here: enable Klarna / Affirm / Afterpay /
- * Zip once in the Stripe Dashboard, and with automatic_payment_methods on,
- * Checkout shows each customer whichever they're eligible for based on the
- * amount. That's why the button can say "tarjeta o a plazos" — Stripe
- * decides the menu.
+ * Zip once in the Stripe Dashboard. Checkout automatically shows each
+ * customer whichever methods they're eligible for, based on the amount.
  *
  * Env (billing portal):
  *   STRIPE_SECRET_KEY      already here for the rest of billing
@@ -26,10 +24,23 @@ export async function POST(req) {
   try {
     const secret = process.env.LIVE_API_SECRET;
     if (!secret) {
-      return NextResponse.json({ error: 'LIVE_API_SECRET not set' }, { status: 500 });
+      console.error('[live-checkout] LIVE_API_SECRET not set on billing portal');
+      return NextResponse.json(
+        { error: 'billing: LIVE_API_SECRET not set' },
+        { status: 500 }
+      );
     }
     if (req.headers.get('x-live-secret') !== secret) {
-      return NextResponse.json({ error: 'Not authorised' }, { status: 401 });
+      return NextResponse.json({ error: 'billing: secret mismatch' }, { status: 401 });
+    }
+
+    const stripeKey = process.env.STRIPE_SECRET_KEY;
+    if (!stripeKey) {
+      console.error('[live-checkout] STRIPE_SECRET_KEY not set on billing portal');
+      return NextResponse.json(
+        { error: 'billing: STRIPE_SECRET_KEY not set' },
+        { status: 500 }
+      );
     }
 
     const body = await req.json().catch(() => ({}));
@@ -39,15 +50,21 @@ export async function POST(req) {
     const successUrl = body.success_url || 'https://order.erendirasboutique.com';
 
     if (!Number.isInteger(amount) || amount <= 0) {
-      return NextResponse.json({ error: 'A positive amount_cents is required.' }, { status: 400 });
+      return NextResponse.json(
+        { error: `billing: bad amount_cents (${body.amount_cents})` },
+        { status: 400 }
+      );
     }
 
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+    const stripe = new Stripe(stripeKey);
 
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
-      // Let Stripe present card + whatever BNPL the amount qualifies for.
-      automatic_payment_methods: { enabled: true },
+      // No automatic_payment_methods here — that parameter belongs to the
+      // Payment Intents API and Checkout rejects it. Checkout already shows
+      // every method enabled in the Dashboard (card + Klarna/Affirm/
+      // Afterpay/Zip once you turn them on), chosen by amount. Nothing to
+      // pass; enabling them in Settings → Payment methods is the whole job.
       customer_email: email,
       line_items: [
         {
@@ -59,15 +76,17 @@ export async function POST(req) {
           },
         },
       ],
-      // A fresh session every time means the amount is always current — an
-      // old link can never charge a stale total.
       success_url: successUrl,
       cancel_url: successUrl,
     });
 
     return NextResponse.json({ url: session.url });
   } catch (err) {
-    console.error('[live-checkout]', err?.message);
-    return NextResponse.json({ error: err?.message ?? 'Checkout failed' }, { status: 500 });
+    // Surface Stripe's actual message and type, so a 500 says WHY. Stripe
+    // errors carry .type (e.g. StripeAuthenticationError) and .raw.message.
+    const detail = err?.raw?.message || err?.message || String(err);
+    const type = err?.type || err?.name || 'error';
+    console.error('[live-checkout]', type, detail);
+    return NextResponse.json({ error: `billing: ${type} — ${detail}` }, { status: 500 });
   }
 }
