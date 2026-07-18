@@ -1,10 +1,9 @@
-```js
 // app/api/account/route.js
 
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 const TABLE = "shipping_customers";
 
@@ -25,7 +24,7 @@ const UUID_RE =
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-function getDatabase() {
+async function getDatabase() {
   const supabaseUrl = process.env.SHIPPING_SUPABASE_URL;
   const serviceRoleKey =
     process.env.SHIPPING_SUPABASE_SERVICE_ROLE_KEY;
@@ -33,6 +32,15 @@ function getDatabase() {
   if (!supabaseUrl || !serviceRoleKey) {
     throw new Error(
       "Missing SHIPPING_SUPABASE_URL or SHIPPING_SUPABASE_SERVICE_ROLE_KEY"
+    );
+  }
+
+  const supabasePackage = await import("@supabase/supabase-js");
+  const createClient = supabasePackage.createClient;
+
+  if (typeof createClient !== "function") {
+    throw new Error(
+      "@supabase/supabase-js did not provide createClient"
     );
   }
 
@@ -46,25 +54,33 @@ function getDatabase() {
 }
 
 function clean(value, maxLength) {
-  return String(value || "")
+  return String(value ?? "")
     .trim()
     .slice(0, maxLength);
+}
+
+function jsonError(error, status) {
+  return NextResponse.json(
+    {
+      error,
+    },
+    {
+      status,
+    }
+  );
 }
 
 // GET /api/account?t=<portal_token>
 export async function GET(request) {
   try {
-    const token =
-      request.nextUrl.searchParams.get("t") || "";
+    const url = new URL(request.url);
+    const token = url.searchParams.get("t") ?? "";
 
     if (!UUID_RE.test(token)) {
-      return NextResponse.json(
-        { error: "invalid_link" },
-        { status: 400 }
-      );
+      return jsonError("invalid_link", 400);
     }
 
-    const supabase = getDatabase();
+    const supabase = await getDatabase();
 
     const selectedColumns = [
       COLS.name,
@@ -77,7 +93,7 @@ export async function GET(request) {
       COLS.zip,
     ].join(",");
 
-    const result = await supabase
+    const { data, error } = await supabase
       .from(TABLE)
       .select(selectedColumns)
       .eq(COLS.token, token)
@@ -85,41 +101,28 @@ export async function GET(request) {
       .is("merged_into", null)
       .maybeSingle();
 
-    if (result.error) {
-      console.error("Account GET Supabase error:", result.error);
-
-      return NextResponse.json(
-        { error: "server_error" },
-        { status: 500 }
-      );
+    if (error) {
+      console.error("Account GET Supabase error:", error);
+      return jsonError("server_error", 500);
     }
 
-    if (!result.data) {
-      return NextResponse.json(
-        { error: "not_found" },
-        { status: 404 }
-      );
+    if (!data) {
+      return jsonError("not_found", 404);
     }
-
-    const data = result.data;
 
     return NextResponse.json({
-      name: data[COLS.name] || "",
-      email: data[COLS.email] || "",
-      phone: data[COLS.phone] || "",
-      address1: data[COLS.address1] || "",
-      address2: data[COLS.address2] || "",
-      city: data[COLS.city] || "",
-      state: data[COLS.state] || "",
-      zip: data[COLS.zip] || "",
+      name: data[COLS.name] ?? "",
+      email: data[COLS.email] ?? "",
+      phone: data[COLS.phone] ?? "",
+      address1: data[COLS.address1] ?? "",
+      address2: data[COLS.address2] ?? "",
+      city: data[COLS.city] ?? "",
+      state: data[COLS.state] ?? "",
+      zip: data[COLS.zip] ?? "",
     });
   } catch (error) {
     console.error("Account GET error:", error);
-
-    return NextResponse.json(
-      { error: "server_error" },
-      { status: 500 }
-    );
+    return jsonError("server_error", 500);
   }
 }
 
@@ -131,19 +134,13 @@ export async function POST(request) {
     try {
       body = await request.json();
     } catch {
-      return NextResponse.json(
-        { error: "bad_request" },
-        { status: 400 }
-      );
+      return jsonError("bad_request", 400);
     }
 
-    const token = String(body.t || "");
+    const token = String(body.t ?? "");
 
     if (!UUID_RE.test(token)) {
-      return NextResponse.json(
-        { error: "invalid_link" },
-        { status: 400 }
-      );
+      return jsonError("invalid_link", 400);
     }
 
     const name = clean(body.name, 120);
@@ -156,33 +153,27 @@ export async function POST(request) {
     const zip = clean(body.zip, 20);
 
     if (!address1 || !city || !state || !zip) {
-      return NextResponse.json(
-        { error: "missing_fields" },
-        { status: 422 }
-      );
+      return jsonError("missing_fields", 422);
     }
 
     if (email && !EMAIL_RE.test(email)) {
-      return NextResponse.json(
-        { error: "invalid_email" },
-        { status: 422 }
-      );
+      return jsonError("invalid_email", 422);
     }
 
-    const updateData = {};
+    const updateData = {
+      [COLS.name]: name,
+      [COLS.email]: email,
+      [COLS.phone]: phone,
+      [COLS.address1]: address1,
+      [COLS.address2]: address2,
+      [COLS.city]: city,
+      [COLS.state]: state,
+      [COLS.zip]: zip,
+    };
 
-    updateData[COLS.name] = name;
-    updateData[COLS.email] = email;
-    updateData[COLS.phone] = phone;
-    updateData[COLS.address1] = address1;
-    updateData[COLS.address2] = address2;
-    updateData[COLS.city] = city;
-    updateData[COLS.state] = state;
-    updateData[COLS.zip] = zip;
+    const supabase = await getDatabase();
 
-    const supabase = getDatabase();
-
-    const result = await supabase
+    const { data, error } = await supabase
       .from(TABLE)
       .update(updateData)
       .eq(COLS.token, token)
@@ -191,20 +182,13 @@ export async function POST(request) {
       .select(COLS.token)
       .maybeSingle();
 
-    if (result.error) {
-      console.error("Account POST Supabase error:", result.error);
-
-      return NextResponse.json(
-        { error: "server_error" },
-        { status: 500 }
-      );
+    if (error) {
+      console.error("Account POST Supabase error:", error);
+      return jsonError("server_error", 500);
     }
 
-    if (!result.data) {
-      return NextResponse.json(
-        { error: "not_found" },
-        { status: 404 }
-      );
+    if (!data) {
+      return jsonError("not_found", 404);
     }
 
     return NextResponse.json({
@@ -212,11 +196,6 @@ export async function POST(request) {
     });
   } catch (error) {
     console.error("Account POST error:", error);
-
-    return NextResponse.json(
-      { error: "server_error" },
-      { status: 500 }
-    );
+    return jsonError("server_error", 500);
   }
 }
-```
