@@ -1,13 +1,8 @@
-```jsx
 // app/account/page.jsx
-// Customer details page opened through a tokenized link:
-// https://my.erendirasboutique.com/account?t=<portal_token>
 
 "use client";
 
-import Image from "next/image";
-import { Suspense, useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const T = {
   en: {
@@ -23,7 +18,7 @@ const T = {
     state: "State",
     zip: "ZIP code",
     save: "Save changes",
-    saving: "Saving…",
+    saving: "Saving...",
     saved: "Saved. Your future shipments will use these details.",
     loadError:
       "This link isn't valid anymore. Reply to us and we'll send you a new one.",
@@ -32,7 +27,6 @@ const T = {
     invalidEmail: "Please enter a valid email address.",
     langSwitch: "Español",
   },
-
   es: {
     title: "Tus datos de entrega",
     intro:
@@ -46,7 +40,7 @@ const T = {
     state: "Estado",
     zip: "Código postal",
     save: "Guardar cambios",
-    saving: "Guardando…",
+    saving: "Guardando...",
     saved: "Guardado. Tus próximos envíos usarán estos datos.",
     loadError:
       "Este enlace ya no es válido. Escríbenos y te enviaremos uno nuevo.",
@@ -68,10 +62,8 @@ const EMPTY_FORM = {
   zip: "",
 };
 
-function AccountInner() {
-  const params = useSearchParams();
-  const token = params.get("t") || "";
-
+export default function AccountPage() {
+  const [token, setToken] = useState("");
   const [lang, setLang] = useState("en");
   const [form, setForm] = useState(null);
   const [status, setStatus] = useState("loading");
@@ -80,15 +72,20 @@ function AccountInner() {
   const t = T[lang];
 
   useEffect(() => {
-    if (!token) {
+    const searchParams = new URLSearchParams(window.location.search);
+    const portalToken = searchParams.get("t") || "";
+
+    setToken(portalToken);
+
+    if (!portalToken) {
       setStatus("load_error");
       return;
     }
 
-    const loadAccount = async () => {
+    async function loadAccount() {
       try {
         const response = await fetch(
-          "/api/account?t=" + encodeURIComponent(token),
+          "/api/account?t=" + encodeURIComponent(portalToken),
           {
             method: "GET",
             cache: "no-store",
@@ -96,13 +93,12 @@ function AccountInner() {
         );
 
         if (!response.ok) {
-          throw new Error("Account could not be loaded.");
+          throw new Error("Unable to load account.");
         }
 
         const data = await response.json();
 
         setForm({
-          ...EMPTY_FORM,
           name: data.name || "",
           email: data.email || "",
           phone: data.phone || "",
@@ -118,15 +114,13 @@ function AccountInner() {
         console.error("Account load error:", error);
         setStatus("load_error");
       }
-    };
+    }
 
     loadAccount();
-  }, [token]);
+  }, []);
 
-  const updateField = (key) => (event) => {
-    const value = event.target.value;
-
-    setForm((currentForm) => {
+  function updateField(key, value) {
+    setForm(function updateCurrentForm(currentForm) {
       if (!currentForm) {
         return currentForm;
       }
@@ -142,10 +136,10 @@ function AccountInner() {
     }
 
     setValidationMsg("");
-  };
+  }
 
-  const save = async () => {
-    if (!form || status === "saving") {
+  async function save() {
+    if (!form || !token || status === "saving") {
       return;
     }
 
@@ -188,7 +182,7 @@ function AccountInner() {
       });
 
       if (!response.ok) {
-        throw new Error("Account could not be saved.");
+        throw new Error("Unable to save account.");
       }
 
       setStatus("saved");
@@ -196,18 +190,15 @@ function AccountInner() {
       console.error("Account save error:", error);
       setStatus("save_error");
     }
-  };
+  }
 
   return (
     <main style={styles.page}>
       <div style={styles.card}>
         <div style={styles.logoWrap}>
-          <Image
+          <img
             src="/logo2.png"
             alt="Erendira's Boutique"
-            width={260}
-            height={100}
-            priority
             style={styles.logo}
           />
         </div>
@@ -217,10 +208,8 @@ function AccountInner() {
 
           <button
             type="button"
-            onClick={() => {
-              setLang((currentLang) =>
-                currentLang === "en" ? "es" : "en"
-              );
+            onClick={function switchLanguage() {
+              setLang(lang === "en" ? "es" : "en");
               setValidationMsg("");
             }}
             style={styles.langBtn}
@@ -234,8 +223,8 @@ function AccountInner() {
         <p style={styles.intro}>{t.intro}</p>
 
         {status === "loading" && (
-          <div aria-label="Loading account details">
-            <div style={styles.skeletonLineLarge} />
+          <div>
+            <div style={styles.skeletonLine} />
             <div style={styles.skeletonLine} />
             <div style={styles.skeletonLine} />
             <div style={styles.skeletonLine} />
@@ -253,7 +242,9 @@ function AccountInner() {
                 type="text"
                 style={styles.input}
                 value={form.name}
-                onChange={updateField("name")}
+                onChange={function changeName(event) {
+                  updateField("name", event.target.value);
+                }}
                 autoComplete="name"
               />
             </Field>
@@ -263,7 +254,9 @@ function AccountInner() {
                 type="email"
                 style={styles.input}
                 value={form.email}
-                onChange={updateField("email")}
+                onChange={function changeEmail(event) {
+                  updateField("email", event.target.value);
+                }}
                 autoComplete="email"
                 inputMode="email"
               />
@@ -274,7 +267,9 @@ function AccountInner() {
                 type="tel"
                 style={styles.input}
                 value={form.phone}
-                onChange={updateField("phone")}
+                onChange={function changePhone(event) {
+                  updateField("phone", event.target.value);
+                }}
                 autoComplete="tel"
                 inputMode="tel"
               />
@@ -285,7 +280,9 @@ function AccountInner() {
                 type="text"
                 style={styles.input}
                 value={form.address1}
-                onChange={updateField("address1")}
+                onChange={function changeAddress1(event) {
+                  updateField("address1", event.target.value);
+                }}
                 autoComplete="address-line1"
               />
             </Field>
@@ -295,7 +292,9 @@ function AccountInner() {
                 type="text"
                 style={styles.input}
                 value={form.address2}
-                onChange={updateField("address2")}
+                onChange={function changeAddress2(event) {
+                  updateField("address2", event.target.value);
+                }}
                 autoComplete="address-line2"
               />
             </Field>
@@ -306,7 +305,9 @@ function AccountInner() {
                   type="text"
                   style={styles.input}
                   value={form.city}
-                  onChange={updateField("city")}
+                  onChange={function changeCity(event) {
+                    updateField("city", event.target.value);
+                  }}
                   autoComplete="address-level2"
                 />
               </Field>
@@ -316,7 +317,9 @@ function AccountInner() {
                   type="text"
                   style={styles.input}
                   value={form.state}
-                  onChange={updateField("state")}
+                  onChange={function changeState(event) {
+                    updateField("state", event.target.value);
+                  }}
                   autoComplete="address-level1"
                   maxLength={40}
                 />
@@ -327,7 +330,9 @@ function AccountInner() {
                   type="text"
                   style={styles.input}
                   value={form.zip}
-                  onChange={updateField("zip")}
+                  onChange={function changeZip(event) {
+                    updateField("zip", event.target.value);
+                  }}
                   autoComplete="postal-code"
                   inputMode="numeric"
                   maxLength={20}
@@ -372,16 +377,16 @@ function AccountInner() {
   );
 }
 
-function Field({ label, children, grow }) {
+function Field(props) {
   return (
     <label
       style={{
         ...styles.field,
-        flex: grow || undefined,
+        flex: props.grow || undefined,
       }}
     >
-      <span style={styles.label}>{label}</span>
-      {children}
+      <span style={styles.label}>{props.label}</span>
+      {props.children}
     </label>
   );
 }
@@ -422,6 +427,7 @@ const styles = {
   },
 
   logo: {
+    display: "block",
     width: "auto",
     height: "auto",
     maxWidth: "230px",
@@ -544,13 +550,6 @@ const styles = {
     margin: 0,
   },
 
-  skeletonLineLarge: {
-    height: 46,
-    borderRadius: 10,
-    background: "#f1ece3",
-    marginBottom: 18,
-  },
-
   skeletonLine: {
     height: 46,
     borderRadius: 10,
@@ -558,12 +557,3 @@ const styles = {
     marginBottom: 18,
   },
 };
-
-export default function AccountPage() {
-  return (
-    <Suspense fallback={null}>
-      <AccountInner />
-    </Suspense>
-  );
-}
-```
