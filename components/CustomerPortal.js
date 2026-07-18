@@ -414,6 +414,8 @@ export default function CustomerPortal({ initialUser, initialPayments }) {
         {shipmentsLoading && <div className={styles.empty}>{t.loadingShipments}</div>}
         {!shipmentsLoading && shipments.length === 0 && <div className={styles.empty}>{t.noShipments}</div>}
         {!shipmentsLoading && shipments.map(function (s, i) {
+                  <LiveBaskets lang={lang} />          {/* ← add */}
+
           const state = shipmentState(s);
           const shippedDone = state === 'shipped';
           return (
