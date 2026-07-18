@@ -1,3 +1,4 @@
+```jsx
 // app/account/page.jsx
 // Customer address page — opened via tokenized link:
 //   https://my.erendirasboutique.com/account?t=<portal_token>
@@ -15,6 +16,7 @@ const T = {
     intro:
       "Check that everything below is correct. Any change you save is applied to your future shipments right away.",
     name: "Name",
+    email: "Email",
     phone: "Phone",
     address1: "Street address",
     address2: "Apt, suite, unit (optional)",
@@ -23,7 +25,7 @@ const T = {
     zip: "ZIP code",
     save: "Save changes",
     saving: "Saving…",
-    saved: "Saved. Your future shipments will use this address.",
+    saved: "Saved. Your future shipments will use these details.",
     loadError:
       "This link isn't valid anymore. Reply to us and we'll send you a new one.",
     saveError: "Your changes couldn't be saved. Please try again.",
@@ -36,6 +38,7 @@ const T = {
     intro:
       "Revisa que todo esté correcto. Cualquier cambio que guardes se aplica de inmediato a tus próximos envíos.",
     name: "Nombre",
+    email: "Correo electrónico",
     phone: "Teléfono",
     address1: "Dirección",
     address2: "Apto, suite, unidad (opcional)",
@@ -44,7 +47,7 @@ const T = {
     zip: "Código postal",
     save: "Guardar cambios",
     saving: "Guardando…",
-    saved: "Guardado. Tus próximos envíos usarán esta dirección.",
+    saved: "Guardado. Tus próximos envíos usarán estos datos.",
     loadError:
       "Este enlace ya no es válido. Escríbenos y te enviaremos uno nuevo.",
     saveError: "No se pudieron guardar los cambios. Inténtalo de nuevo.",
@@ -69,10 +72,20 @@ function AccountInner() {
       setStatus("load_error");
       return;
     }
+
     fetch(`/api/account?t=${encodeURIComponent(token)}`)
       .then((r) => (r.ok ? r.json() : Promise.reject()))
       .then((data) => {
-        setForm(data);
+        setForm({
+          name: data.name ?? "",
+          email: data.email ?? "",
+          phone: data.phone ?? "",
+          address1: data.address1 ?? "",
+          address2: data.address2 ?? "",
+          city: data.city ?? "",
+          state: data.state ?? "",
+          zip: data.zip ?? "",
+        });
         setStatus("ready");
       })
       .catch(() => setStatus("load_error"));
@@ -80,13 +93,22 @@ function AccountInner() {
 
   const set = (key) => (e) => {
     if (!form) return;
-    setForm({ ...form, [key]: e.target.value });
-    if (status === "saved" || status === "save_error") setStatus("ready");
+
+    setForm({
+      ...form,
+      [key]: e.target.value,
+    });
+
+    if (status === "saved" || status === "save_error") {
+      setStatus("ready");
+    }
+
     setValidationMsg("");
   };
 
   const save = async () => {
     if (!form) return;
+
     if (
       !form.address1.trim() ||
       !form.city.trim() ||
@@ -96,15 +118,26 @@ function AccountInner() {
       setValidationMsg(t.missing);
       return;
     }
+
     setStatus("saving");
     setValidationMsg("");
+
     try {
       const res = await fetch("/api/account", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ t: token, ...form }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          t: token,
+          ...form,
+        }),
       });
-      if (!res.ok) throw new Error();
+
+      if (!res.ok) {
+        throw new Error();
+      }
+
       setStatus("saved");
     } catch {
       setStatus("save_error");
@@ -116,6 +149,7 @@ function AccountInner() {
       <div style={styles.card}>
         <div style={styles.topRow}>
           <span style={styles.kicker}>{t.kicker}</span>
+
           <button
             type="button"
             onClick={() => setLang(lang === "en" ? "es" : "en")}
@@ -145,8 +179,20 @@ function AccountInner() {
               />
             </Field>
 
+            <Field label={t.email}>
+              <input
+                type="email"
+                style={styles.input}
+                value={form.email}
+                onChange={set("email")}
+                autoComplete="email"
+                inputMode="email"
+              />
+            </Field>
+
             <Field label={t.phone}>
               <input
+                type="tel"
                 style={styles.input}
                 value={form.phone}
                 onChange={set("phone")}
@@ -182,6 +228,7 @@ function AccountInner() {
                   autoComplete="address-level2"
                 />
               </Field>
+
               <Field label={t.state} grow={1}>
                 <input
                   style={styles.input}
@@ -190,6 +237,7 @@ function AccountInner() {
                   autoComplete="address-level1"
                 />
               </Field>
+
               <Field label={t.zip} grow={1}>
                 <input
                   style={styles.input}
@@ -201,11 +249,17 @@ function AccountInner() {
               </Field>
             </div>
 
-            {validationMsg && <p style={styles.errorText}>{validationMsg}</p>}
+            {validationMsg && (
+              <p style={styles.errorText}>{validationMsg}</p>
+            )}
+
             {status === "save_error" && (
               <p style={styles.errorText}>{t.saveError}</p>
             )}
-            {status === "saved" && <p style={styles.savedText}>{t.saved}</p>}
+
+            {status === "saved" && (
+              <p style={styles.savedText}>{t.saved}</p>
+            )}
 
             <button
               type="button"
@@ -214,6 +268,7 @@ function AccountInner() {
               style={{
                 ...styles.saveBtn,
                 opacity: status === "saving" ? 0.6 : 1,
+                cursor: status === "saving" ? "not-allowed" : "pointer",
               }}
             >
               {status === "saving" ? t.saving : t.save}
@@ -327,7 +382,6 @@ const styles = {
     padding: "14px 0",
     fontSize: 16,
     letterSpacing: "0.03em",
-    cursor: "pointer",
     fontFamily: "inherit",
   },
   savedText: {
@@ -365,3 +419,4 @@ export default function AccountPage() {
     </Suspense>
   );
 }
+```
