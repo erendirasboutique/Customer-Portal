@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 function money(amount, currency = 'usd') {
   if (amount === null || amount === undefined) return '';
-  return new Intl.NumberFormat('es-US', {
+  return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: String(currency || 'usd').toUpperCase(),
   }).format(amount);
@@ -21,7 +21,6 @@ export default function Page() {
           hour: 'numeric',
           minute: '2-digit',
           second: '2-digit',
-          hour12: true,
         })
       );
     tick();
@@ -35,26 +34,12 @@ export default function Page() {
     )
       .then((res) => res.json())
       .then(setPayment)
-      .catch(() => setPayment({}));
+      .catch(() => setPayment({ productName: 'Boutique Payment' }));
 
     return () => clearInterval(timer);
   }, []);
 
-  // Prefer the customer's name; fall back through the fields a Stripe session
-  // might carry it under, so this works whether the API returns a dedicated
-  // customerName or just the raw Stripe fields.
-  const customerName =
-    payment?.customerName ||
-    payment?.customer_name ||
-    payment?.name ||
-    '';
-
-  // Basket number, if this payment was for a live-sale basket.
-  const basketNumber =
-    payment?.basketNumber ??
-    payment?.basket_number ??
-    null;
-
+  const name = payment?.productName || payment?.name || 'Boutique Payment';
   const amountText = payment?.amount ? money(payment.amount, payment.currency) : '';
 
   return (
@@ -73,7 +58,7 @@ export default function Page() {
           <div className="ebcVideoScrimBottom" />
           <div className="ebcTop">
             <span className="ebcTime">{time}</span>
-            <span className="ebcTopLabel">Confirmación de pago</span>
+            <span className="ebcTopLabel">Payment Confirmation</span>
           </div>
         </div>
 
@@ -82,51 +67,44 @@ export default function Page() {
             {!imageMissing ? (
               <img
                 src="/checkmark.png"
-                alt="Pago confirmado"
+                alt="Payment confirmed"
                 className="ebcCheckImg"
                 onError={() => setImageMissing(true)}
               />
             ) : (
-              <span className="ebcCheckFallback">Pagado</span>
+              <span className="ebcCheckFallback">Paid</span>
             )}
           </div>
 
-          <p className="ebcOverline">Confirmación de pago</p>
+          <p className="ebcOverline">Payment Confirmation</p>
+          <h1 className="ebcTitle">Thanks For Your Payment!</h1>
 
-          {/* Greet the customer by name when we have it. */}
-          <h1 className="ebcTitle">
-            {customerName ? `¡Gracias, ${customerName}!` : '¡Gracias por tu pago!'}
-          </h1>
-
-          {/* The amount paid, and the basket number if this was a live basket. */}
           <div className="ebcPayment">
-            <span className="ebcPayName">
-              {basketNumber != null ? `Canasta #${basketNumber}` : 'Pago recibido'}
-            </span>
+            <span className="ebcPayName">{name}</span>
             {amountText && <span className="ebcPayAmount">{amountText}</span>}
           </div>
 
           <div className="ebcText">
             <p>
-              Tu transacción se procesó correctamente y nos complace confirmar
-              que recibimos tu pago.
+              Your transaction has been successfully processed, and we&rsquo;re
+              pleased to confirm receipt of your payment.
             </p>
             <p>
-              En breve recibirás un correo de confirmación con los detalles de
-              tu compra.
+              You&rsquo;ll receive an email confirmation shortly with the details
+              of your purchase.
             </p>
             <p>
-              Guarda esta confirmación para tus registros. Si necesitas ayuda,
-              puedes contactarnos cuando quieras.
+              Please keep this confirmation for your records. If you need help,
+              you can contact us anytime.
             </p>
           </div>
 
           <nav className="ebcLinks">
             <a href="https://www.erendirasboutique.com/legal/payments">Legal</a>
-            <a href="https://returns.erendirasboutique.com">Devoluciones</a>
-            <a href="https://www.erendirasboutique.com/contact">Contacto</a>
+            <a href="https://returns.erendirasboutique.com">Returns</a>
+            <a href="https://www.erendirasboutique.com/contact">Contact</a>
             <a className="ebcLinkPrimary" href="https://my.erendirasboutique.com">
-              Portal del cliente
+              Customer Portal
             </a>
           </nav>
         </section>
