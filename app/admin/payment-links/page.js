@@ -14,7 +14,7 @@ function money(value) {
   return '$' + Number(value || 0).toFixed(2);
 }
 
-var DEFAULT_REDIRECT = 'https://pay.erendiras.boutique/payment-complete?session_id={CHECKOUT_SESSION_ID}';
+var DEFAULT_REDIRECT = 'https://my.erendirasboutique.com/payment-complete';
 
 /* ---------------- Translations ---------------- */
 const T = {
