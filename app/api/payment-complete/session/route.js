@@ -7,7 +7,15 @@ export const runtime = 'nodejs';
 export async function GET(req) {
   try {
     const url = new URL(req.url);
-    const sessionId = url.searchParams.get('session_id');
+    let sessionId = url.searchParams.get('session_id');
+
+    // Defensive: if a malformed id arrives carrying a second "?session_id="
+    // (a URL-building bug we've since fixed), keep only the real id — the
+    // part before any stray "?". A Stripe session id has no "?" in it.
+    if (sessionId && sessionId.includes('?')) {
+      sessionId = sessionId.split('?')[0];
+    }
+
     if (!sessionId) {
       return NextResponse.json({ paid: true, name: 'Boutique Payment', productName: 'Boutique Payment' });
     }
