@@ -34,12 +34,26 @@ export default function Page() {
     )
       .then((res) => res.json())
       .then(setPayment)
-      .catch(() => setPayment({ productName: 'Boutique Payment' }));
+      .catch(() => setPayment({}));
 
     return () => clearInterval(timer);
   }, []);
 
-  const name = payment?.productName || payment?.name || 'Boutique Payment';
+  // Prefer the customer's name; fall back through the fields a Stripe session
+  // might carry it under, so this works whether the API returns a dedicated
+  // customerName or just the raw Stripe fields.
+  const customerName =
+    payment?.customerName ||
+    payment?.customer_name ||
+    payment?.name ||
+    '';
+
+  // Basket number, if this payment was for a live-sale basket.
+  const basketNumber =
+    payment?.basketNumber ??
+    payment?.basket_number ??
+    null;
+
   const amountText = payment?.amount ? money(payment.amount, payment.currency) : '';
 
   return (
@@ -77,10 +91,17 @@ export default function Page() {
           </div>
 
           <p className="ebcOverline">Payment Confirmation</p>
-          <h1 className="ebcTitle">Thanks For Your Payment!</h1>
 
+          {/* Greet the customer by name when we have it. */}
+          <h1 className="ebcTitle">
+            {customerName ? `Thank You, ${customerName}!` : 'Thanks For Your Payment!'}
+          </h1>
+
+          {/* The amount paid, and the basket number if this was a live basket. */}
           <div className="ebcPayment">
-            <span className="ebcPayName">{name}</span>
+            <span className="ebcPayName">
+              {basketNumber != null ? `Basket #${basketNumber}` : 'Payment received'}
+            </span>
             {amountText && <span className="ebcPayAmount">{amountText}</span>}
           </div>
 
