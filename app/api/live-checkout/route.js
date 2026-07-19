@@ -47,6 +47,9 @@ export async function POST(req) {
     const amount = Number(body.amount_cents);
     const label = typeof body.label === 'string' ? body.label : 'Live sale basket';
     const email = typeof body.email === 'string' ? body.email : undefined;
+    // The basket this session pays for. Stored in metadata so the webhook
+    // can mark THAT basket paid when Stripe confirms the charge.
+    const basketId = typeof body.basket_id === 'string' ? body.basket_id : null;
     const successUrl = body.success_url || 'https://order.erendirasboutique.com';
 
     if (!Number.isInteger(amount) || amount <= 0) {
@@ -76,8 +79,15 @@ export async function POST(req) {
           },
         },
       ],
+      // {CHECKOUT_SESSION_ID} is a Stripe template — it fills in the real
+      // session id on redirect, so the payment-complete page can look the
+      // session up if it wants to.
       success_url: successUrl,
-      cancel_url: successUrl,
+      cancel_url: body.cancel_url || successUrl,
+      // Carried through to the webhook. This is how "they paid" becomes
+      // "mark basket X paid" — the redirect is NOT trusted for that.
+      metadata: basketId ? { basket_id: basketId } : undefined,
+      payment_intent_data: basketId ? { metadata: { basket_id: basketId } } : undefined,
     });
 
     return NextResponse.json({ url: session.url });
