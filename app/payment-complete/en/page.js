@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 
 function money(amount, currency = 'usd') {
   if (amount === null || amount === undefined) return '';
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat('es-US', {
     style: 'currency',
     currency: String(currency || 'usd').toUpperCase(),
   }).format(amount);
@@ -21,6 +21,7 @@ export default function Page() {
           hour: 'numeric',
           minute: '2-digit',
           second: '2-digit',
+          hour12: true,
         })
       );
     tick();
@@ -72,7 +73,7 @@ export default function Page() {
           <div className="ebcVideoScrimBottom" />
           <div className="ebcTop">
             <span className="ebcTime">{time}</span>
-            <span className="ebcTopLabel">Payment Confirmation</span>
+            <span className="ebcTopLabel">Confirmación de pago</span>
           </div>
         </div>
 
@@ -81,51 +82,51 @@ export default function Page() {
             {!imageMissing ? (
               <img
                 src="/checkmark.png"
-                alt="Payment confirmed"
+                alt="Pago confirmado"
                 className="ebcCheckImg"
                 onError={() => setImageMissing(true)}
               />
             ) : (
-              <span className="ebcCheckFallback">Paid</span>
+              <span className="ebcCheckFallback">Pagado</span>
             )}
           </div>
 
-          <p className="ebcOverline">Payment Confirmation</p>
+          <p className="ebcOverline">Confirmación de pago</p>
 
           {/* Greet the customer by name when we have it. */}
           <h1 className="ebcTitle">
-            {customerName ? `Thank You, ${customerName}!` : 'Thanks For Your Payment!'}
+            {customerName ? `¡Gracias, ${customerName}!` : '¡Gracias por tu pago!'}
           </h1>
 
           {/* The amount paid, and the basket number if this was a live basket. */}
           <div className="ebcPayment">
             <span className="ebcPayName">
-              {basketNumber != null ? `Basket #${basketNumber}` : 'Payment received'}
+              {basketNumber != null ? `Canasta #${basketNumber}` : 'Pago recibido'}
             </span>
             {amountText && <span className="ebcPayAmount">{amountText}</span>}
           </div>
 
           <div className="ebcText">
             <p>
-              Your transaction has been successfully processed, and we&rsquo;re
-              pleased to confirm receipt of your payment.
+              Tu transacción se procesó correctamente y nos complace confirmar
+              que recibimos tu pago.
             </p>
             <p>
-              You&rsquo;ll receive an email confirmation shortly with the details
-              of your purchase.
+              En breve recibirás un correo de confirmación con los detalles de
+              tu compra.
             </p>
             <p>
-              Please keep this confirmation for your records. If you need help,
-              you can contact us anytime.
+              Guarda esta confirmación para tus registros. Si necesitas ayuda,
+              puedes contactarnos cuando quieras.
             </p>
           </div>
 
           <nav className="ebcLinks">
             <a href="https://www.erendirasboutique.com/legal/payments">Legal</a>
-            <a href="https://returns.erendirasboutique.com">Returns</a>
-            <a href="https://www.erendirasboutique.com/contact">Contact</a>
+            <a href="https://returns.erendirasboutique.com">Devoluciones</a>
+            <a href="https://www.erendirasboutique.com/contact">Contacto</a>
             <a className="ebcLinkPrimary" href="https://my.erendirasboutique.com">
-              Customer Portal
+              Portal del cliente
             </a>
           </nav>
         </section>
