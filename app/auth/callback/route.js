@@ -2,7 +2,11 @@ import { NextResponse } from 'next/server';
 import { getSupabaseRoute } from '@/lib/supabaseRoute';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 
-const ALLOWED_ADMINS = ['hello@shoperendirasboutique.com'];
+const ALLOWED_ADMINS = [
+  'hello@shoperendirasboutique.com',
+  'erendira@erendiramoreno.com',
+  'dylan@dylanmontoya.com',
+];
 
 export async function GET(req) {
   const url = new URL(req.url);
