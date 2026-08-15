@@ -5,6 +5,7 @@ import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 const ALLOWED_ADMINS = [
   'hello@shoperendirasboutique.com',
   'erendira@erendiramoreno.com',
+  'lucila@lucilamontoya.com',
   'dylan@dylanmontoya.com',
 ];
 
