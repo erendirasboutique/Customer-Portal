@@ -3,6 +3,8 @@ import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 
 const ALLOWED_ADMINS = [
   'hello@shoperendirasboutique.com',
+  'erendira@erendiramoreno.com',
+  'dylan@dylanmontoya.com',
 ];
 
 export async function POST(req) {
