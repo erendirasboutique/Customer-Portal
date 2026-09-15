@@ -8,7 +8,7 @@ Drop-in Sezzle Buy-Now-Pay-Later for your existing customer portal / admin repo.
 lib/sezzle.js                                  Sezzle v2 API client
 app/api/sezzle/create-checkout/route.js        Creates a checkout / payment link
 app/api/sezzle/webhook/route.js                Receives + verifies payment webhooks
-app/admin/payment-links/page.js                Admin page  -> /admin/payment-links
+app/admin/sezzle-links/page.js                 Admin page  -> /admin/sezzle-links
 components/SezzlePaymentLinkPanel.jsx           Admin UI to generate a link
 ```
 
@@ -56,19 +56,17 @@ Authorization: Bearer <token from /authentication>
 
 ## 4. Use the admin panel
 
-A ready-made page is included at `app/admin/payment-links/page.js`, live at:
+A ready-made page is included at `app/admin/sezzle-links/page.js`, live at:
 
-  https://my.erendirasboutique.com/admin/payment-links
+  https://my.erendirasboutique.com/admin/sezzle-links
 
-Staff enter an amount, hit generate, and get a copyable checkout link. Tick the
-box to have Sezzle email/text it to the customer.
+This is a SEPARATE route from any existing Stripe payment-link generator, so
+it will not overwrite or collide with it. Staff enter an amount, hit generate,
+and get a copyable checkout link. Tick the box to have Sezzle email/text it to
+the customer.
 
 IMPORTANT: put this page behind the same auth guard your other /admin pages use
 — the page file does not add protection on its own.
-
-Prefer it inside your existing payment-link generator instead? Skip the page
-file and just render `<SezzlePaymentLinkPanel />` on that page; the URL is then
-whatever that page already is.
 
 ## Notes
 
