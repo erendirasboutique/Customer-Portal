@@ -35,6 +35,8 @@ export default function SezzlePaymentLinkPanel() {
         body: JSON.stringify({
           orderId: `pl_${Date.now()}`, // swap for a real order id to reconcile in Supabase
           amountInCents: cents,
+          description, // Sezzle requires an order description
+
           items: [
             {
               name: description || 'Erendira\u2019s Boutique',

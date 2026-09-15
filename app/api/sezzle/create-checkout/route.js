@@ -4,7 +4,7 @@ import { createCheckout } from '@/lib/sezzle';
 
 export async function POST(req) {
   try {
-    const { orderId, amountInCents, items, customer, mode } = await req.json();
+    const { orderId, amountInCents, items, customer, mode, description } = await req.json();
 
     // Always verify/recompute the amount against your own DB in real code.
     // Never trust an amount that came straight from the browser.
@@ -15,10 +15,17 @@ export async function POST(req) {
       );
     }
 
+    // Sezzle REQUIRES a non-empty order.description — fall back if none was typed.
+    const orderDescription =
+      description && description.trim()
+        ? description.trim()
+        : `Erendira\u2019s Boutique order ${orderId}`;
+
     const origin = process.env.NEXT_PUBLIC_SITE_URL; // e.g. https://my.erendirasboutique.com
 
     const result = await createCheckout({
       referenceId: orderId,
+      description: orderDescription,
       amount: { amount_in_cents: amountInCents, currency: 'USD' },
       items: items.map((i) => ({
         name: i.name,
