@@ -182,16 +182,16 @@ function Icon(props) {
 const IconSearch = function () { return (<Icon><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.35-4.35" /></Icon>); };
 
 const pageCss = '' +
-'.ebp-amt { font-size:46px; line-height:1.05; color:#806a52; margin:14px 0 0;' +
+'.ebp-amt { font-size:46px; line-height:1.05; color:#da5e16; margin:14px 0 0;' +
 '  font-family:"La Luxes Serif","Recoleta",Georgia,serif; font-weight:400; }' +
-'.ebp-name { font-size:14px; color:#8b7a64; margin:6px 0 0; }' +
-'.ebp-linkbox { border:1px dashed #e8e2d8; border-radius:20px; padding:16px; margin-top:18px; font-size:12.5px;' +
-'  color:#bda891; text-align:center; }' +
-'.ebp-linkbox.ready { text-align:left; border-style:solid; border-color:#e8e2d8; background:#FAF8F4; color:#3d3428; }' +
-'.ebp-url { margin:8px 0 12px; font-size:12px; word-break:break-all; color:#8b7a64; }' +
+'.ebp-name { font-size:14px; color:#da5e16; margin:6px 0 0; }' +
+'.ebp-linkbox { border:1px dashed #f6d3a8; border-radius:20px; padding:16px; margin-top:18px; font-size:12.5px;' +
+'  color:#eda033; text-align:center; }' +
+'.ebp-linkbox.ready { text-align:left; border-style:solid; border-color:#f6d3a8; background:#fffdf8; color:#da5e16; }' +
+'.ebp-url { margin:8px 0 12px; font-size:12px; word-break:break-all; color:#da5e16; }' +
 '.ebp-btnrow { display:flex; flex-wrap:wrap; gap:8px; }' +
 '.ebp-redirect { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin-top:16px; padding-top:16px;' +
-'  border-top:1px solid #e8e2d8; }' +
+'  border-top:1px solid #f6d3a8; }' +
 '.ebp-redirect .eba-in { flex:1; min-width:220px; width:auto; border-radius:999px; font-size:12px; }' +
 '.ebp-tools { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }';
 
