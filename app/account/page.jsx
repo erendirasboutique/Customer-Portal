@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 
 const T = {
   en: {
-    title: "Your delivery details",
+    title: "Your Delivery Details",
     intro:
       "Check that everything below is correct. Any change you save is applied to your future shipments right away.",
     name: "Name",
@@ -41,7 +41,7 @@ const T = {
     zip: "Código postal",
     save: "Guardar cambios",
     saving: "Guardando...",
-    saved: "Guardado. Tus próximos envíos usarán estos datos.",
+    saved: "Guardado! Tus próximos envíos usarán estos datos.",
     loadError:
       "Este enlace ya no es válido. Escríbenos y te enviaremos uno nuevo.",
     saveError: "No se pudieron guardar los cambios. Inténtalo de nuevo.",
@@ -398,13 +398,13 @@ function isValidEmail(email) {
 const styles = {
   page: {
     minHeight: "100vh",
-    background: "#F5F3EF",
+    background: "#fdfcf7",
     display: "flex",
     justifyContent: "center",
     alignItems: "flex-start",
     padding: "48px 16px",
     fontFamily: "'Recoleta', Georgia, serif",
-    color: "#3d332a",
+    color: "#da5e16",
     boxSizing: "border-box",
   },
 
@@ -412,10 +412,10 @@ const styles = {
     width: "100%",
     maxWidth: 520,
     background: "#ffffff",
-    border: "1px solid #e4dccf",
+    border: "1px solid #f6d3a8",
     borderRadius: 16,
     padding: "32px 32px 40px",
-    boxShadow: "0 2px 24px rgba(128, 106, 82, 0.08)",
+    boxShadow: "0 2px 24px rgba(237, 160, 51, 0.12)",
     boxSizing: "border-box",
   },
 
@@ -447,17 +447,17 @@ const styles = {
     fontSize: 12,
     letterSpacing: "0.18em",
     textTransform: "uppercase",
-    color: "#bda891",
+    color: "#eda033",
   },
 
   langBtn: {
     flexShrink: 0,
     background: "none",
-    border: "1px solid #bda891",
+    border: "1px solid #eda033",
     borderRadius: 999,
     padding: "6px 14px",
     fontSize: 12,
-    color: "#806a52",
+    color: "#da5e16",
     cursor: "pointer",
     fontFamily: "inherit",
   },
@@ -468,14 +468,14 @@ const styles = {
     lineHeight: 1.15,
     fontWeight: 400,
     margin: "0 0 10px",
-    color: "#806a52",
+    color: "#da5e16",
   },
 
   intro: {
     fontSize: 15,
     lineHeight: 1.55,
     margin: "0 0 28px",
-    color: "#6f6354",
+    color: "#da5e16",
   },
 
   field: {
@@ -489,20 +489,20 @@ const styles = {
   label: {
     fontSize: 13,
     letterSpacing: "0.04em",
-    color: "#806a52",
+    color: "#da5e16",
   },
 
   input: {
     width: "100%",
-    border: "1px solid #d8cdbc",
+    border: "1px solid #f6d3a8",
     borderRadius: 10,
     padding: "12px 14px",
     fontSize: 16,
     lineHeight: 1.3,
     fontFamily: "inherit",
-    color: "#3d332a",
-    background: "#fdfcfa",
-    outlineColor: "#bda891",
+    color: "#da5e16",
+    background: "#fffdf8",
+    outlineColor: "#eda033",
     boxSizing: "border-box",
   },
 
@@ -515,8 +515,8 @@ const styles = {
   saveBtn: {
     width: "100%",
     marginTop: 8,
-    background: "#806a52",
-    color: "#F5F3EF",
+    background: "#eda033",
+    color: "#fdfcf7",
     border: "none",
     borderRadius: 999,
     padding: "14px 20px",
@@ -553,7 +553,7 @@ const styles = {
   skeletonLine: {
     height: 46,
     borderRadius: 10,
-    background: "#f1ece3",
+    background: "#fcefdc",
     marginBottom: 18,
   },
 };
