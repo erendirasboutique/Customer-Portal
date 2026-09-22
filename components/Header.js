@@ -4,7 +4,7 @@ export default function Header() {
   return (
     <header className="header customerOnlyHeader">
       <a className="brand" href="/">
-        <img src="/logo2.png" alt="Erendira's Boutique" />
+        <img src="/EB_Logo_Fall BGBLANK.png" alt="Erendira's Boutique" />
         <span className="brandText">
           <strong>Erendira&apos;s Boutique</strong>
           <span>
