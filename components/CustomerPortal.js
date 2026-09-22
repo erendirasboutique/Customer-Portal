@@ -297,7 +297,7 @@ export default function CustomerPortal({ initialUser, initialPayments }) {
         <div className={styles.wrap}>
           <header className={styles.header}>
             <div className={styles.brand}>
-              <img src="/logo2.png" className={styles.brandLogoBig} alt="Erendira's Boutique" />
+              <img src="/EB_Logo_Fall BGBLANK.png" className={styles.brandLogoBig} alt="Erendira's Boutique" />
             </div>
             <div className={styles.headerRight}>
               <LanguageToggle lang={lang} setLang={setLang} />
@@ -372,7 +372,7 @@ export default function CustomerPortal({ initialUser, initialPayments }) {
 
         <header className={styles.header}>
           <div className={styles.brand}>
-            <img src="/logo2.png" className={styles.brandLogo} alt="Erendira's Boutique" />
+            <img src="/EB_Logo_Fall BGBLANK.png" className={styles.brandLogo} alt="Erendira's Boutique" />
             <span className={styles.brandName}>Erendira&apos;s Boutique</span>
           </div>
           <div className={styles.headerRight}>
