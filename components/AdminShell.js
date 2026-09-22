@@ -23,7 +23,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-const LOGO_SRC = '/logo.png';
+const LOGO_SRC = '/EB_Logo_Fall BGBLANK.png';
 const SHIP = 'https://ship.erendirasboutique.com';
 
 const T = {
@@ -102,7 +102,7 @@ function initials(name) {
 /* ---------------- Design system ---------------- */
 export const shellCss = '' +
 /* tokens */
-'.eba { --cream:#F2F0EB; --card:#FFFFFF; --wash:#FAF8F4; --sand:#bda891; --taupe:#806a52; --ink:#3d3428; --mute:#8b7a64; --line:#e8e2d8;' +
+'.eba { --cream:#fdfcf7; --card:#FFFFFF; --wash:#fffdf8; --sand:#eda033; --taupe:#da5e16; --ink:#da5e16; --mute:#da5e16; --line:#f6d3a8; --accent:#eda033; --accent-dark:#d98a1f;' +
 '  min-height:100vh; background:var(--cream); color:var(--ink); overflow-x:clip;' +
 '  font-family:"Recoleta", Georgia, serif; -webkit-font-smoothing:antialiased; }' +
 '.eba * { box-sizing:border-box; }' +
@@ -120,7 +120,7 @@ export const shellCss = '' +
 /* sidebar */
 '.eba-side { position:sticky; top:18px; min-width:0; background:var(--card); border-radius:30px; padding:26px 20px 20px;' +
 '  display:flex; flex-direction:column; gap:4px; min-height:calc(100vh - 36px);' +
-'  box-shadow:0 1px 2px rgba(61,52,40,.04), 0 14px 40px rgba(61,52,40,.06); }' +
+'  box-shadow:0 1px 2px rgba(218,94,22,.04), 0 14px 40px rgba(218,94,22,.06); }' +
 '.eba-logo { width:150px; height:auto; display:block; object-fit:contain; margin:4px 0 22px 6px; }' +
 '.eba-brand { margin:0 0 2px 6px; font-size:9.5px; letter-spacing:.26em; color:var(--sand); }' +
 '.eba-studio { margin:0 0 4px 6px; font-size:34px; line-height:1.02; color:var(--taupe); }' +
@@ -130,15 +130,15 @@ export const shellCss = '' +
 '.eba-nav a, .eba-nav button { display:flex; align-items:center; gap:12px; width:100%; text-align:left;' +
 '  padding:9px 14px 9px 9px; border-radius:999px; border:1px solid transparent; background:var(--wash);' +
 '  color:var(--mute); font-size:14px; transition:background .16s ease, color .16s ease, box-shadow .16s ease; }' +
-'.eba-nav a:hover, .eba-nav button:hover { background:#F0ECE4; color:var(--ink); }' +
+'.eba-nav a:hover, .eba-nav button:hover { background:#fcefdc; color:var(--ink); }' +
 '.eba-nav a.on { background:var(--card); border-color:var(--line); color:var(--ink);' +
-'  box-shadow:0 4px 16px rgba(61,52,40,.07); }' +
-'.eba-nav .ic { width:30px; height:30px; border-radius:50%; background:#EFEAE1; color:var(--taupe);' +
+'  box-shadow:0 4px 16px rgba(218,94,22,.07); }' +
+'.eba-nav .ic { width:30px; height:30px; border-radius:50%; background:#fcefdc; color:var(--taupe);' +
 '  display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; }' +
-'.eba-nav a.on .ic { background:var(--taupe); color:var(--cream); }' +
+'.eba-nav a.on .ic { background:var(--accent); color:var(--cream); }' +
 '.eba-nav .ext { margin-left:auto; opacity:.6; display:inline-flex; }' +
 '.eba-navlabel { margin:20px 6px 8px; font-size:9px; letter-spacing:.22em; color:var(--sand); }' +
-'.eba-tip { margin-top:18px; background:rgba(189,168,145,.16); border-radius:18px; padding:14px 16px; }' +
+'.eba-tip { margin-top:18px; background:rgba(237,160,51,.16); border-radius:18px; padding:14px 16px; }' +
 '.eba-tip .lb { display:block; font-size:12.5px; color:var(--taupe); margin-bottom:4px; }' +
 '.eba-tip p { margin:0; font-size:12.5px; line-height:1.5; color:var(--mute); }' +
 '.eba-spacer { flex:1; min-height:18px; }' +
@@ -148,13 +148,13 @@ export const shellCss = '' +
 '.eba-userpill { display:flex; align-items:center; gap:11px; padding:9px 12px 9px 9px !important; border-radius:999px;' +
 '  border:1px solid var(--line) !important; background:var(--wash); width:100%; }' +
 '.eba-avatar, .eba-avatar-fb { width:34px; height:34px; border-radius:50%; flex-shrink:0; display:block; object-fit:cover; }' +
-'.eba-avatar-fb { background:var(--taupe); color:var(--cream); font-size:12px; display:flex; align-items:center; justify-content:center; }' +
+'.eba-avatar-fb { background:var(--accent); color:var(--cream); font-size:12px; display:flex; align-items:center; justify-content:center; }' +
 '.eba-utext { min-width:0; flex:1; }' +
 '.eba-uname, .eba-umail { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }' +
 '.eba-uname { font-size:13.5px; color:var(--ink); }' +
 '.eba-umail { font-size:10.5px; color:var(--sand); margin-top:1px; }' +
 '.eba-menu { position:absolute; left:0; right:0; bottom:calc(100% + 8px); z-index:60; background:var(--card);' +
-'  border:1px solid var(--line); border-radius:18px; overflow:hidden; box-shadow:0 18px 40px rgba(61,52,40,.16); }' +
+'  border:1px solid var(--line); border-radius:18px; overflow:hidden; box-shadow:0 18px 40px rgba(218,94,22,.16); }' +
 '.eba-menu-head { padding:12px 14px; border-bottom:1px solid var(--line); }' +
 '.eba-menu-head p { margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }' +
 '.eba-menu-head .n { font-size:13px; color:var(--ink); }' +
@@ -167,9 +167,9 @@ export const shellCss = '' +
 '.eba-main { min-width:0; display:grid; gap:16px; }' +
 '.eba-hero { position:relative; overflow:hidden; background:var(--card); border-radius:30px; padding:30px 34px;' +
 '  display:flex; align-items:center; justify-content:space-between; gap:24px;' +
-'  box-shadow:0 1px 2px rgba(61,52,40,.04), 0 14px 40px rgba(61,52,40,.06); }' +
+'  box-shadow:0 1px 2px rgba(218,94,22,.04), 0 14px 40px rgba(218,94,22,.06); }' +
 '.eba-hero::after { content:""; position:absolute; right:-70px; top:-90px; width:280px; height:280px; border-radius:50%;' +
-'  background:radial-gradient(circle at 30% 30%, rgba(189,168,145,.28), rgba(189,168,145,0) 65%); pointer-events:none; }' +
+'  background:radial-gradient(circle at 30% 30%, rgba(237,160,51,.28), rgba(237,160,51,0) 65%); pointer-events:none; }' +
 '.eba-hero-copy { position:relative; z-index:1; min-width:0; }' +
 '.eba-hero .eyebrow { margin:0 0 6px; font-size:10px; letter-spacing:.28em; color:var(--sand); }' +
 '.eba-hero h1 { margin:0; font-size:clamp(32px,4.2vw,58px); line-height:1; color:var(--taupe); }' +
@@ -182,12 +182,12 @@ export const shellCss = '' +
 '.eba-herostat .cap { display:block; font-size:11.5px; color:var(--sand); }' +
 '.eba-langs { display:flex; border:1px solid var(--line); border-radius:999px; overflow:hidden; }' +
 '.eba-langs button { border:0; background:transparent; padding:8px 13px; font-size:10px; letter-spacing:.14em; color:var(--taupe); }' +
-'.eba-langs button.on { background:var(--taupe); color:var(--cream); }' +
+'.eba-langs button.on { background:var(--accent); color:var(--cream); }' +
 
 /* stat cards */
 '.eba-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(168px,1fr)); gap:14px; }' +
 '.eba-stat { background:var(--card); border:0; border-radius:24px; padding:18px 20px; text-align:left; display:block;' +
-'  box-shadow:0 1px 2px rgba(61,52,40,.04), 0 10px 30px rgba(61,52,40,.05); transition:transform .16s ease; }' +
+'  box-shadow:0 1px 2px rgba(218,94,22,.04), 0 10px 30px rgba(218,94,22,.05); transition:transform .16s ease; }' +
 'button.eba-stat:hover { transform:translateY(-2px); }' +
 '.eba-stat .lb { display:block; font-size:12.5px; color:var(--mute); }' +
 '.eba-stat b { display:block; font-size:38px; line-height:1.1; color:var(--taupe); margin:8px 0 4px; overflow-wrap:anywhere; }' +
@@ -197,7 +197,7 @@ export const shellCss = '' +
 '.eba-cols { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:16px; align-items:start; }' +
 '.eba-cols.wide-left { grid-template-columns:minmax(0,1.35fr) minmax(0,1fr); }' +
 '.eba-panel { background:var(--card); border-radius:30px; padding:26px 28px;' +
-'  box-shadow:0 1px 2px rgba(61,52,40,.04), 0 14px 40px rgba(61,52,40,.06); }' +
+'  box-shadow:0 1px 2px rgba(218,94,22,.04), 0 14px 40px rgba(218,94,22,.06); }' +
 '.eba-eyebrow { margin:0 0 4px; font-size:10px; letter-spacing:.28em; color:var(--sand); text-transform:uppercase; }' +
 '.eba-panel h2 { margin:0 0 18px; font-size:clamp(26px,2.6vw,40px); line-height:1.02; color:var(--taupe); }' +
 '.eba-panelhead { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; }' +
@@ -206,22 +206,22 @@ export const shellCss = '' +
 '.eba-btn { display:inline-flex; align-items:center; justify-content:center; gap:7px; border:1px solid var(--line);' +
 '  border-radius:999px; padding:10px 18px; font-size:12.5px; background:var(--card); color:var(--taupe); }' +
 '.eba-btn:hover { background:var(--wash); }' +
-'.eba-btn-dark { background:var(--taupe); border-color:var(--taupe); color:var(--cream); }' +
-'.eba-btn-dark:hover { background:#6f5b45; color:var(--cream); }' +
+'.eba-btn-dark { background:var(--accent); border-color:var(--accent); color:var(--cream); }' +
+'.eba-btn-dark:hover { background:var(--accent-dark); color:var(--cream); }' +
 '.eba-btn.mini { padding:6px 13px; font-size:11px; }' +
 '.eba-btn:disabled { opacity:.5; cursor:not-allowed; }' +
 
 /* cta */
 '.eba-cta { display:flex; align-items:center; justify-content:space-between; gap:16px; width:100%; text-align:left;' +
-'  background:var(--taupe); color:var(--cream); border:0; border-radius:24px; padding:24px 26px;' +
+'  background:var(--accent); color:var(--cream); border:0; border-radius:24px; padding:24px 26px;' +
 '  transition:background .16s ease; }' +
-'.eba-cta:hover { background:#6f5b45; }' +
+'.eba-cta:hover { background:var(--accent-dark); }' +
 '.eba-cta > span { min-width:0; }' +
 '.eba-cta h3 { margin:0; font-size:clamp(24px,2.4vw,36px); line-height:1; overflow-wrap:anywhere; }' +
 '.eba-cta p { margin:8px 0 0; font-size:13px; opacity:.82; }' +
 '.eba-cta .go { font-size:13px; white-space:nowrap; opacity:.9; }' +
 '.eba-cta-quiet { background:var(--wash); color:var(--ink); border:1px solid var(--line); margin-top:14px; }' +
-'.eba-cta-quiet:hover { background:#F0ECE4; }' +
+'.eba-cta-quiet:hover { background:#fcefdc; }' +
 '.eba-cta-quiet h3 { color:var(--taupe); }' +
 '.eba-cta-quiet p { color:var(--mute); opacity:1; }' +
 '.eba-cta-quiet .go { color:var(--taupe); }' +
@@ -239,10 +239,10 @@ export const shellCss = '' +
 '.eba-field + .eba-field, .eba-formrow + .eba-field, .eba-field + .eba-formrow, .eba-formrow + .eba-formrow { margin-top:12px; }' +
 '.eba-checks { display:flex; flex-wrap:wrap; gap:10px 18px; margin-top:16px; padding-top:16px; border-top:1px solid var(--line); }' +
 '.eba-check { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--mute); cursor:pointer; }' +
-'.eba-check input { accent-color:var(--taupe); width:16px; height:16px; }' +
+'.eba-check input { accent-color:var(--accent); width:16px; height:16px; }' +
 '.eba-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:18px; }' +
 '.eba-select { appearance:none; border:1px solid var(--line); border-radius:999px; padding:10px 32px 10px 15px;' +
-'  background:var(--card) url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'11\' height=\'11\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23806a52\' stroke-width=\'2\'%3E%3Cpath d=\'M6 9l6 6 6-6\'/%3E%3C/svg%3E") no-repeat right 13px center;' +
+'  background:var(--card) url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'11\' height=\'11\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23da5e16\' stroke-width=\'2\'%3E%3Cpath d=\'M6 9l6 6 6-6\'/%3E%3C/svg%3E") no-repeat right 13px center;' +
 '  color:var(--taupe); font-size:12.5px; outline:0; }' +
 '.eba-search { display:flex; align-items:center; gap:9px; border:1px solid var(--line); border-radius:999px;' +
 '  padding:10px 16px; background:var(--card); flex:1; min-width:200px; }' +
@@ -269,8 +269,8 @@ export const shellCss = '' +
 '.eba-rowbtns { display:flex; flex-wrap:wrap; gap:6px; }' +
 '.eba-pill { border-radius:999px; padding:4px 11px; font-size:9px; letter-spacing:.12em; text-transform:uppercase;' +
 '  white-space:nowrap; border:1px solid transparent; }' +
-'.eba-pill.ok { background:var(--taupe); color:var(--cream); }' +
-'.eba-pill.mid { background:rgba(189,168,145,.32); color:var(--taupe); }' +
+'.eba-pill.ok { background:var(--accent); color:var(--cream); }' +
+'.eba-pill.mid { background:rgba(237,160,51,.32); color:var(--taupe); }' +
 '.eba-pill.off { background:var(--card); border-color:var(--line); color:var(--mute); }' +
 '.eba-empty { padding:44px 18px; text-align:center; font-size:13.5px; color:var(--sand); background:var(--wash); border-radius:20px; }' +
 
