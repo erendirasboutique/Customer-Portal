@@ -8,7 +8,7 @@
 //
 // Props:
 //   admin      { name, email, avatar_url, role }  — used for the profile card
-//   active     'overview' | 'payment-links' | 'gift-cards' | 'live-link' | 'checks'
+//   active     'overview' | 'payment-links' | 'sezzle' | 'gift-cards' | 'live-link' | 'checks'
 //   lang       'en' | 'es'   (optional — omit and the shell manages it itself)
 //   onLang     (l) => void   (optional — pass when the page owns lang state)
 //   eyebrow    small caps line above the hero title
@@ -33,6 +33,7 @@ const T = {
     welcome: 'Welcome',
     overview: 'Dashboard',
     paymentLinks: 'Payment links',
+    sezzle: 'Sezzle',
     giftCards: 'Gift cards',
     liveLink: 'Live link',
     checks: 'Checks',
@@ -47,12 +48,13 @@ const T = {
     welcome: 'Bienvenida',
     overview: 'Panel',
     paymentLinks: 'Enlaces de pago',
+    sezzle: 'Sezzle',
     giftCards: 'Tarjetas de regalo',
     liveLink: 'Enlace en vivo',
     checks: 'Cheques',
     orders: 'Pedidos',
-    shipping: 'Env\u00edos',
-    logOut: 'Cerrar sesi\u00f3n',
+    shipping: 'Envíos',
+    logOut: 'Cerrar sesión',
     account: 'Cuenta',
   },
 };
@@ -77,6 +79,7 @@ function Icon(props) {
 }
 const IconHome = function () { return (<Icon><path d="M5 12l7-8 7 8" /><path d="M6 10v9a1 1 0 001 1h10a1 1 0 001-1v-9" /></Icon>); };
 const IconLink = function () { return (<Icon><path d="M9 15l6-6" /><path d="M11 6l.5-.5a4.95 4.95 0 017 7L18 13" /><path d="M13 18l-.5.5a4.95 4.95 0 01-7-7L6 11" /></Icon>); };
+const IconSezzle = function () { return (<Icon><path d="M4 8h13a3 3 0 013 3v0a3 3 0 01-3 3H7a3 3 0 01-3-3" /><path d="M8 5v3" /><path d="M16 14v3" /></Icon>); };
 const IconGift = function () { return (<Icon><path d="M3 9h18v3H3z" /><path d="M12 9v12" /><path d="M19 12v7a2 2 0 01-2 2H7a2 2 0 01-2-2v-7" /><path d="M7.5 9a2.5 2.5 0 010-5C11 4 12 9 12 9s1-5 4.5-5a2.5 2.5 0 010 5" /></Icon>); };
 const IconBroadcast = function () { return (<Icon><circle cx="12" cy="12" r="2" /><path d="M16.24 7.76a6 6 0 010 8.49" /><path d="M7.76 16.24a6 6 0 010-8.49" /><path d="M19.07 4.93a10 10 0 010 14.14" /><path d="M4.93 19.07a10 10 0 010-14.14" /></Icon>); };
 const IconCheck = function () { return (<Icon><rect x="3" y="6" width="18" height="12" rx="2" /><path d="M3 10h18" /><path d="M7 14h4" /></Icon>); };
@@ -412,6 +415,7 @@ export default function AdminShell(props) {
   const nav = [
     { key: 'overview', href: '/admin', label: t.overview, icon: <IconHome /> },
     { key: 'payment-links', href: '/admin/payment-links', label: t.paymentLinks, icon: <IconLink /> },
+    { key: 'sezzle', href: '/admin/sezzle', label: t.sezzle, icon: <IconSezzle /> },
     { key: 'gift-cards', href: '/admin/gift-cards', label: t.giftCards, icon: <IconGift /> },
     { key: 'live-link', href: '/admin/live-link', label: t.liveLink, icon: <IconBroadcast /> },
     { key: 'checks', href: '/admin/checks', label: t.checks, icon: <IconCheck /> },
@@ -477,7 +481,7 @@ export default function AdminShell(props) {
               )}
               <span className="eba-utext">
                 <span className="eba-uname">{admin?.name || t.account}</span>
-                <span className="eba-umail">{admin?.email || '\u2014'}</span>
+                <span className="eba-umail">{admin?.email || '—'}</span>
               </span>
               <IconChevron />
             </button>
@@ -486,7 +490,7 @@ export default function AdminShell(props) {
               <div className="eba-menu" role="menu">
                 <div className="eba-menu-head">
                   <p className="n">{admin?.name || t.account}</p>
-                  <p className="e">{admin?.email}{admin?.role ? ' \u00b7 ' + admin.role : ''}</p>
+                  <p className="e">{admin?.email}{admin?.role ? ' · ' + admin.role : ''}</p>
                 </div>
                 <button role="menuitem" onClick={logout}><IconLogout />{t.logOut}</button>
               </div>

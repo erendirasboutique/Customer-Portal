@@ -1,6 +1,5 @@
 // app/api/admin/create-sezzle-link/route.js
-// Sezzle counterpart to your Stripe create-payment-link route.
-// Same shape: POST a form payload, get back { url }.
+// Creates a Sezzle Checkout API v2 session and returns { url }.
 //
 // Env vars (add in Vercel):
 //   SEZZLE_PUBLIC_KEY, SEZZLE_PRIVATE_KEY
@@ -44,11 +43,9 @@ export async function POST(request) {
     const reference = `EB-${Date.now()}`;
     const description = [body.title, body.description].filter(Boolean).join(' — ')
       || `Erendira’s Boutique #${reference}`;
-
-    // Where the customer goes after paying. Sezzle requires absolute URLs.
     const redirect = (body.redirectAfterPayment && body.redirectUrl)
       ? body.redirectUrl
-      : (portal ? `${portal}/admin/payment-links` : 'https://ebtq.io/cc');
+      : (portal ? `${portal}/admin/sezzle` : 'https://ebtq.io/cc');
 
     const token = await getToken(base, publicKey, privateKey);
 
@@ -78,7 +75,6 @@ export async function POST(request) {
       url: data.order && data.order.checkout_url,
       uuid: data.order && data.order.uuid,
       reference,
-      processor: 'sezzle',
     });
   } catch (e) {
     return Response.json({ error: e.message || 'Unexpected error' }, { status: 500 });
