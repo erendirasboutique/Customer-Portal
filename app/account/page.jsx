@@ -197,7 +197,7 @@ export default function AccountPage() {
       <div style={styles.card}>
         <div style={styles.logoWrap}>
           <img
-            src="/logo2.png"
+            src="/EB_Logo_Fall BGBLANK.png"
             alt="Erendira's Boutique"
             style={styles.logo}
           />
