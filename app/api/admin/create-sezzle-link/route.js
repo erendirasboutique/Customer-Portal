@@ -16,6 +16,27 @@ async function getToken(base, publicKey, privateKey) {
   return (await r.json()).token;
 }
 
+// Shorten a URL with Dub. Fails soft: returns null on any error so we can
+// fall back to the original long link.
+async function shorten(longUrl) {
+  const key = process.env.DUB_API_KEY;
+  if (!key) return null;
+  try {
+    const body = { url: longUrl };
+    if (process.env.DUB_DOMAIN) body.domain = process.env.DUB_DOMAIN;
+    const r = await fetch('https://api.dub.co/links', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+      body: JSON.stringify(body),
+    });
+    if (!r.ok) return null;
+    const d = await r.json().catch(() => ({}));
+    return d.shortLink || null;
+  } catch (e) {
+    return null;
+  }
+}
+
 export async function POST(request) {
   try {
     const base = (process.env.SEZZLE_BASE || DEFAULT_BASE).replace(/\/+$/, '');
@@ -42,8 +63,6 @@ export async function POST(request) {
     const firstName = parts.shift() || name || undefined;
     const lastName = parts.join(' ') || undefined;
 
-    // Approved OR declined both return to complete_url; /pay/complete reads the
-    // status and shows the right message. Custom redirect overrides both.
     const q = `ref=${encodeURIComponent(reference)}&amt=${amountCents}`;
     let completeHref;
     let cancelHref;
@@ -51,7 +70,7 @@ export async function POST(request) {
       completeHref = body.redirectUrl;
       cancelHref = body.redirectUrl;
     } else if (portal) {
-            completeHref = `${portal}/sezzle-complete?${q}`;
+      completeHref = `${portal}/sezzle-complete?${q}`;
       cancelHref = `${portal}/sezzle-complete?${q}`;
     } else {
       completeHref = 'https://ebtq.io/cc';
@@ -99,8 +118,13 @@ export async function POST(request) {
       return Response.json({ error: 'Sezzle could not create the link.', detail: data }, { status: r.status });
     }
 
+    const checkoutUrl = data.order && data.order.checkout_url;
+    const shortUrl = checkoutUrl ? await shorten(checkoutUrl) : null;
+
     return Response.json({
-      url: data.order && data.order.checkout_url,
+      url: shortUrl || checkoutUrl, // short link if Dub is set up, else the long one
+      long_url: checkoutUrl,
+      shortened: Boolean(shortUrl),
       uuid: data.order && data.order.uuid,
       reference,
     });
