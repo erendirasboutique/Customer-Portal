@@ -51,8 +51,8 @@ export async function POST(request) {
       completeHref = body.redirectUrl;
       cancelHref = body.redirectUrl;
     } else if (portal) {
-      completeHref = `${portal}/pay/complete?${q}`;
-      cancelHref = `${portal}/pay/cancel?ref=${encodeURIComponent(reference)}`;
+            completeHref = `${portal}/sezzle-complete?${q}`;
+      cancelHref = `${portal}/sezzle-complete?${q}`;
     } else {
       completeHref = 'https://ebtq.io/cc';
       cancelHref = 'https://ebtq.io/cc';
