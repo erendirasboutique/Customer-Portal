@@ -13,6 +13,11 @@ const LOGO_SRC = '/EB_Logo_Fall BGBLANK.png'; // same dark logo as the admin sid
 const SHOP_EMAIL = 'info@erendirasboutique.com';
 const SHOP_SITE = 'erendirasboutique.com';
 
+// Stripe Climate: shown on Stripe payments only (Clover isn't part of it).
+// Change the percent here if you change it in Stripe → Climate.
+const CLIMATE_PERCENT = '0.1%';
+const CLIMATE_ICON = '/stripe-climate.png';
+
 const T = {
   en: {
     eyebrow: 'PAYMENT RECEIPT',
@@ -31,6 +36,7 @@ const T = {
     total: 'Total paid',
     questions: 'Questions about this payment? Email us at',
     print: 'Print or save as PDF',
+    climate: function (pct) { return <>Erendira&#8217;s Boutique LLC contributed <b>{pct} of your purchase</b> to remove CO<sub>2</sub> from the atmosphere.</>; },
     notFoundTitle: 'Receipt not found',
     notFoundBody: 'This receipt link may be incomplete. Please check the link or contact us.',
     locale: 'en-US',
@@ -52,6 +58,7 @@ const T = {
     total: 'Total pagado',
     questions: '¿Preguntas sobre este pago? Escríbenos a',
     print: 'Imprimir o guardar como PDF',
+    climate: function (pct) { return <>Erendira&#8217;s Boutique LLC contribuy&oacute; el <b>{pct} de tu compra</b> para eliminar CO<sub>2</sub> de la atm&oacute;sfera.</>; },
     notFoundTitle: 'Recibo no encontrado',
     notFoundBody: 'Es posible que el enlace esté incompleto. Revísalo o contáctanos.',
     locale: 'es-MX',
@@ -162,6 +169,14 @@ export default async function ReceiptPage(props) {
           <b className="rcpt-display">{money(refunded ? 0 : r.amount, r.currency, t.locale)}</b>
         </div>
 
+        {r.provider === 'stripe' && !refunded && (
+          <div className="rcpt-climate">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={CLIMATE_ICON} alt="" width="30" height="21" />
+            <p>{t.climate(CLIMATE_PERCENT)}</p>
+          </div>
+        )}
+
         <footer className="rcpt-foot">
           <p>{t.questions} <a href={'mailto:' + SHOP_EMAIL + '?subject=' + encodeURIComponent('Receipt ' + r.receipt_number)}>{SHOP_EMAIL}</a></p>
           <p className="rcpt-shop">Erendira&#8217;s Boutique &middot; <a href={'https://' + SHOP_SITE}>{SHOP_SITE}</a></p>
@@ -209,6 +224,12 @@ const css = '' +
 '.rcpt-total span { font-size:11px; letter-spacing:.2em; text-transform:uppercase; }' +
 '.rcpt-total b { font-size:30px; }' +
 '.rcpt-foot { margin-top:26px; text-align:center; font-size:12.5px; line-height:1.6; color:var(--sand); }' +
+'.rcpt-climate { display:flex; align-items:center; gap:14px; margin:20px 0 0; padding:14px 16px; background:var(--wash);' +
+'  border:1px solid var(--line); border-radius:18px; }' +
+'.rcpt-climate img { flex-shrink:0; width:30px; height:auto; }' +
+'.rcpt-climate p { margin:0; font-size:13px; line-height:1.5; }' +
+'.rcpt-climate b { font-weight:600; }' +
+'.rcpt-climate sub { font-size:.7em; }' +
 '.rcpt-foot p { margin:0; }' +
 '.rcpt-shop { margin-top:6px !important; }' +
 '.rcpt-actions { max-width:520px; margin:16px auto 0; display:flex; justify-content:center; }' +
