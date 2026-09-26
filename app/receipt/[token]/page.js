@@ -121,7 +121,7 @@ export default async function ReceiptPage(props) {
     { k: t.date, v: when(r.created_at, t.locale) },
     r.note ? { k: t.forWhat, v: r.note } : null,
     { k: t.receiptNo, v: r.receipt_number, mono: true },
-    r.clover_charge_id ? { k: t.txn, v: r.clover_charge_id, mono: true } : null,
+    (r.payment_ref || r.clover_charge_id) ? { k: t.txn, v: r.payment_ref || r.clover_charge_id, mono: true } : null,
     r.auth_code ? { k: t.auth, v: r.auth_code, mono: true } : null,
   ].filter(Boolean);
 

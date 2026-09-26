@@ -146,7 +146,20 @@ export async function POST(req) {
   let receipt = null;
   let receiptError = null;
   try {
-    receipt = await createReceipt(charge, { cents, name, email, note }, req.nextUrl.origin);
+    const cs = charge.source || {};
+    receipt = await createReceipt({
+      provider: 'clover',
+      paymentRef: charge.id,
+      amount: Number(charge.amount || cents) / 100,
+      currency: charge.currency,
+      brand: cs.brand,
+      last4: cs.last4,
+      authCode: charge.auth_code || charge.authCode || null,
+      created: charge.created,
+      name: name,
+      email: email,
+      note: note,
+    }, req.nextUrl.origin);
   } catch (err) {
     console.error('Charged, but could not create receipt', err);
     receiptError = err.message || 'Could not create the receipt.';
