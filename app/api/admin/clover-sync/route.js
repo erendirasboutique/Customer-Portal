@@ -114,9 +114,61 @@ function toPaymentRow(p) {
   };
 }
 
-async function saveRows(rows) {
+/*
+ * Read the real column names of the payments table, so we only send
+ * columns that exist. Uses Supabase's built-in API description; falls
+ * back to looking at one existing row.
+ */
+async function getPaymentColumns(url, key) {
+  const headers = { apikey: key, Authorization: 'Bearer ' + key };
+  try {
+    const res = await fetch(url + '/rest/v1/', {
+      headers: { ...headers, Accept: 'application/openapi+json' },
+      cache: 'no-store',
+    });
+    if (res.ok) {
+      const spec = await res.json();
+      const props = spec && spec.definitions && spec.definitions.payments && spec.definitions.payments.properties;
+      if (props) return new Set(Object.keys(props));
+    }
+  } catch (e) { /* fall through */ }
+
+  const res = await fetch(url + '/rest/v1/payments?select=*&limit=1', { headers, cache: 'no-store' });
+  const rows = res.ok ? await res.json() : [];
+  if (Array.isArray(rows) && rows[0]) return new Set(Object.keys(rows[0]));
+  return null;
+}
+
+// For each value, the column names it could be stored under (first match wins).
+const COLUMN_OPTIONS = {
+  brand: ['brand', 'card_brand', 'payment_method_brand'],
+  last4: ['last4', 'card_last4', 'last_4', 'payment_method_last4'],
+  payment_method: ['payment_method', 'payment_method_type', 'method'],
+  amount_total: ['amount_total', 'amount', 'total'],
+  receipt_url: ['receipt_url'],
+  refund_status: ['refund_status'],
+};
+
+function fitRowToColumns(row, columns) {
+  if (!columns) return row;
+  const out = {};
+  for (const [field, value] of Object.entries(row)) {
+    const options = COLUMN_OPTIONS[field] || [field];
+    const col = options.find(function (c) { return columns.has(c); });
+    if (col && value !== undefined) out[col] = value;
+  }
+  return out;
+}
+
+async function saveRows(rawRows) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  const columns = await getPaymentColumns(url, key);
+  if (columns && !columns.has('clover_payment_id')) {
+    throw new Error('The payments table is missing the clover_payment_id column. Run sql/add-clover-column.sql in Supabase once.');
+  }
+  const rows = rawRows.map(function (r) { return fitRowToColumns(r, columns); });
 
   const res = await fetch(url + '/rest/v1/payments?on_conflict=clover_payment_id', {
     method: 'POST',
