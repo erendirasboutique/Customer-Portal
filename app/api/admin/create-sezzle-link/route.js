@@ -1,11 +1,4 @@
 // app/api/admin/create-sezzle-link/route.js
-// Creates a Sezzle Checkout API v2 session and returns { url }.
-//
-// Env vars (add in Vercel):
-//   SEZZLE_PUBLIC_KEY, SEZZLE_PRIVATE_KEY
-//   SEZZLE_BASE       (optional) https://gateway.sezzle.com [default] or the sandbox URL
-//   SEZZLE_PORTAL_URL (optional) fallback redirect if the form doesn't send one
-
 export const runtime = 'nodejs';
 
 const DEFAULT_BASE = 'https://gateway.sezzle.com';
@@ -25,11 +18,10 @@ async function getToken(base, publicKey, privateKey) {
 
 export async function POST(request) {
   try {
-    // Trim any stray slash so SEZZLE_BASE + '/v2/...' can't double up.
     const base = (process.env.SEZZLE_BASE || DEFAULT_BASE).replace(/\/+$/, '');
     const publicKey = process.env.SEZZLE_PUBLIC_KEY;
     const privateKey = process.env.SEZZLE_PRIVATE_KEY;
-    const portal = process.env.SEZZLE_PORTAL_URL || '';
+    const portal = (process.env.SEZZLE_PORTAL_URL || '').replace(/\/+$/, '');
 
     if (!publicKey || !privateKey) {
       return Response.json({ error: 'Sezzle keys are not configured.' }, { status: 500 });
@@ -45,16 +37,26 @@ export async function POST(request) {
     const description = [body.title, body.description].filter(Boolean).join(' — ')
       || `Erendira\u2019s Boutique #${reference}`;
 
-    // Split the single name field into first / last.
     const name = (body.customerName || '').trim();
     const parts = name ? name.split(/\s+/) : [];
     const firstName = parts.shift() || name || undefined;
     const lastName = parts.join(' ') || undefined;
 
-    // Redirect after payment (defaults to the admin page; custom overrides it).
-    const redirect = (body.customRedirect && body.redirectUrl)
-      ? body.redirectUrl
-      : (portal ? `${portal}/admin/sezzle` : 'https://ebtq.io/cc');
+    // Approved OR declined both return to complete_url; /pay/complete reads the
+    // status and shows the right message. Custom redirect overrides both.
+    const q = `ref=${encodeURIComponent(reference)}&amt=${amountCents}`;
+    let completeHref;
+    let cancelHref;
+    if (body.customRedirect && body.redirectUrl) {
+      completeHref = body.redirectUrl;
+      cancelHref = body.redirectUrl;
+    } else if (portal) {
+      completeHref = `${portal}/pay/complete?${q}`;
+      cancelHref = `${portal}/pay/cancel?ref=${encodeURIComponent(reference)}`;
+    } else {
+      completeHref = 'https://ebtq.io/cc';
+      cancelHref = 'https://ebtq.io/cc';
+    }
 
     const token = await getToken(base, publicKey, privateKey);
 
@@ -66,7 +68,6 @@ export async function POST(request) {
       requires_shipping_info: Boolean(body.collectShipping),
     };
 
-    // Ask Sezzle to text / email the hosted link to the shopper.
     if (body.send && (body.phone || body.email)) {
       order.send_checkout_url = {};
       if (body.phone) order.send_checkout_url.to_sms_phone = String(body.phone);
@@ -74,12 +75,11 @@ export async function POST(request) {
     }
 
     const payload = {
-      cancel_url: { href: redirect },
-      complete_url: { href: redirect },
+      cancel_url: { href: cancelHref },
+      complete_url: { href: completeHref },
       order,
     };
 
-    // Include customer details when provided (improves approval + prefill).
     if (firstName || body.email || body.phone) {
       payload.customer = {
         first_name: firstName,
