@@ -1,154 +1,101 @@
-# Live Sale module — Erendira's Boutique (JavaScript)
+# Account section — Team, Branding, Integrations, Settings, Help
 
-Adds Wednesday/Thursday live sale tracking to the customer portal admin, and puts each customer's basket into the portal they already have.
+All new files. Nothing here replaces a file you already have.
 
-**Plain JavaScript.** JSX in `.js` files, matching `components/AdminDashboard.js`. No TypeScript, no build changes. Type hints are JSDoc in `lib/live/types.js`, so editors still autocomplete but nothing compiles.
+## What's in the zip
 
----
-
-## What you get
-
-| Screen | Path | Job |
-|---|---|---|
-| Live sales | `/admin/live` | Start a sale, see the week at a glance |
-| Catalog | `/admin/live/{id}/catalog` | Load the rack **before** the live |
-| Run live | `/admin/live/{id}/claims` | Basket # + tag code, ~2 seconds a claim |
-| Baskets | `/admin/live/{id}/baskets` | Match customers, finalize, copy the message |
-| Customer basket | your existing `/portal/{token}` | Photos, total, Pay button, EN/ES |
-
----
-
-## Install — 6 steps, all browser
-
-### 1. Run the migration
-
-Supabase dashboard → **SQL Editor** → paste `supabase/migrations/20260716000000_live_sales.sql` → Run.
-
-Safe to re-run. Creates `live_sales`, `live_items`, `baskets`, `basket_items`, two views, RLS locked to service role.
-
-> **If your billing portal and shipping portal use different Supabase projects,** run this in whichever one holds `customers` and `portal_token`. The module reads customers directly, so it has to live in the same database as them.
-
-### 2. Drop the files in
-
-Upload via the GitHub web UI, keeping paths:
-
-```
-supabase/migrations/20260716000000_live_sales.sql
-lib/live/types.js            lib/live/messages.js
-lib/live/supabase.js         lib/live/money.js
-lib/live/queries.js
-styles/live.css
-components/live/*.js         (7 files)
-app/admin/live/**            (4 pages)
-app/api/live/**              (10 routes)
-```
-
-**Don't** upload `app/portal-basket-example/` — that's a reference file, see step 5.
-
-### 3. Check the dependencies
-
-`package.json` needs `stripe` and `@supabase/supabase-js`. This repo has both already — the billing portal wouldn't work otherwise. Nothing to install.
-
-### 4. Environment variables
-
-Vercel → Settings → Environment Variables. You already have the first three.
-
-| Variable | Notes |
+| File | What it is |
 |---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | existing |
-| `SUPABASE_SERVICE_ROLE_KEY` | existing |
-| `STRIPE_SECRET_KEY` | existing |
-| `NEXT_PUBLIC_PORTAL_URL` | **new** — `https://my.erendirasboutique.com` |
-| `STRIPE_LIVE_WEBHOOK_SECRET` | **new**, only if you add a separate webhook (see step 6) |
+| `app/admin/team/page.js` | Team & permissions |
+| `app/admin/branding/page.js` | Logo, colors, thank-you text, with live preview |
+| `app/admin/integrations/page.js` | Status of Stripe, Sezzle, Clover, Supabase, Dub, MICR, site URL |
+| `app/admin/settings/page.js` | Business profile + defaults |
+| `app/admin/help/page.js` | FAQ, contact support, quick links |
+| `components/account/TeamManager.js` | Invite form + roster (client) |
+| `components/account/BrandingForm.js` | Branding form + preview (client) |
+| `components/account/SettingsSection.js` | Reusable settings form (client) |
+| `app/api/admin/team/route.js` | Add / change role / remove team members |
+| `app/api/admin/settings/route.js` | Save branding, business, preferences |
+| `lib/admin/account-settings.js` | Shared helpers (auth, Supabase, settings) |
+| `supabase/account.sql` | Creates the two tables these pages use |
 
-### 5. Wire the customer portal
+## Setup (3 steps)
 
-Open your existing portal page (`app/portal/[token]/page.js` or wherever it lives) and add two lines:
+1. **Run the SQL.** Supabase → SQL Editor → paste `supabase/account.sql` → Run.
+2. **Add one key in Vercel** (skip if you already have it): `SUPABASE_SERVICE_ROLE_KEY`
+   from Supabase → Project Settings → API → `service_role`. Redeploy after adding it.
+3. **Add the links to the sidebar** with the AdminShell edit below.
+
+Then open `/admin/team` once. The first person to open it becomes the Owner.
+
+## AdminShell edit — put the Account links in the profile menu
+
+This puts Team, Branding, Integrations, Settings and Help in the menu that opens
+when you click your name at the bottom of the sidebar, above Log out.
+Three small pastes in `components/AdminShell.js`:
+
+### 1. Icons — paste next to the other `const Icon... = function` lines
 
 ```jsx
-import PortalBaskets from '@/components/live/PortalBaskets';
-import '@/styles/live.css';
-
-// ...then inside the page, above the address section:
-<PortalBaskets token={token} />
+const IconUsers = function () { return (<Icon size={14}><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20a6.5 6.5 0 0113 0" /><path d="M16 4.5a3.5 3.5 0 010 7" /><path d="M18 14.5a6.5 6.5 0 013.5 5.5" /></Icon>); };
+const IconPalette = function () { return (<Icon size={14}><path d="M12 3a9 9 0 100 18c1.1 0 1.7-.9 1.4-1.8l-.3-.9a1.6 1.6 0 011.5-2.1H17a4 4 0 004-4c0-5-4-9.2-9-9.2z" /><circle cx="7.5" cy="11" r="1" /><circle cx="10" cy="7" r="1" /><circle cx="15" cy="7.5" r="1" /></Icon>); };
+const IconPlug = function () { return (<Icon size={14}><path d="M9 3v5M15 3v5" /><path d="M6 8h12v3a6 6 0 01-12 0V8z" /><path d="M12 17v4" /></Icon>); };
+const IconGear = function () { return (<Icon size={14}><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z" /></Icon>); };
+const IconHelp = function () { return (<Icon size={14}><circle cx="12" cy="12" r="9" /><path d="M9.5 9a2.5 2.5 0 015 .5c0 1.7-2.5 2-2.5 3.5" /><path d="M12 17h.01" /></Icon>); };
 ```
 
-That's the whole integration. See `app/portal-basket-example/EXAMPLE-portal-page.js`.
-
-### 6. Stripe webhook
-
-**You almost certainly already have a webhook in this repo** (the Stripe checkout and payment links live here). If so, don't register a second endpoint in Stripe. Open your existing webhook route and add this inside the `checkout.session.completed` branch:
+### 2. Styles — find this line in `shellCss`
 
 ```js
-import { markBasketPaid } from '@/app/api/live/stripe-webhook/route';
-
-const basketId = session.metadata?.basket_id;
-if (basketId) await markBasketPaid(basketId);
+'.eba-menu button:hover { background:var(--wash); }' +
 ```
 
-Keep `app/api/live/stripe-webhook/route.js` in place either way — that's where `markBasketPaid` is exported from. It just won't receive traffic.
+and paste these three lines right under it:
 
-**If you'd rather have a separate endpoint:** Stripe → Developers → Webhooks → add `https://my.erendirasboutique.com/api/live/stripe-webhook`, event `checkout.session.completed`, and put the signing secret in `STRIPE_LIVE_WEBHOOK_SECRET`.
-
----
-
-## Three things to check against your schema
-
-This module makes exactly three assumptions about tables you already have. Each is isolated to one constant, so a mismatch is a one-line fix:
-
-1. **Customers table is called `customers`** — if not, change `CUSTOMERS_TABLE` in `lib/live/queries.js` and `app/api/live/customers/search/route.js`.
-2. **It has `id`, `name`, `email`, `phone`, `portal_token`** — if your columns differ (`first_name`/`last_name`, say), change `SELECT_COLS` and `SEARCH_COLS` in `app/api/live/customers/search/route.js`, and the `.select(...)` in `getBasketDetail` / `getBasketsForPortalToken`.
-3. **`customers.id` and `orders.id` are uuid** — the foreign keys are commented out at the bottom of the migration. Run this first:
-
-```sql
-select table_name, column_name, data_type
-from information_schema.columns
-where table_name in ('customers','orders') and column_name = 'id';
+```js
+'.eba-menu a { display:flex; align-items:center; gap:9px; width:100%; padding:11px 14px; color:var(--taupe); font-size:13px; }' +
+'.eba-menu a:hover, .eba-menu a.on { background:var(--wash); }' +
+'.eba-menu-sep { border-top:1px solid var(--line); }' +
 ```
 
-If both are uuid, uncomment those two `alter table` statements and run them. If not, leave them commented — everything works without the FKs, you just lose database-level referential integrity.
+### 3. Menu links — find the Log out button inside `.eba-menu`
 
-### One more, if this repo uses the Pages Router
+```jsx
+<button role="menuitem" onClick={logout}><IconLogout />{t.logOut}</button>
+```
 
-These are App Router files (`app/`, `route.js`, server components). If the customer portal is on `pages/`, tell me and I'll re-cut it — the lib layer and the SQL carry over unchanged, only the pages and routes change shape.
+and paste this **directly above** it:
 
----
+```jsx
+{[
+  { key: 'team', href: '/admin/team', label: 'Team & permissions', icon: <IconUsers /> },
+  { key: 'branding', href: '/admin/branding', label: 'Branding', icon: <IconPalette /> },
+  { key: 'integrations', href: '/admin/integrations', label: 'Integrations', icon: <IconPlug /> },
+  { key: 'settings', href: '/admin/settings', label: 'Settings', icon: <IconGear /> },
+  { key: 'help', href: '/admin/help', label: 'Help', icon: <IconHelp /> },
+].map(function (l) {
+  return (
+    <a key={l.key} role="menuitem" href={l.href} className={props.active === l.key ? 'on' : ''}>
+      {l.icon}{l.label}
+    </a>
+  );
+})}
+<div className="eba-menu-sep" />
+```
 
-## Your week, after this
+## Good to know
 
-**Wednesday morning — load the rack (~20 min)**
-Catalog screen. Code, description, price, quantity, photo. Or paste a whole list from a sheet. These photos become the portal photos, so this isn't extra work — it's Thursday's work moved earlier.
-
-**Wednesday/Thursday — run the live**
-Claims screen. Type `47`, Enter, `A3`, Enter. The basket number sticks, so a customer claiming five things is `A3` Enter `B1` Enter `C7` Enter. Ctrl+Z undoes the last claim. Hit **Show rack** if you'd rather click photos than type codes.
-
-Using a barcode scanner? Most send the code then a Tab — the tag field treats Tab as Enter, so scanning just works. Type the basket number, then scan, scan, scan.
-
-**Thursday night — send totals (~5 min for 150 baskets)**
-Baskets screen. Match each basket to a customer (typeahead), then **Finalize every matched basket**. Every basket gets its total locked and a Stripe link minted. Then per basket: **Copy message** → paste into Messenger. Toggle EN/ES at the top.
-
-**Friday — payment**
-Nothing. The webhook marks baskets paid as they come in. Watch Collected climb.
-
-**Saturday — ship**
-Paid baskets are ready for your label flow.
-
----
-
-## What's deliberately not here
-
-- **Auto-sending the Messenger message.** Needs a Business Page. Right now it's Copy → paste.
-- **Comment capture.** Same reason.
-- **Auto-release + Friday reminders.** These want a Vercel Cron, and I'd rather you run one live with the manual version first and see what the real timing should be. `reminderMessage()` in `lib/live/messages.js` is already written for when you want it.
-- **EB-XXX order creation on payment.** `baskets.order_id` is there and empty. Tell me how order rows get created today and I'll wire the webhook to mint one — that's the bridge from this module to the shipping portal.
-
----
-
-## Notes
-
-- **All money is integer cents.** Totals come from the `basket_totals` view, never from JS math.
-- **Prices are snapshotted** onto `basket_items` at claim time. Editing the catalog later never silently rewrites a total a customer already saw.
-- **Undo is a soft void**, not a delete. When someone disputes a total on Thursday, the history is still there.
-- **Basket numbers reset every sale.** `(live_sale_id, basket_number)` is unique, not `basket_number` alone — that's what stops next Wednesday from colliding with this one.
-- **`params` is awaited** (Next 15 style). On Next 14 the `await` is a harmless no-op and it still works.
-- **Styles are scoped** under a `.live` wrapper class with its own CSS variables, so nothing here can leak into `AdminDashboard.js` or your existing portal styles.
+- **Access.** Every page and API uses your existing `requireChecksAdmin()`, so the
+  same people who can open Checks can open these. The Team roster controls who can
+  *manage the team*. It doesn't yet decide who can sign in to the admin. To make it
+  do that, `requireChecksAdmin()` needs to also check `admin_team`.
+- **Branding and Settings are saved, not yet applied.** They're stored in Supabase.
+  Any server page can read them with
+  `getSettings(["branding"])` from `@/lib/admin/account-settings`.
+  Your thank-you pages, receipts and checks need to be pointed at them.
+- **Integrations** only reads which variables exist in Vercel. It never shows or
+  sends the keys. If a service shows "Not connected" but works, it's using a
+  variable name that isn't in the list; add that name in `INTEGRATIONS`.
+- **Help** sends support emails to the address in `SUPPORT_EMAIL` at the top of
+  `app/admin/help/page.js`. Change it if it should go somewhere else.
+- GitHub doesn't unzip uploads. Extract the zip first, then drag the folders in.
