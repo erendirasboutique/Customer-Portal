@@ -1,27 +1,16 @@
 'use client';
 
-// app/admin/sezzle/page.jsx
-// Sezzle Buy-Now-Pay-Later link creator, styled with the Admin Studio shell.
-
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import AdminShell from '@/components/AdminShell';
 
-function money(v) {
-  return `$${Number(v || 0).toFixed(2)}`;
-}
+function money(v) { return `$${Number(v || 0).toFixed(2)}`; }
+function moneyCents(c) { return `$${(Number(c || 0) / 100).toFixed(2)}`; }
+function fmtDate(v) { return v ? new Date(v).toLocaleString() : '—'; }
 
 export default function SezzlePage() {
   const [form, setForm] = useState({
-    title: '',
-    amount: '',
-    description: '',
-    customerName: '',
-    email: '',
-    phone: '',
-    reference: '',
-    sendToCustomer: true,
-    collectShipping: false,
-    customRedirect: false,
+    title: '', amount: '', description: '', customerName: '', email: '', phone: '',
+    reference: '', sendToCustomer: true, collectShipping: false, customRedirect: false,
     redirectUrl: 'https://erendirasboutique.com/thank-you',
   });
   const [message, setMessage] = useState('');
@@ -29,58 +18,59 @@ export default function SezzlePage() {
   const [createdLink, setCreatedLink] = useState('');
   const [copied, setCopied] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [saved, setSaved] = useState([]);
+  const [loadingSaved, setLoadingSaved] = useState(true);
+  const [copiedId, setCopiedId] = useState('');
 
-  function update(field, value) {
-    setForm((c) => ({ ...c, [field]: value }));
+  function update(field, value) { setForm((c) => ({ ...c, [field]: value })); }
+
+  async function loadSaved() {
+    setLoadingSaved(true);
+    try {
+      const res = await fetch('/api/admin/sezzle-links', { cache: 'no-store' });
+      const data = await res.json();
+      setSaved(data.links || []);
+    } catch { setSaved([]); }
+    finally { setLoadingSaved(false); }
   }
+  useEffect(() => { loadSaved(); }, []);
 
   async function generate(e) {
     e.preventDefault();
-    setMessage('');
-    setError('');
-    setCreatedLink('');
-    setCopied(false);
-
+    setMessage(''); setError(''); setCreatedLink(''); setCopied(false);
     if (!form.title.trim()) { setError('Enter a payment title.'); return; }
     if (!form.amount || Number(form.amount) < 1) { setError('Enter a valid amount (minimum $1.00).'); return; }
 
-    setBusy(true);
-    setMessage('Creating Sezzle link...');
+    setBusy(true); setMessage('Creating Sezzle link...');
     try {
       const res = await fetch('/api/admin/create-sezzle-link', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          title: form.title,
-          description: form.description,
-          amount: form.amount,
-          customerName: form.customerName,
-          email: form.email,
-          phone: form.phone,
-          reference: form.reference,
-          send: form.sendToCustomer,
-          collectShipping: form.collectShipping,
-          customRedirect: form.customRedirect,
-          redirectUrl: form.redirectUrl,
+          title: form.title, description: form.description, amount: form.amount,
+          customerName: form.customerName, email: form.email, phone: form.phone,
+          reference: form.reference, send: form.sendToCustomer, collectShipping: form.collectShipping,
+          customRedirect: form.customRedirect, redirectUrl: form.redirectUrl,
         }),
       });
       const data = await res.json();
       if (!res.ok) { setMessage(''); setError(data.error || 'Could not create Sezzle link.'); return; }
       setCreatedLink(data.url || '');
       setMessage(form.sendToCustomer ? 'Sezzle link created and sent.' : 'Sezzle link created.');
-    } catch (err) {
-      setMessage('');
-      setError(err.message || 'Could not create Sezzle link.');
-    } finally {
-      setBusy(false);
-    }
+      loadSaved();
+    } catch (err) { setMessage(''); setError(err.message || 'Could not create Sezzle link.'); }
+    finally { setBusy(false); }
   }
 
   async function copyLink() {
     if (!createdLink) return;
     await navigator.clipboard.writeText(createdLink);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1800);
+    setCopied(true); setTimeout(() => setCopied(false), 1800);
+  }
+  async function copyRow(link) {
+    const u = link.short_url || link.checkout_url;
+    if (!u) return;
+    await navigator.clipboard.writeText(u);
+    setCopiedId(link.id); setTimeout(() => setCopiedId(''), 1600);
   }
 
   return (
@@ -92,7 +82,6 @@ export default function SezzlePage() {
       tip={{ label: 'Heads up', body: 'Sezzle also collects the customer\u2019s details on its own checkout page.' }}
     >
       <div className="eba-cols wide-left">
-        {/* form */}
         <form className="eba-panel" onSubmit={generate}>
           <p className="eba-eyebrow">New link</p>
           <h2>Payment information</h2>
@@ -150,20 +139,11 @@ export default function SezzlePage() {
               <input type="checkbox" checked={form.customRedirect} onChange={(e) => update('customRedirect', e.target.checked)} />
               <span>Custom redirect after payment</span>
             </label>
-            <input
-              className="eba-in"
-              style={{ flex: 1, minWidth: 220 }}
-              value={form.redirectUrl}
-              onChange={(e) => update('redirectUrl', e.target.value)}
-              placeholder="https://erendirasboutique.com/thank-you"
-              disabled={!form.customRedirect}
-            />
+            <input className="eba-in" style={{ flex: 1, minWidth: 220 }} value={form.redirectUrl} onChange={(e) => update('redirectUrl', e.target.value)} placeholder="https://erendirasboutique.com/thank-you" disabled={!form.customRedirect} />
           </div>
 
           <div className="eba-actions">
-            <button className="eba-btn eba-btn-dark" type="submit" disabled={busy}>
-              {busy ? 'Creating…' : 'Generate Sezzle Link'}
-            </button>
+            <button className="eba-btn eba-btn-dark" type="submit" disabled={busy}>{busy ? 'Creating…' : 'Generate Sezzle Link'}</button>
             <a className="eba-btn" href="/admin">Back to Dashboard</a>
           </div>
 
@@ -171,21 +151,16 @@ export default function SezzlePage() {
           {error && <div className="eba-err">{error}</div>}
         </form>
 
-        {/* preview */}
         <aside className="eba-panel">
           <p className="eba-eyebrow">Preview</p>
           <h2>Link summary</h2>
-
           <div className="eba-cell" style={{ marginBottom: 14 }}>
             <span className="lb">{form.title || 'Untitled link'}</span>
-            <b style={{ fontSize: 30, display: 'block', color: 'var(--taupe)', margin: '4px 0' }}>
-              {form.amount ? money(form.amount) : '$0.00'}
-            </b>
+            <b style={{ fontSize: 30, display: 'block', color: 'var(--taupe)', margin: '4px 0' }}>{form.amount ? money(form.amount) : '$0.00'}</b>
             <span>{form.description || '\u2014'}</span>
             <div style={{ marginTop: 8 }}>4 payments of {money((Number(form.amount) || 0) / 4)} with Sezzle</div>
             {form.customerName && <div style={{ marginTop: 6 }}>For: {form.customerName}</div>}
           </div>
-
           {createdLink ? (
             <div className="eba-cell">
               <span className="lb">Sezzle link ready</span>
@@ -195,11 +170,43 @@ export default function SezzlePage() {
                 <a className="eba-btn mini" href={createdLink} target="_blank" rel="noopener noreferrer">Open Link</a>
               </div>
             </div>
-          ) : (
-            <div className="eba-empty">Your generated Sezzle link will appear here.</div>
-          )}
+          ) : (<div className="eba-empty">Your generated Sezzle link will appear here.</div>)}
         </aside>
       </div>
+
+      {/* Saved links */}
+      <section className="eba-panel" style={{ marginTop: 16 }}>
+        <div className="eba-panelhead">
+          <div>
+            <p className="eba-eyebrow">Saved Links</p>
+            <h2>Generated Sezzle links</h2>
+          </div>
+          <button className="eba-btn mini" type="button" onClick={loadSaved}>Refresh</button>
+        </div>
+
+        {loadingSaved ? (
+          <div className="eba-empty">Loading saved links…</div>
+        ) : saved.length === 0 ? (
+          <div className="eba-empty">No Sezzle links yet.</div>
+        ) : (
+          <div className="eba-rows">
+            {saved.map((link) => (
+              <div className="eba-row" key={link.id}>
+                <div className="eba-who">
+                  <span className="n">{link.title || link.reference}</span>
+                  <span className="s">{link.customer_name || '—'} · {link.reference} · {fmtDate(link.created_at)}</span>
+                </div>
+                <span className="eba-amt">{moneyCents(link.amount_cents)}</span>
+                <span className={`eba-pill ${link.status === 'sent' ? 'mid' : 'off'}`}>{link.status || 'created'}</span>
+                <div className="eba-rowbtns">
+                  <button className="eba-btn mini" type="button" onClick={() => copyRow(link)}>{copiedId === link.id ? 'Copied!' : 'Copy'}</button>
+                  <a className="eba-btn mini" href={link.short_url || link.checkout_url} target="_blank" rel="noopener noreferrer">Open</a>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
     </AdminShell>
   );
 }
