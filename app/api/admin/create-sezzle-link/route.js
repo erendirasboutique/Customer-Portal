@@ -1,4 +1,5 @@
-// app/api/admin/create-sezzle-link/route.js
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
+
 export const runtime = 'nodejs';
 
 const DEFAULT_BASE = 'https://gateway.sezzle.com';
@@ -16,8 +17,6 @@ async function getToken(base, publicKey, privateKey) {
   return (await r.json()).token;
 }
 
-// Shorten a URL with Dub. Fails soft: returns null on any error so we can
-// fall back to the original long link.
 async function shorten(longUrl) {
   const key = process.env.DUB_API_KEY;
   if (!key) return null;
@@ -64,17 +63,13 @@ export async function POST(request) {
     const lastName = parts.join(' ') || undefined;
 
     const q = `ref=${encodeURIComponent(reference)}&amt=${amountCents}`;
-    let completeHref;
-    let cancelHref;
+    let completeHref, cancelHref;
     if (body.customRedirect && body.redirectUrl) {
-      completeHref = body.redirectUrl;
-      cancelHref = body.redirectUrl;
+      completeHref = body.redirectUrl; cancelHref = body.redirectUrl;
     } else if (portal) {
-      completeHref = `${portal}/sezzle-complete?${q}`;
-      cancelHref = `${portal}/sezzle-complete?${q}`;
+      completeHref = `${portal}/sezzle-complete?${q}`; cancelHref = `${portal}/sezzle-complete?${q}`;
     } else {
-      completeHref = 'https://ebtq.io/cc';
-      cancelHref = 'https://ebtq.io/cc';
+      completeHref = 'https://ebtq.io/cc'; cancelHref = 'https://ebtq.io/cc';
     }
 
     const token = await getToken(base, publicKey, privateKey);
@@ -86,26 +81,15 @@ export async function POST(request) {
       order_amount: { amount_in_cents: amountCents, currency: 'USD' },
       requires_shipping_info: Boolean(body.collectShipping),
     };
-
     if (body.send && (body.phone || body.email)) {
       order.send_checkout_url = {};
       if (body.phone) order.send_checkout_url.to_sms_phone = String(body.phone);
       if (body.email) order.send_checkout_url.to_email = String(body.email);
     }
 
-    const payload = {
-      cancel_url: { href: cancelHref },
-      complete_url: { href: completeHref },
-      order,
-    };
-
+    const payload = { cancel_url: { href: cancelHref }, complete_url: { href: completeHref }, order };
     if (firstName || body.email || body.phone) {
-      payload.customer = {
-        first_name: firstName,
-        last_name: lastName,
-        email: body.email || undefined,
-        phone: body.phone || undefined,
-      };
+      payload.customer = { first_name: firstName, last_name: lastName, email: body.email || undefined, phone: body.phone || undefined };
     }
 
     const r = await fetch(`${base}/v2/session`, {
@@ -121,8 +105,28 @@ export async function POST(request) {
     const checkoutUrl = data.order && data.order.checkout_url;
     const shortUrl = checkoutUrl ? await shorten(checkoutUrl) : null;
 
+    const db = supabaseAdmin();
+    if (db) {
+      try {
+        await db.from('sezzle_links').insert({
+          reference,
+          order_uuid: (data.order && data.order.uuid) || null,
+          title: body.title || null,
+          description: body.description || null,
+          amount_cents: amountCents,
+          currency: 'USD',
+          customer_name: name || null,
+          email: body.email || null,
+          phone: body.phone || null,
+          checkout_url: checkoutUrl,
+          short_url: shortUrl,
+          status: body.send ? 'sent' : 'created',
+        });
+      } catch (e) { /* ignore DB errors */ }
+    }
+
     return Response.json({
-      url: shortUrl || checkoutUrl, // short link if Dub is set up, else the long one
+      url: shortUrl || checkoutUrl,
       long_url: checkoutUrl,
       shortened: Boolean(shortUrl),
       uuid: data.order && data.order.uuid,
