@@ -105,7 +105,7 @@ export async function POST(request) {
     const checkoutUrl = data.order && data.order.checkout_url;
     const shortUrl = checkoutUrl ? await shorten(checkoutUrl) : null;
 
-    const db = supabaseAdmin();
+       const db = getSupabaseAdmin();
     if (db) {
       try {
         await db.from('sezzle_links').insert({
