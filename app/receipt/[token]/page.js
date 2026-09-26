@@ -6,6 +6,7 @@
 
 import { getReceiptByToken } from '@/lib/receipts';
 import PrintButton from './PrintButton';
+import CardBrand from './CardBrand';
 
 export const dynamic = 'force-dynamic';
 
@@ -120,7 +121,12 @@ export default async function ReceiptPage(props) {
   }
 
   const refunded = r.status === 'refunded';
-  const method = [brandName(r.card_brand) || t.card, r.card_last4 ? '•••• ' + r.card_last4 : ''].filter(Boolean).join(' ');
+  const method = (
+    <span className="rcpt-method">
+      <CardBrand brand={r.card_brand} label={brandName(r.card_brand) || t.card} />
+      {r.card_last4 ? <span>{'•••• ' + r.card_last4}</span> : null}
+    </span>
+  );
 
   const rows = [
     r.customer_name ? { k: t.billedTo, v: r.customer_name, sub: r.customer_email } : null,
@@ -220,6 +226,8 @@ const css = '' +
 '.rcpt-row dd { margin:0; text-align:right; font-size:14px; min-width:0; overflow-wrap:anywhere; }' +
 '.rcpt-row dd .sub { display:block; font-size:11.5px; color:var(--sand); margin-top:2px; }' +
 '.rcpt-row dd .mono { font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12.5px; letter-spacing:.02em; }' +
+'.rcpt-method { display:inline-flex; align-items:center; gap:8px; }' +
+'.rcpt-brand { height:22px; width:auto; display:block; border-radius:4px; }' +
 '.rcpt-total { display:flex; justify-content:space-between; align-items:baseline; margin:18px 4px 0; padding-top:16px; border-top:2px solid var(--taupe); }' +
 '.rcpt-total span { font-size:11px; letter-spacing:.2em; text-transform:uppercase; }' +
 '.rcpt-total b { font-size:30px; }' +
