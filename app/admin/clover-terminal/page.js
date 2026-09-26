@@ -59,6 +59,16 @@ const T = {
     confirm: 'Charge {amt} to this card?',
     sdkFail: 'Could not load Clover’s card fields. Check your connection and reload.',
     limit: 'Limit per charge:',
+    receiptLabel: 'Receipt link',
+    copy: 'Copy',
+    copied: 'Copied!',
+    text: 'Text',
+    emailIt: 'Email',
+    open: 'Open',
+    receiptFailed: 'The payment went through, but the receipt could not be created:',
+    longLinkNote: 'Short link unavailable — this is the full receipt link.',
+    msgBody: 'Hi{name}! Here is your receipt from Erendira’s Boutique: {url}',
+    mailSubject: 'Your receipt from Erendira’s Boutique',
   },
   es: {
     eyebrow: 'ADMIN STUDIO',
@@ -108,6 +118,16 @@ const T = {
     confirm: '¿Cobrar {amt} a esta tarjeta?',
     sdkFail: 'No se pudieron cargar los campos de Clover. Revisa tu conexión y recarga.',
     limit: 'Límite por cobro:',
+    receiptLabel: 'Enlace del recibo',
+    copy: 'Copiar',
+    copied: '¡Copiado!',
+    text: 'Mensaje',
+    emailIt: 'Correo',
+    open: 'Abrir',
+    receiptFailed: 'El pago se hizo, pero no se pudo crear el recibo:',
+    longLinkNote: 'Enlace corto no disponible — este es el enlace completo del recibo.',
+    msgBody: '¡Hola{name}! Aquí está tu recibo de Erendira’s Boutique: {url}',
+    mailSubject: 'Tu recibo de Erendira’s Boutique',
   },
 };
 
@@ -161,6 +181,7 @@ export default function CloverTerminalPage(props) {
   const [charging, setCharging] = useState(false);
   const [result, setResult] = useState(null);
   const [ledgerMsg, setLedgerMsg] = useState('');
+  const [copied, setCopied] = useState(false);
 
   const cloverRef = useRef(null);
   const mountedRef = useRef(false);
@@ -301,6 +322,22 @@ export default function CloverTerminalPage(props) {
     }
   }
 
+  function receiptMessage() {
+    const first = name.trim().split(' ')[0];
+    return t.msgBody.replace('{name}', first ? ' ' + first : '').replace('{url}', result.receiptUrl);
+  }
+
+  async function copyReceipt() {
+    try {
+      await navigator.clipboard.writeText(result.receiptUrl);
+    } catch (e) {
+      window.prompt(t.receiptLabel, result.receiptUrl);
+      return;
+    }
+    setCopied(true);
+    setTimeout(function () { setCopied(false); }, 2000);
+  }
+
   function startOver() {
     // Clover's card fields can't be cleared safely, so reload for a fresh set.
     window.location.reload();
@@ -366,6 +403,29 @@ export default function CloverTerminalPage(props) {
             {t.successSub} {result.brand ? String(result.brand).toUpperCase() : ''} {result.last4 ? '•••• ' + result.last4 : ''}
             {name ? ' · ' + name : ''}
           </p>
+          {result.receiptUrl && (
+            <div className="ebt-receipt">
+              <span className="eba-lb">{t.receiptLabel}</span>
+              <div className="ebt-linkrow">
+                <a className="ebt-link" href={result.receiptUrl} target="_blank" rel="noopener noreferrer">
+                  {result.receiptUrl.replace(/^https?:\/\//, '')}
+                </a>
+              </div>
+              {!result.receiptShort && <p className="ebt-hint">{t.longLinkNote}</p>}
+              <div className="eba-actions ebt-center">
+                <button className="eba-btn eba-btn-dark" type="button" onClick={copyReceipt}>{copied ? t.copied : t.copy}</button>
+                <a className="eba-btn" href={'sms:?&body=' + encodeURIComponent(receiptMessage())}>{t.text}</a>
+                <a
+                  className="eba-btn"
+                  href={'mailto:' + encodeURIComponent(email.trim()) + '?subject=' + encodeURIComponent(t.mailSubject) + '&body=' + encodeURIComponent(receiptMessage())}
+                >
+                  {t.emailIt}
+                </a>
+                <a className="eba-btn" href={result.receiptUrl} target="_blank" rel="noopener noreferrer">{t.open}</a>
+              </div>
+            </div>
+          )}
+          {result.receiptError && <div className="eba-err">{t.receiptFailed} {result.receiptError}</div>}
           {ledgerMsg && <div className="eba-notice">{ledgerMsg}</div>}
           <div className="eba-actions ebt-center">
             <button className="eba-btn eba-btn-dark" type="button" onClick={startOver}>{t.newCharge}</button>
@@ -483,6 +543,10 @@ const css = '' +
 '  align-items:center; justify-content:center; font-size:26px; margin:0 auto 14px; }' +
 '.ebt-big { margin:0 0 6px; font-size:52px; line-height:1; color:var(--taupe); }' +
 '.ebt-center { justify-content:center; }' +
+'.ebt-receipt { margin:22px auto 0; max-width:520px; padding:18px; background:var(--wash); border:1px solid var(--line); border-radius:20px; }' +
+'.ebt-linkrow { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:12px 14px; }' +
+'.ebt-link { font-size:16px; color:var(--taupe); text-decoration:underline; text-underline-offset:3px; overflow-wrap:anywhere; }' +
+'.ebt-receipt .eba-actions { margin-top:14px; }' +
 '@media (max-width:560px) {' +
 ' .ebt-cardfields { grid-template-columns:repeat(2,minmax(0,1fr)); }' +
 ' .ebt-field:last-child { grid-column:1 / -1; }' +

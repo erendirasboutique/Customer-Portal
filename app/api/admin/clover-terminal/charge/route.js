@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { cloverUrls, isUnlocked, maxChargeCents, missingEnv, savePaymentRow } from '@/lib/cloverTerminal';
+import { createReceipt } from '@/lib/receipts';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -53,6 +54,7 @@ async function recordCharge(charge, info) {
     customer_name: info.name || null,
     customer_email: info.email || null,
     note: info.note || null,
+    receipt_url: info.receiptUrl || null,
     created_at: new Date(charge.created || Date.now()).toISOString(),
   });
   return true;
@@ -98,7 +100,8 @@ export async function POST(req) {
     ecomind: 'moto', // entered by staff (mail / telephone order)
     description: description,
   };
-  if (email) payload.receipt_email = email;
+  // No receipt_email to Clover: customers get your branded receipt link instead,
+  // so they don't receive two different receipts.
 
   const ip = (req.headers.get('x-forwarded-for') || '').split(',')[0].trim() || '127.0.0.1';
   const idempotencyKey = String(body.idempotencyKey || '').slice(0, 64) || crypto.randomUUID();
@@ -136,11 +139,23 @@ export async function POST(req) {
     return NextResponse.json({ error: 'Could not reach Clover. The card was not charged. Try again.' }, { status: 502 });
   }
 
-  // The card is charged at this point. Recording it is a bonus: if it fails,
-  // "Sync Clover" still brings the payment in, so never report failure here.
+  // The card is charged at this point. Everything below is a bonus: if any of
+  // it fails the payment still stands, so never report the charge as failed.
+
+  // 1. Branded receipt page + Dub short link.
+  let receipt = null;
+  let receiptError = null;
+  try {
+    receipt = await createReceipt(charge, { cents, name, email, note }, req.nextUrl.origin);
+  } catch (err) {
+    console.error('Charged, but could not create receipt', err);
+    receiptError = err.message || 'Could not create the receipt.';
+  }
+
+  // 2. Payment ledger ("Sync Clover" brings it in if this is skipped).
   let recorded = false;
   try {
-    recorded = await recordCharge(charge, { cents, name, email, note });
+    recorded = await recordCharge(charge, { cents, name, email, note, receiptUrl: receipt && receipt.url });
   } catch (err) {
     console.error('Charged, but could not record in payments table', err);
   }
@@ -153,5 +168,9 @@ export async function POST(req) {
     brand: src.brand || null,
     last4: src.last4 || null,
     recorded: recorded,
+    receiptUrl: receipt ? receipt.url : null,
+    receiptShort: Boolean(receipt && receipt.shortUrl),
+    receiptNumber: receipt ? receipt.number : null,
+    receiptError: receiptError,
   });
 }
