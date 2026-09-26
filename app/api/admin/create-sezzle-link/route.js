@@ -53,7 +53,17 @@ export async function POST(request) {
       return Response.json({ error: 'Enter a valid amount (minimum $1.00).' }, { status: 400 });
     }
 
-    const reference = (body.reference && String(body.reference).trim()) || `EB-${Date.now()}`;
+        const db = getSupabaseAdmin();
+
+    let reference = (body.reference && String(body.reference).trim()) || '';
+    if (!reference) {
+      if (db) {
+        const { data: nextRef } = await db.rpc('next_sezzle_ref');
+        reference = nextRef || `EB-SZL-${Date.now()}`;
+      } else {
+        reference = `EB-SZL-${Date.now()}`;
+      }
+    }
     const description = [body.title, body.description].filter(Boolean).join(' — ')
       || `Erendira\u2019s Boutique #${reference}`;
 
