@@ -3,7 +3,7 @@ import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 export const runtime = 'nodejs';
 
 export async function GET() {
-  const db = supabaseAdmin();
+    const db = getSupabaseAdmin();
   if (!db) return Response.json({ links: [] });
   const { data, error } = await db
     .from('sezzle_links')
