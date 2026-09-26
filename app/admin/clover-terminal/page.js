@@ -2,30 +2,39 @@
 
 /* ============================================================
    /admin/clover-terminal — take a card payment by hand (phone orders).
+   Renders inside AdminShell like every other admin page.
    Card numbers are typed into Clover's secure fields (iframes), so they
    never touch this site. The server only receives a one-time token.
    ============================================================ */
 
 import { useEffect, useRef, useState } from 'react';
+import AdminShell from '@/components/AdminShell';
 
 const T = {
   en: {
-    back: '← Admin',
     eyebrow: 'ADMIN STUDIO',
     title: 'Card Terminal',
     sub: 'Take a card payment by phone. Charges go through Clover.',
-    sandbox: 'SANDBOX — test cards only',
-    lockedTitle: 'Terminal locked',
-    lockedSub: 'Enter the terminal passcode to take payments on this device.',
+    heroLabel: 'Charge',
+    heroCap: 'ready to run',
+    tipLabel: 'Quick tip',
+    tipBody: 'Read the amount back to the customer before you press Charge. Refunds are done in your Clover dashboard.',
+    sandbox: 'SANDBOX MODE — test cards only, no real money moves.',
+    lockedEyebrow: 'LOCKED',
+    lockedTitle: 'Enter Passcode',
+    lockedSub: 'The terminal stays unlocked on this device for 12 hours.',
     passcode: 'Passcode',
     unlock: 'Unlock',
     unlocking: 'Checking…',
     lock: 'Lock terminal',
+    detailsEyebrow: 'PHONE ORDER',
+    detailsTitle: 'New Charge',
     amount: 'Amount',
     name: 'Customer name',
-    email: 'Email for receipt (optional)',
-    note: 'Note (optional)',
-    notePh: 'e.g. Order #1042, pink dress',
+    email: 'Email for receipt',
+    emailPh: 'optional',
+    note: 'Note',
+    notePh: 'optional — e.g. Order #1042, pink dress',
     card: 'Card',
     cardNumber: 'Card number',
     exp: 'Expiration',
@@ -34,7 +43,9 @@ const T = {
     charge: 'Charge',
     charging: 'Charging…',
     loading: 'Loading secure card fields…',
-    successTitle: 'Payment approved',
+    secure: 'Card details go straight to Clover and are never stored here.',
+    successEyebrow: 'APPROVED',
+    successTitle: 'Payment Approved',
     successSub: 'charged to',
     savedLedger: 'Saved to the payment ledger.',
     syncing: 'Adding it to the payment ledger…',
@@ -50,22 +61,29 @@ const T = {
     limit: 'Limit per charge:',
   },
   es: {
-    back: '← Admin',
     eyebrow: 'ADMIN STUDIO',
     title: 'Terminal de Tarjeta',
     sub: 'Cobra con tarjeta por teléfono. Los cobros pasan por Clover.',
-    sandbox: 'SANDBOX — solo tarjetas de prueba',
-    lockedTitle: 'Terminal bloqueada',
-    lockedSub: 'Escribe el código de la terminal para cobrar en este dispositivo.',
+    heroLabel: 'Cobro',
+    heroCap: 'listo para cobrar',
+    tipLabel: 'Consejo',
+    tipBody: 'Confírmale el monto a la clienta antes de cobrar. Los reembolsos se hacen en tu panel de Clover.',
+    sandbox: 'MODO SANDBOX — solo tarjetas de prueba, no se mueve dinero real.',
+    lockedEyebrow: 'BLOQUEADA',
+    lockedTitle: 'Escribe el Código',
+    lockedSub: 'La terminal queda desbloqueada en este dispositivo por 12 horas.',
     passcode: 'Código',
     unlock: 'Desbloquear',
     unlocking: 'Revisando…',
     lock: 'Bloquear terminal',
+    detailsEyebrow: 'PEDIDO POR TELÉFONO',
+    detailsTitle: 'Nuevo Cobro',
     amount: 'Monto',
     name: 'Nombre de la clienta',
-    email: 'Correo para recibo (opcional)',
-    note: 'Nota (opcional)',
-    notePh: 'ej. Pedido #1042, vestido rosa',
+    email: 'Correo para recibo',
+    emailPh: 'opcional',
+    note: 'Nota',
+    notePh: 'opcional — ej. Pedido #1042, vestido rosa',
     card: 'Tarjeta',
     cardNumber: 'Número de tarjeta',
     exp: 'Vencimiento',
@@ -74,7 +92,9 @@ const T = {
     charge: 'Cobrar',
     charging: 'Cobrando…',
     loading: 'Cargando campos seguros…',
-    successTitle: 'Pago aprobado',
+    secure: 'Los datos de la tarjeta van directo a Clover y nunca se guardan aquí.',
+    successEyebrow: 'APROBADO',
+    successTitle: 'Pago Aprobado',
     successSub: 'cobrado a',
     savedLedger: 'Guardado en el libro de pagos.',
     syncing: 'Agregándolo al libro de pagos…',
@@ -91,7 +111,8 @@ const T = {
   },
 };
 
-const LANG_KEY = 'ebtq-terminal-lang';
+// Same key AdminShell uses, so the language matches every other admin page.
+const LANG_KEY = 'eb-lang';
 
 function money(n) {
   return '$' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -121,9 +142,10 @@ function newKey() {
   return String(Date.now()) + Math.random().toString(16).slice(2);
 }
 
-export default function CloverTerminalPage() {
+export default function CloverTerminalPage(props) {
+  const admin = props && props.admin;
   const [lang, setLang] = useState('en');
-  const t = T[lang];
+  const t = T[lang] || T.en;
 
   const [config, setConfig] = useState(null);   // null = loading
   const [error, setError] = useState('');
@@ -151,11 +173,6 @@ export default function CloverTerminalPage() {
     loadConfig();
   }, []);
 
-  function changeLang(l) {
-    setLang(l);
-    try { window.localStorage.setItem(LANG_KEY, l); } catch (e) { /* ignore */ }
-  }
-
   async function loadConfig() {
     setError('');
     try {
@@ -179,8 +196,8 @@ export default function CloverTerminalPage() {
         const clover = new window.Clover(config.publicKey, { merchantId: config.merchantId });
         const elements = clover.elements();
         const styles = {
-          body: { fontFamily: 'Helvetica, Arial, sans-serif' },
-          input: { fontSize: '16px', color: '#3d3128' },
+          body: { fontFamily: 'Georgia, serif' },
+          input: { fontSize: '15px', color: '#da5e16' },
         };
         elements.create('CARD_NUMBER', styles).mount('#ebt-card-number');
         elements.create('CARD_DATE', styles).mount('#ebt-card-date');
@@ -292,78 +309,89 @@ export default function CloverTerminalPage() {
   const amtNum = Number(String(amount).replace(/[^0-9.]/g, '')) || 0;
 
   return (
-    <main className="ebt">
+    <AdminShell
+      admin={admin}
+      active="card-terminal"
+      lang={lang}
+      onLang={setLang}
+      eyebrow={t.eyebrow}
+      title={t.title}
+      subtitle={t.sub}
+      heroStat={{ label: t.heroLabel, value: amtNum ? money(amtNum) : '$0.00', caption: t.heroCap }}
+      tip={{ label: t.tipLabel, body: t.tipBody }}
+    >
       <style>{css}</style>
-      <div className="ebt-wrap">
-        <div className="ebt-top">
-          <a className="ebt-back" href="/admin">{t.back}</a>
-          <div className="ebt-langs" role="group" aria-label="Language">
-            {['en', 'es'].map(function (l) {
-              return (
-                <button key={l} type="button" className={lang === l ? 'on' : ''} onClick={function () { changeLang(l); }}>
-                  {l.toUpperCase()}
-                </button>
-              );
-            })}
-          </div>
-        </div>
 
-        <p className="ebt-eyebrow">{t.eyebrow}</p>
-        <h1 className="ebt-title">{t.title}</h1>
-        <p className="ebt-sub">{t.sub}</p>
-        <div className="ebt-rule" />
+      {config && config.sandbox && <div className="eba-notice">{t.sandbox}</div>}
 
-        {config && config.sandbox && <div className="ebt-sandbox">{t.sandbox}</div>}
+      {config === null && (
+        <div className="eba-panel"><p className="eba-muted">{t.loading}</p></div>
+      )}
 
-        {config === null && <p className="ebt-muted">{t.loading}</p>}
-
-        {/* ---------- Locked ---------- */}
-        {config && !config.unlocked && !config.broken && (
-          <form className="ebt-card ebt-lock" onSubmit={unlock}>
-            <h2>{t.lockedTitle}</h2>
-            <p className="ebt-muted">{t.lockedSub}</p>
-            <label className="ebt-label" htmlFor="ebt-pass">{t.passcode}</label>
+      {/* ---------- Locked ---------- */}
+      {config && !config.unlocked && !config.broken && (
+        <form className="eba-panel ebt-narrow" onSubmit={unlock}>
+          <p className="eba-eyebrow">{t.lockedEyebrow}</p>
+          <h2>{t.lockedTitle}</h2>
+          <p className="eba-muted ebt-gap">{t.lockedSub}</p>
+          <div className="eba-field">
+            <label className="eba-lb" htmlFor="ebt-pass">{t.passcode}</label>
             <input
               id="ebt-pass"
-              className="ebt-input"
+              className="eba-in"
               type="password"
               autoComplete="off"
               value={passcode}
               onChange={function (e) { setPasscode(e.target.value); }}
               autoFocus
             />
-            <button className="ebt-btn" type="submit" disabled={unlocking || !passcode}>
+          </div>
+          <div className="eba-actions">
+            <button className="eba-btn eba-btn-dark" type="submit" disabled={unlocking || !passcode}>
               {unlocking ? t.unlocking : t.unlock}
             </button>
-          </form>
-        )}
-
-        {/* ---------- Success ---------- */}
-        {result && (
-          <div className="ebt-card ebt-success">
-            <div className="ebt-check" aria-hidden="true">{'✓'}</div>
-            <h2>{t.successTitle}</h2>
-            <p className="ebt-big">{money(result.amount)}</p>
-            <p className="ebt-muted">
-              {t.successSub} {result.brand ? String(result.brand).toUpperCase() : ''} {result.last4 ? '•••• ' + result.last4 : ''}
-              {name ? ' · ' + name : ''}
-            </p>
-            {ledgerMsg && <p className="ebt-ledger">{ledgerMsg}</p>}
-            <div className="ebt-row">
-              <button className="ebt-btn" type="button" onClick={startOver}>{t.newCharge}</button>
-              <a className="ebt-btn ghost" href="/admin">{t.toDashboard}</a>
-            </div>
           </div>
-        )}
+          {error && <div className="eba-err" role="alert">{error}</div>}
+        </form>
+      )}
 
-        {/* ---------- Charge form ---------- */}
-        {config && config.unlocked && !result && (
-          <form className="ebt-card" onSubmit={charge}>
-            <label className="ebt-label" htmlFor="ebt-amt">{t.amount}</label>
+      {/* ---------- Success ---------- */}
+      {result && (
+        <div className="eba-panel ebt-success">
+          <div className="ebt-check" aria-hidden="true">{'✓'}</div>
+          <p className="eba-eyebrow">{t.successEyebrow}</p>
+          <h2>{t.successTitle}</h2>
+          <p className="ebt-big eba-display">{money(result.amount)}</p>
+          <p className="eba-muted">
+            {t.successSub} {result.brand ? String(result.brand).toUpperCase() : ''} {result.last4 ? '•••• ' + result.last4 : ''}
+            {name ? ' · ' + name : ''}
+          </p>
+          {ledgerMsg && <div className="eba-notice">{ledgerMsg}</div>}
+          <div className="eba-actions ebt-center">
+            <button className="eba-btn eba-btn-dark" type="button" onClick={startOver}>{t.newCharge}</button>
+            <a className="eba-btn" href="/admin">{t.toDashboard}</a>
+          </div>
+        </div>
+      )}
+
+      {/* ---------- Charge form ---------- */}
+      {config && config.unlocked && !result && (
+        <form className="eba-panel" onSubmit={charge}>
+          <div className="eba-panelhead">
+            <div>
+              <p className="eba-eyebrow">{t.detailsEyebrow}</p>
+              <h2>{t.detailsTitle}</h2>
+            </div>
+            <button className="eba-btn mini" type="button" onClick={lock}>{t.lock}</button>
+          </div>
+
+          <div className="eba-field">
+            <label className="eba-lb" htmlFor="ebt-amt">{t.amount}</label>
             <div className="ebt-amt">
-              <span>$</span>
+              <span className="eba-display">$</span>
               <input
                 id="ebt-amt"
+                className="eba-display"
                 inputMode="decimal"
                 placeholder="0.00"
                 value={amount}
@@ -371,104 +399,92 @@ export default function CloverTerminalPage() {
               />
             </div>
             {config.maxDollars ? <p className="ebt-hint">{t.limit} {money(config.maxDollars)}</p> : null}
+          </div>
 
-            <div className="ebt-grid2">
-              <div>
-                <label className="ebt-label" htmlFor="ebt-name">{t.name}</label>
-                <input id="ebt-name" className="ebt-input" value={name} onChange={function (e) { setName(e.target.value); }} autoComplete="off" />
-              </div>
-              <div>
-                <label className="ebt-label" htmlFor="ebt-email">{t.email}</label>
-                <input id="ebt-email" className="ebt-input" type="email" value={email} onChange={function (e) { setEmail(e.target.value); }} autoComplete="off" />
-              </div>
+          <div className="eba-formrow even">
+            <div className="eba-field">
+              <label className="eba-lb" htmlFor="ebt-name">{t.name}</label>
+              <input id="ebt-name" className="eba-in" value={name} onChange={function (e) { setName(e.target.value); }} autoComplete="off" />
             </div>
+            <div className="eba-field">
+              <label className="eba-lb" htmlFor="ebt-email">{t.email}</label>
+              <input id="ebt-email" className="eba-in" type="email" placeholder={t.emailPh} value={email} onChange={function (e) { setEmail(e.target.value); }} autoComplete="off" />
+            </div>
+          </div>
 
-            <label className="ebt-label" htmlFor="ebt-note">{t.note}</label>
-            <input id="ebt-note" className="ebt-input" placeholder={t.notePh} value={note} onChange={function (e) { setNote(e.target.value); }} autoComplete="off" />
+          <div className="eba-field">
+            <label className="eba-lb" htmlFor="ebt-note">{t.note}</label>
+            <input id="ebt-note" className="eba-in" placeholder={t.notePh} value={note} onChange={function (e) { setNote(e.target.value); }} autoComplete="off" />
+          </div>
 
-            <div className="ebt-section">{t.card}</div>
-            {!fieldsReady && <p className="ebt-muted">{t.loading}</p>}
+          <div className="ebt-cardbox">
+            <p className="eba-eyebrow">{t.card}</p>
+            {!fieldsReady && <p className="eba-muted">{t.loading}</p>}
             <div className={'ebt-cardfields' + (fieldsReady ? '' : ' hidden')}>
               <div className="ebt-field wide">
-                <span className="ebt-label">{t.cardNumber}</span>
+                <span className="eba-lb">{t.cardNumber}</span>
                 <div id="ebt-card-number" className="ebt-frame" />
               </div>
               <div className="ebt-field">
-                <span className="ebt-label">{t.exp}</span>
+                <span className="eba-lb">{t.exp}</span>
                 <div id="ebt-card-date" className="ebt-frame" />
               </div>
               <div className="ebt-field">
-                <span className="ebt-label">{t.cvv}</span>
+                <span className="eba-lb">{t.cvv}</span>
                 <div id="ebt-card-cvv" className="ebt-frame" />
               </div>
               <div className="ebt-field">
-                <span className="ebt-label">{t.zip}</span>
+                <span className="eba-lb">{t.zip}</span>
                 <div id="ebt-card-zip" className="ebt-frame" />
               </div>
             </div>
+            <p className="ebt-hint">{'🔒 '}{t.secure}</p>
+          </div>
 
-            <button className="ebt-btn ebt-charge" type="submit" disabled={charging || !fieldsReady}>
-              {charging ? t.charging : t.charge + (amtNum ? ' ' + money(amtNum) : '')}
-            </button>
+          <button className="eba-cta ebt-charge" type="submit" disabled={charging || !fieldsReady}>
+            <span><h3>{charging ? t.charging : t.charge + (amtNum ? ' ' + money(amtNum) : '')}</h3></span>
+            <span className="go">{'→'}</span>
+          </button>
 
-            <button className="ebt-linkbtn" type="button" onClick={lock}>{t.lock}</button>
-          </form>
-        )}
+          {error && <div className="eba-err" role="alert">{error}</div>}
+        </form>
+      )}
 
-        {error && <p className="ebt-error" role="alert">{error}</p>}
-      </div>
-    </main>
+      {config && config.broken && error && (
+        <div className="eba-panel"><div className="eba-err" role="alert">{error}</div></div>
+      )}
+    </AdminShell>
   );
 }
 
-const css = `
-.ebt { min-height: 100vh; background: #f6f1ea; color: #3d3128; font-family: inherit; padding: 32px 16px 64px; }
-.ebt * { box-sizing: border-box; font-family: inherit; }
-.ebt-wrap { max-width: 620px; margin: 0 auto; }
-.ebt-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; }
-.ebt-back { color: #3d3128; text-decoration: none; font-size: 14px; opacity: .8; }
-.ebt-back:hover { opacity: 1; }
-.ebt-langs { display: flex; border: 1px solid #3d3128; border-radius: 999px; overflow: hidden; }
-.ebt-langs button { background: transparent; border: 0; padding: 5px 12px; font-size: 12px; letter-spacing: .08em; color: #3d3128; cursor: pointer; }
-.ebt-langs button.on { background: #3d3128; color: #f6f1ea; }
-.ebt-eyebrow { font-size: 11px; letter-spacing: .22em; margin: 0 0 6px; opacity: .7; }
-.ebt-title { font-style: italic; font-weight: 400; font-size: 40px; line-height: 1.1; margin: 0; }
-.ebt-sub { margin: 8px 0 0; opacity: .75; font-size: 15px; }
-.ebt-rule { height: 2px; background: #3d3128; margin: 20px 0 24px; }
-.ebt-sandbox { background: #f3d9a4; color: #5a3d0c; font-size: 12px; letter-spacing: .1em; padding: 8px 12px; border-radius: 8px; margin-bottom: 16px; text-align: center; }
-.ebt-card { background: #fffdf9; border: 1px solid #e4d9cb; border-radius: 16px; padding: 24px; }
-.ebt-card h2 { font-style: italic; font-weight: 400; font-size: 24px; margin: 0 0 6px; }
-.ebt-lock { max-width: 380px; }
-.ebt-muted { opacity: .7; font-size: 14px; margin: 0 0 12px; }
-.ebt-hint { font-size: 12px; opacity: .6; margin: 6px 0 0; }
-.ebt-label { display: block; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; opacity: .75; margin: 16px 0 6px; }
-.ebt-input { width: 100%; padding: 11px 12px; border: 1px solid #d8cbbb; border-radius: 10px; background: #fff; color: #3d3128; font-size: 16px; }
-.ebt-input:focus { outline: 2px solid #a39382; outline-offset: 1px; }
-.ebt-amt { display: flex; align-items: baseline; gap: 6px; border-bottom: 1px dotted #a39382; padding-bottom: 6px; }
-.ebt-amt span { font-size: 32px; opacity: .6; }
-.ebt-amt input { border: 0; background: transparent; font-size: 40px; width: 100%; color: #3d3128; outline: none; }
-.ebt-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
-.ebt-section { margin: 26px 0 4px; padding-top: 16px; border-top: 1px dotted #a39382; font-style: italic; font-size: 18px; }
-.ebt-cardfields { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0 12px; }
-.ebt-cardfields.hidden { visibility: hidden; height: 0; overflow: hidden; }
-.ebt-field.wide { grid-column: 1 / -1; }
-.ebt-frame { height: 46px; border: 1px solid #d8cbbb; border-radius: 10px; background: #fff; padding: 0 10px; overflow: hidden; }
-.ebt-frame iframe { width: 100% !important; height: 44px !important; border: 0; }
-.ebt-btn { display: inline-flex; justify-content: center; align-items: center; margin-top: 18px; padding: 13px 22px; border-radius: 999px; border: 1px solid #3d3128; background: #3d3128; color: #f6f1ea; font-size: 15px; cursor: pointer; text-decoration: none; }
-.ebt-btn:disabled { opacity: .5; cursor: default; }
-.ebt-btn.ghost { background: transparent; color: #3d3128; }
-.ebt-charge { width: 100%; margin-top: 26px; font-size: 17px; padding: 15px; }
-.ebt-linkbtn { display: block; margin: 16px auto 0; background: none; border: 0; color: #3d3128; opacity: .6; font-size: 13px; text-decoration: underline; cursor: pointer; }
-.ebt-error { margin-top: 16px; background: #fbe9e6; color: #8a2b1d; border: 1px solid #efc4bb; border-radius: 10px; padding: 12px 14px; font-size: 14px; }
-.ebt-success { text-align: center; }
-.ebt-check { width: 52px; height: 52px; border-radius: 50%; background: #3d3128; color: #f6f1ea; display: flex; align-items: center; justify-content: center; font-size: 26px; margin: 0 auto 12px; }
-.ebt-big { font-size: 40px; margin: 4px 0; }
-.ebt-ledger { font-size: 13px; opacity: .75; margin: 10px 0 0; }
-.ebt-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-@media (max-width: 560px) {
-  .ebt-grid2 { grid-template-columns: 1fr; }
-  .ebt-cardfields { grid-template-columns: 1fr 1fr; }
-  .ebt-field:last-child { grid-column: 1 / -1; }
-  .ebt-title { font-size: 32px; }
-}
-`;
+/* Only the bits AdminShell doesn't already style. */
+const css = '' +
+'.ebt-narrow { max-width:520px; }' +
+'.ebt-gap { margin:-8px 0 16px; }' +
+'.ebt-hint { margin:6px 0 0; font-size:11.5px; color:var(--sand); }' +
+'.ebt-amt { display:flex; align-items:baseline; gap:6px; border-bottom:1px dashed var(--line); padding-bottom:6px; }' +
+'.ebt-amt span { font-size:34px; color:var(--sand); }' +
+'.ebt-amt input { border:0; outline:0; background:transparent; width:100%; min-width:0; font-size:46px; line-height:1.1; color:var(--taupe); }' +
+'.eba .ebt-amt input:focus-visible { outline:0; }' +
+'.ebt-amt:focus-within { border-bottom-color:var(--taupe); }' +
+'.eba-formrow > .eba-field { margin-top:0; }' +
+'.ebt-cardbox .eba-eyebrow { margin-bottom:12px; }' +
+'.ebt-amt input::placeholder { color:var(--line); }' +
+'.ebt-cardbox { margin-top:20px; padding:18px; background:var(--wash); border:1px solid var(--line); border-radius:20px; }' +
+'.ebt-cardfields { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }' +
+'.ebt-cardfields.hidden { visibility:hidden; height:0; overflow:hidden; }' +
+'.ebt-field.wide { grid-column:1 / -1; }' +
+'.ebt-frame { height:46px; border:1px solid var(--line); border-radius:14px; background:var(--card); padding:0 12px; overflow:hidden; }' +
+'.ebt-frame iframe { width:100% !important; height:44px !important; border:0; }' +
+'.ebt-charge { margin-top:18px; }' +
+'.ebt-charge:disabled { opacity:.55; cursor:default; }' +
+'.ebt-success { text-align:center; }' +
+'.ebt-check { width:54px; height:54px; border-radius:50%; background:var(--accent); color:var(--cream); display:flex;' +
+'  align-items:center; justify-content:center; font-size:26px; margin:0 auto 14px; }' +
+'.ebt-big { margin:0 0 6px; font-size:52px; line-height:1; color:var(--taupe); }' +
+'.ebt-center { justify-content:center; }' +
+'@media (max-width:560px) {' +
+' .ebt-cardfields { grid-template-columns:repeat(2,minmax(0,1fr)); }' +
+' .ebt-field:last-child { grid-column:1 / -1; }' +
+' .ebt-amt input { font-size:38px; }' +
+'}';
