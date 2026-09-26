@@ -9,6 +9,7 @@
 // Props:
 //   admin      { name, email, avatar_url, role }  — used for the profile card
 //   active     'overview' | 'payment-links' | 'sezzle' | 'gift-cards' | 'live-link' | 'checks'
+//              | 'team' | 'branding' | 'integrations' | 'settings' | 'help'  (profile menu pages)
 //   lang       'en' | 'es'   (optional — omit and the shell manages it itself)
 //   onLang     (l) => void   (optional — pass when the page owns lang state)
 //   eyebrow    small caps line above the hero title
@@ -41,6 +42,11 @@ const T = {
     shipping: 'Shipping',
     logOut: 'Log out',
     account: 'Account',
+    team: 'Team & permissions',
+    branding: 'Branding',
+    integrations: 'Integrations',
+    settings: 'Settings',
+    help: 'Help',
   },
   es: {
     brand: "ERENDIRA'S BOUTIQUE",
@@ -56,6 +62,11 @@ const T = {
     shipping: 'Envíos',
     logOut: 'Cerrar sesión',
     account: 'Cuenta',
+    team: 'Equipo y permisos',
+    branding: 'Marca',
+    integrations: 'Integraciones',
+    settings: 'Configuración',
+    help: 'Ayuda',
   },
 };
 
@@ -88,6 +99,11 @@ const IconTruck = function () { return (<Icon><circle cx="7" cy="17" r="2" /><ci
 const IconExternal = function () { return (<Icon size={11}><path d="M7 17L17 7" /><path d="M8 7h9v9" /></Icon>); };
 const IconChevron = function () { return (<Icon size={13}><path d="M6 9l6 6 6-6" /></Icon>); };
 const IconLogout = function () { return (<Icon size={14}><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" /><path d="M16 17l5-5-5-5" /><path d="M21 12H9" /></Icon>); };
+const IconUsers = function () { return (<Icon size={14}><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20a6.5 6.5 0 0113 0" /><path d="M16 4.5a3.5 3.5 0 010 7" /><path d="M18 14.5a6.5 6.5 0 013.5 5.5" /></Icon>); };
+const IconPalette = function () { return (<Icon size={14}><path d="M12 3a9 9 0 100 18c1.1 0 1.7-.9 1.4-1.8l-.3-.9a1.6 1.6 0 011.5-2.1H17a4 4 0 004-4c0-5-4-9.2-9-9.2z" /><circle cx="7.5" cy="11" r="1" /><circle cx="10" cy="7" r="1" /><circle cx="15" cy="7.5" r="1" /></Icon>); };
+const IconPlug = function () { return (<Icon size={14}><path d="M9 3v5M15 3v5" /><path d="M6 8h12v3a6 6 0 01-12 0V8z" /><path d="M12 17v4" /></Icon>); };
+const IconGear = function () { return (<Icon size={14}><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z" /></Icon>); };
+const IconHelp = function () { return (<Icon size={14}><circle cx="12" cy="12" r="9" /><path d="M9.5 9a2.5 2.5 0 015 .5c0 1.7-2.5 2-2.5 3.5" /><path d="M12 17h.01" /></Icon>); };
 
 function initials(name) {
   return (name || '?')
@@ -162,6 +178,9 @@ export const shellCss = '' +
 '.eba-menu button { display:flex; align-items:center; gap:9px; width:100%; border:0; background:transparent;' +
 '  padding:12px 14px; text-align:left; color:var(--taupe); font-size:13px; }' +
 '.eba-menu button:hover { background:var(--wash); }' +
+'.eba-menu a { display:flex; align-items:center; gap:9px; width:100%; padding:11px 14px; color:var(--taupe); font-size:13px; }' +
+'.eba-menu a:hover, .eba-menu a.on { background:var(--wash); }' +
+'.eba-menu-sep { border-top:1px solid var(--line); }' +
 
 /* main */
 '.eba-main { min-width:0; display:grid; gap:16px; }' +
@@ -420,6 +439,13 @@ export default function AdminShell(props) {
     { key: 'live-link', href: '/admin/live-link', label: t.liveLink, icon: <IconBroadcast /> },
     { key: 'checks', href: '/admin/checks', label: t.checks, icon: <IconCheck /> },
   ];
+  const accountNav = [
+    { key: 'team', href: '/admin/team', label: t.team, icon: <IconUsers /> },
+    { key: 'branding', href: '/admin/branding', label: t.branding, icon: <IconPalette /> },
+    { key: 'integrations', href: '/admin/integrations', label: t.integrations, icon: <IconPlug /> },
+    { key: 'settings', href: '/admin/settings', label: t.settings, icon: <IconGear /> },
+    { key: 'help', href: '/admin/help', label: t.help, icon: <IconHelp /> },
+  ];
 
   return (
     <main className="eba">
@@ -492,6 +518,14 @@ export default function AdminShell(props) {
                   <p className="n">{admin?.name || t.account}</p>
                   <p className="e">{admin?.email}{admin?.role ? ' · ' + admin.role : ''}</p>
                 </div>
+                {accountNav.map(function (item) {
+                  return (
+                    <a key={item.key} role="menuitem" href={item.href} className={props.active === item.key ? 'on' : ''} aria-current={props.active === item.key ? 'page' : undefined}>
+                      {item.icon}{item.label}
+                    </a>
+                  );
+                })}
+                <div className="eba-menu-sep" />
                 <button role="menuitem" onClick={logout}><IconLogout />{t.logOut}</button>
               </div>
             )}
