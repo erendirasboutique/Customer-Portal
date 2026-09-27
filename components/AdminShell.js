@@ -8,7 +8,9 @@
 //
 // Props:
 //   admin      { name, email, avatar_url, role }  — used for the profile card
-//   active     'overview' | 'payment-links' | 'sezzle' | 'card-terminal' | 'stripe-terminal' | 'receipts' | 'gift-cards' | 'live-link' | 'checks'
+//   active     'overview' | 'payment-links' | 'sezzle' | 'card-terminal' | 'stripe-terminal' | 'receipts'
+//              | 'gift-cards' | 'gift-card-sales'
+//              | 'live-link' | 'live-schedule' | 'checks'
 //              | 'team' | 'branding' | 'integrations' | 'settings' | 'help'  (profile menu pages)
 //   lang       'en' | 'es'   (optional — omit and the shell manages it itself)
 //   onLang     (l) => void   (optional — pass when the page owns lang state)
@@ -39,7 +41,9 @@ const T = {
     stripeTerminal: 'Stripe terminal',
     receipts: 'Receipts',
     giftCards: 'Gift cards',
+    giftCardSales: 'Gift card sales',
     liveLink: 'Live link',
+    liveSchedule: 'Live schedule',
     checks: 'Checks',
     orders: 'Orders',
     shipping: 'Shipping',
@@ -62,7 +66,9 @@ const T = {
     stripeTerminal: 'Terminal Stripe',
     receipts: 'Recibos',
     giftCards: 'Tarjetas de regalo',
+    giftCardSales: 'Ventas de tarjetas',
     liveLink: 'Enlace en vivo',
+    liveSchedule: 'Calendario de lives',
     checks: 'Cheques',
     orders: 'Pedidos',
     shipping: 'Envíos',
@@ -97,11 +103,13 @@ function Icon(props) {
 const IconHome = function () { return (<Icon><path d="M5 12l7-8 7 8" /><path d="M6 10v9a1 1 0 001 1h10a1 1 0 001-1v-9" /></Icon>); };
 const IconLink = function () { return (<Icon><path d="M9 15l6-6" /><path d="M11 6l.5-.5a4.95 4.95 0 017 7L18 13" /><path d="M13 18l-.5.5a4.95 4.95 0 01-7-7L6 11" /></Icon>); };
 const IconSezzle = function () { return (<Icon><path d="M4 8h13a3 3 0 013 3v0a3 3 0 01-3 3H7a3 3 0 01-3-3" /><path d="M8 5v3" /><path d="M16 14v3" /></Icon>); };
+const IconTerminal = function () { return (<Icon><rect x="6" y="2.5" width="12" height="19" rx="2" /><path d="M9 6.5h6v3.5H9z" /><path d="M9 14h.01M12 14h.01M15 14h.01M9 17.5h.01M12 17.5h.01M15 17.5h.01" /></Icon>); };
 const IconCard = function () { return (<Icon><rect x="2.5" y="5" width="19" height="14" rx="2.5" /><rect x="5.5" y="8.5" width="4" height="3" rx=".6" /><path d="M5.5 15h6M14 15h4.5" /></Icon>); };
 const IconReceipt = function () { return (<Icon><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3z" /><path d="M9 8h6M9 12h6M9 16h3" /></Icon>); };
-const IconTerminal = function () { return (<Icon><rect x="6" y="2.5" width="12" height="19" rx="2" /><path d="M9 6.5h6v3.5H9z" /><path d="M9 14h.01M12 14h.01M15 14h.01M9 17.5h.01M12 17.5h.01M15 17.5h.01" /></Icon>); };
 const IconGift = function () { return (<Icon><path d="M3 9h18v3H3z" /><path d="M12 9v12" /><path d="M19 12v7a2 2 0 01-2 2H7a2 2 0 01-2-2v-7" /><path d="M7.5 9a2.5 2.5 0 010-5C11 4 12 9 12 9s1-5 4.5-5a2.5 2.5 0 010 5" /></Icon>); };
 const IconBroadcast = function () { return (<Icon><circle cx="12" cy="12" r="2" /><path d="M16.24 7.76a6 6 0 010 8.49" /><path d="M7.76 16.24a6 6 0 010-8.49" /><path d="M19.07 4.93a10 10 0 010 14.14" /><path d="M4.93 19.07a10 10 0 010-14.14" /></Icon>); };
+const IconBag = function () { return (<Icon><path d="M5 8h14l-1 12a1 1 0 01-1 1H7a1 1 0 01-1-1L5 8z" /><path d="M9 8V6a3 3 0 016 0v2" /></Icon>); };
+const IconCalendar = function () { return (<Icon><rect x="3.5" y="5" width="17" height="15" rx="2" /><path d="M3.5 10h17" /><path d="M8 3v4M16 3v4" /><circle cx="12" cy="15" r="1.4" /></Icon>); };
 const IconCheck = function () { return (<Icon><rect x="3" y="6" width="18" height="12" rx="2" /><path d="M3 10h18" /><path d="M7 14h4" /></Icon>); };
 const IconBox = function () { return (<Icon><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z" /><path d="M12 12l8-4.5" /><path d="M12 12v9" /><path d="M12 12L4 7.5" /></Icon>); };
 const IconTruck = function () { return (<Icon><circle cx="7" cy="17" r="2" /><circle cx="17" cy="17" r="2" /><path d="M5 17H3V6a1 1 0 011-1h9v12M9 17h6M15 8h4l2 3v6h-2" /></Icon>); };
@@ -122,6 +130,32 @@ function initials(name) {
     .map(function (w) { return w[0]; })
     .join('')
     .toUpperCase();
+}
+
+/* ---------------- Home screen app ----------------
+   Adds the tags phones look for when you "Add to Home Screen",
+   and registers a tiny service worker that only shows an
+   "offline" screen when there's no internet. */
+function installAppTags() {
+  if (typeof document === 'undefined') return;
+  const head = document.head;
+  function ensure(tag, attrs) {
+    const key = attrs.rel ? 'link[rel="' + attrs.rel + '"]' : 'meta[name="' + attrs.name + '"]';
+    let el = head.querySelector(key);
+    if (!el) { el = document.createElement(tag); head.appendChild(el); }
+    Object.keys(attrs).forEach(function (k) { el.setAttribute(k, attrs[k]); });
+  }
+  ensure('link', { rel: 'manifest', href: '/studio.webmanifest' });
+  ensure('link', { rel: 'apple-touch-icon', href: '/studio-icons/apple-touch-icon.png' });
+  ensure('meta', { name: 'apple-mobile-web-app-capable', content: 'yes' });
+  ensure('meta', { name: 'mobile-web-app-capable', content: 'yes' });
+  ensure('meta', { name: 'apple-mobile-web-app-title', content: 'EB Studio' });
+  ensure('meta', { name: 'apple-mobile-web-app-status-bar-style', content: 'default' });
+  ensure('meta', { name: 'theme-color', content: '#fdfcf7' });
+
+  if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
+    navigator.serviceWorker.register('/studio-sw.js', { scope: '/admin' }).catch(function () {});
+  }
 }
 
 /* ---------------- Design system ---------------- */
@@ -394,6 +428,7 @@ export const shellCss = '' +
 ' .eba-langs { align-self:stretch; }' +
 ' .eba-langs button { flex:1; }' +
 '}' +
+'@media (display-mode:standalone) { .eba-shell { padding-top:max(18px, env(safe-area-inset-top)); padding-bottom:max(18px, env(safe-area-inset-bottom)); } }' +
 '@media (prefers-reduced-motion:reduce) { .eba * { transition:none !important; } }' +
 '@media print { .no-print { display:none !important; } .eba { background:#fff; } .eba-shell { display:block; padding:0; }' +
 ' .eba-panel, .eba-hero { box-shadow:none; padding:0; } }';
@@ -434,6 +469,11 @@ export default function AdminShell(props) {
     };
   }, []);
 
+  // Home screen app: manifest + iPhone tags + offline screen.
+  useEffect(function () {
+    installAppTags();
+  }, []);
+
   async function logout() {
     await fetch('/api/auth/logout', { method: 'POST' });
     window.location.href = '/admin/login';
@@ -448,7 +488,9 @@ export default function AdminShell(props) {
     { key: 'stripe-terminal', href: '/admin/stripe-terminal', label: t.stripeTerminal, icon: <IconCard /> },
     { key: 'receipts', href: '/admin/receipts', label: t.receipts, icon: <IconReceipt /> },
     { key: 'gift-cards', href: '/admin/gift-cards', label: t.giftCards, icon: <IconGift /> },
+    { key: 'gift-card-sales', href: '/admin/gift-card-sales', label: t.giftCardSales, icon: <IconBag /> },
     { key: 'live-link', href: '/admin/live-link', label: t.liveLink, icon: <IconBroadcast /> },
+    { key: 'live-schedule', href: '/admin/live-schedule', label: t.liveSchedule, icon: <IconCalendar /> },
     { key: 'checks', href: '/admin/checks', label: t.checks, icon: <IconCheck /> },
   ];
   const accountNav = [
