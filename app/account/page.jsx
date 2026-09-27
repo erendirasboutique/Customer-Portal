@@ -3,6 +3,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import AddressAutocomplete from "@/components/AddressAutocomplete";
 
 const T = {
   en: {
@@ -14,6 +15,8 @@ const T = {
     phone: "Phone",
     address1: "Street address",
     address2: "Apt, suite, unit (optional)",
+    addressHint: "Start typing and pick your address",
+    poweredBy: "Powered by Google",
     city: "City",
     state: "State",
     zip: "ZIP code",
@@ -36,6 +39,8 @@ const T = {
     phone: "Teléfono",
     address1: "Dirección",
     address2: "Apto, suite, unidad (opcional)",
+    addressHint: "Empieza a escribir y elige tu dirección",
+    poweredBy: "Con tecnología de Google",
     city: "Ciudad",
     state: "Estado",
     zip: "Código postal",
@@ -136,6 +141,36 @@ export default function AccountPage() {
     }
 
     setValidationMsg("");
+  }
+
+  function pickAddress(picked) {
+    setForm(function applyPickedAddress(currentForm) {
+      if (!currentForm) {
+        return currentForm;
+      }
+
+      return {
+        ...currentForm,
+        address1: picked.street1,
+        address2: picked.street2 || currentForm.address2,
+        city: picked.city,
+        state: picked.state,
+        zip: picked.zip,
+      };
+    });
+
+    if (status === "saved" || status === "save_error") {
+      setStatus("ready");
+    }
+
+    setValidationMsg("");
+
+    setTimeout(function focusUnit() {
+      const unitInput = document.getElementById("address2");
+      if (unitInput) {
+        unitInput.focus();
+      }
+    }, 0);
   }
 
   async function save() {
@@ -276,14 +311,15 @@ export default function AccountPage() {
             </Field>
 
             <Field label={t.address1}>
-              <input
-                type="text"
-                style={styles.input}
+              <AddressAutocomplete
+                inputStyle={styles.input}
                 value={form.address1}
-                onChange={function changeAddress1(event) {
-                  updateField("address1", event.target.value);
+                placeholder={t.addressHint}
+                poweredBy={t.poweredBy}
+                onChange={function changeAddress1(value) {
+                  updateField("address1", value);
                 }}
-                autoComplete="address-line1"
+                onSelect={pickAddress}
               />
             </Field>
 
@@ -292,6 +328,7 @@ export default function AccountPage() {
                 type="text"
                 style={styles.input}
                 value={form.address2}
+                id="address2"
                 onChange={function changeAddress2(event) {
                   updateField("address2", event.target.value);
                 }}
