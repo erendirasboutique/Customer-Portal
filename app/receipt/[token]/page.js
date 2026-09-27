@@ -29,6 +29,9 @@ const T = {
     method: 'Payment method',
     card: 'card',
     phoneOrder: 'Phone order',
+    inStore: 'In store',
+    online: 'Online',
+    methods: { cash: 'Cash', check: 'Check', gift_card: 'Gift card', 'gift card': 'Gift card', debit: 'Debit' },
     date: 'Date',
     receiptNo: 'Receipt no.',
     txn: 'Transaction ID',
@@ -51,6 +54,9 @@ const T = {
     method: 'Método de pago',
     card: 'tarjeta',
     phoneOrder: 'Pedido por teléfono',
+    inStore: 'En tienda',
+    online: 'En línea',
+    methods: { cash: 'Efectivo', check: 'Cheque', gift_card: 'Tarjeta de regalo', 'gift card': 'Tarjeta de regalo', debit: 'Débito' },
     date: 'Fecha',
     receiptNo: 'Recibo núm.',
     txn: 'ID de transacción',
@@ -121,16 +127,20 @@ export default async function ReceiptPage(props) {
   }
 
   const refunded = r.status === 'refunded';
-  const method = (
+  const nonCard = r.payment_method && !r.card_last4 && !r.card_brand;
+  const method = nonCard ? (
+    <span>{t.methods[r.payment_method] || String(r.payment_method).replace(/(^|\s|_)\w/g, function (m) { return m.toUpperCase(); }).replace(/_/g, ' ')}</span>
+  ) : (
     <span className="rcpt-method">
       <CardBrand brand={r.card_brand} label={brandName(r.card_brand) || t.card} />
       {r.card_last4 ? <span>{'•••• ' + r.card_last4}</span> : null}
     </span>
   );
+  const sourceLabel = { card_terminal: t.phoneOrder, in_store: t.inStore, online: t.online }[r.source] || null;
 
   const rows = [
     r.customer_name ? { k: t.billedTo, v: r.customer_name, sub: r.customer_email } : null,
-    { k: t.method, v: method, sub: r.source === 'card_terminal' ? t.phoneOrder : null },
+    { k: t.method, v: method, sub: sourceLabel },
     { k: t.date, v: when(r.created_at, t.locale) },
     r.note ? { k: t.forWhat, v: r.note } : null,
     { k: t.receiptNo, v: r.receipt_number, mono: true },
