@@ -25,6 +25,42 @@
   font-display: swap;
 }
 
+/* Old font names still used by admin pages or inline styles now load the new fonts */
+@font-face {
+  font-family: 'LaLuxesSerif';
+  src: url('/fonts/BeynaElavani-Regular.ttf') format('truetype'),
+       url('/fonts/beyna_elvani_regular.ttf') format('truetype');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'La Luxes Serif';
+  src: url('/fonts/BeynaElavani-Regular.ttf') format('truetype'),
+       url('/fonts/beyna_elvani_regular.ttf') format('truetype');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'LaLuxes';
+  src: url('/fonts/BeynaElavani-Regular.ttf') format('truetype'),
+       url('/fonts/beyna_elvani_regular.ttf') format('truetype');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'BringBoldNineties';
+  src: url('/fonts/BeynaElavani-Regular.ttf') format('truetype'),
+       url('/fonts/beyna_elvani_regular.ttf') format('truetype');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Recoleta';
+  src: url('/fonts/CooperLtBT-Regular.ttf') format('truetype');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'MDNichrome';
+  src: url('/fonts/CooperLtBT-Regular.ttf') format('truetype');
+  font-display: swap;
+}
+
 :root {
   --bg: #f6f4f1;
   --card: #fffdf9;
@@ -103,7 +139,11 @@ h1,
 h2,
 h3,
 h4,
-.brand-title {
+.h1,
+.h2,
+.h3,
+.brand-title,
+.brandname {
   font-family: var(--font-heading);
   color: var(--primary);
   font-weight: 500;
@@ -152,7 +192,11 @@ h1 *,
 h2 *,
 h3 *,
 h4 *,
-.brand-title * {
+.h1 *,
+.h2 *,
+.h3 *,
+.brand-title *,
+.brandname * {
   font-family: inherit;
 }
 
