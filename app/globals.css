@@ -4,13 +4,15 @@
    Background: #f6f4f1
    Primary buttons/text: #957f67
    Accent/borders: #cfbda9
-   Headings: La Luxes Serif
+   Headings: Beyna Elavani
    Body/UI: Cooper Lt BT
    ========================================================= */
 
 @font-face {
-  font-family: 'LaLuxesSerif';
-  src: url('/fonts/la_luxes_serif.otf') format('opentype');
+  font-family: 'Beyna Elavani';
+  src: url('/fonts/BeynaElavani-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
   font-display: swap;
 }
 
@@ -43,6 +45,7 @@
   --radius-lg: 24px;
   --radius-md: 18px;
   --radius-sm: 12px;
+  --font-heading: 'Beyna Elavani', Georgia, serif;
   --font-body: 'Cooper Lt BT', Georgia, serif;
 
   /* Compatibility variables from older versions */
@@ -100,7 +103,7 @@ h2,
 h3,
 h4,
 .brand-title {
-  font-family: 'LaLuxesSerif', Georgia, serif;
+  font-family: var(--font-heading);
   color: var(--primary);
   font-weight: 500;
   letter-spacing: 0.01em;
@@ -912,7 +915,7 @@ textarea:disabled {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: 'LaLuxesSerif', Georgia, serif;
+  font-family: var(--font-heading);
   font-size: 58px;
   line-height: 0.82;
   color: var(--ink);
@@ -1235,7 +1238,7 @@ th {
   margin: 0 0 28px;
 }
 .languagePanel h1,.confirmationContent h1 {
-  font-family: 'LaLuxesSerif', Georgia, serif;
+  font-family: var(--font-heading);
   color: var(--confirm-primary);
   font-weight: 400;
   line-height: .88;
@@ -1249,7 +1252,7 @@ th {
   border-bottom: 2px solid var(--confirm-primary);
   background: transparent;
   color: var(--confirm-primary);
-  font-family: 'LaLuxesSerif', Georgia, serif;
+  font-family: var(--font-heading);
   font-size: clamp(42px, 8vw, 70px);
   margin: 34px auto 0;
   cursor: pointer;
@@ -1306,7 +1309,7 @@ th {
   color: var(--confirm-primary);
   border-bottom: 2px solid var(--confirm-primary);
   text-decoration: none;
-  font-family: 'LaLuxesSerif', Georgia, serif;
+  font-family: var(--font-heading);
   font-size: clamp(30px, 5vw, 44px);
   line-height: 1;
 }
@@ -1391,7 +1394,7 @@ th {
 }
 
 .ebConfirmTop span:first-child {
-  font-family: 'LaLuxesSerif', Georgia, serif;
+  font-family: var(--font-heading);
   font-weight: 400;
   color: #957f67;
   font-size: clamp(24px, 5vw, 42px);
@@ -1442,7 +1445,7 @@ th {
 
 .ebLanguageCard h1,
 .ebSuccessCard h1 {
-  font-family: 'LaLuxesSerif', Georgia, serif;
+  font-family: var(--font-heading);
   color: var(--eb-primary);
   font-weight: 400;
   letter-spacing: -.03em;
@@ -1488,7 +1491,7 @@ th {
 }
 
 .ebLanguageActions span {
-  font-family: 'LaLuxesSerif', Georgia, serif;
+  font-family: var(--font-heading);
   font-size: clamp(34px, 6vw, 54px);
   color: var(--eb-primary);
 }
@@ -1526,7 +1529,7 @@ th {
   color: #f6f4f1;
   display: grid;
   place-items: center;
-  font-family: 'LaLuxesSerif', Georgia, serif;
+  font-family: var(--font-heading);
   font-size: clamp(42px, 8vw, 72px);
 }
 
@@ -1711,7 +1714,7 @@ th {
 
 .adminLoginIdentity h1 {
   margin: 0;
-  font-family: 'LaLuxesSerif', Georgia, serif;
+  font-family: var(--font-heading);
   font-size: clamp(42px, 5vw, 66px);
   font-weight: 400;
   line-height: 0.95;
@@ -2071,7 +2074,7 @@ th {
   position: absolute;
   right: 82px;
   top: 90px;
-  font-family: 'LaLuxesSerif', Georgia, serif;
+  font-family: var(--font-heading);
   font-size: 34px;
   line-height: 0.9;
   color: #5f4e3d;
