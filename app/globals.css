@@ -10,7 +10,8 @@
 
 @font-face {
   font-family: 'Beyna Elavani';
-  src: url('/fonts/beyna_elvani_regular.ttf') format('truetype');
+  src: url('/fonts/BeynaElavani-Regular.ttf') format('truetype'),
+       url('/fonts/beyna_elvani_regular.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -144,6 +145,15 @@ td,
 th,
 small {
   font-family: var(--font-body);
+}
+
+/* Keep heading font on text wrapped inside headings (spans, links, etc.) */
+h1 *,
+h2 *,
+h3 *,
+h4 *,
+.brand-title * {
+  font-family: inherit;
 }
 
 /* Layout */
