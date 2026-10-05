@@ -9,6 +9,7 @@ Clover and Stripe terminal links stay put.
 | Bills & supplies | `/admin/reminders` |
 | Document vault | `/admin/documents` |
 | Giveaway wheel | `/admin/giveaway` |
+| Giveaway wheel, no login (staff PIN) | `/giveaway-wheel` |
 
 ## Setup
 
@@ -96,5 +97,23 @@ It checks `CRON_SECRET` itself.
 - **Doesn't count · spin again** removes that result from history (e.g. they weren't eligible).
 - **Copy announcement** copies a ready-to-paste "Congratulations..." message.
 - **Full screen** shows only the wheel. Share your screen on the live so everyone watches it spin.
+
+## Giveaway wheel without logging in (staff PIN)
+
+**`/giveaway-wheel`** is the same wheel without the admin login, for employees.
+
+1. In Vercel add `GIVEAWAY_PIN`, any 4+ digit number or word your staff will know (e.g. `2468`). Redeploy.
+2. On the store phone or iPad, open `my.erendirasboutique.com/giveaway-wheel` and enter the PIN.
+   That device stays unlocked for **30 days**. Tip: add it to the home screen.
+3. Winners save to the same **Past winners** list you see on `/admin/giveaway`, marked "Wheel (staff PIN)".
+
+What the PIN page can and can't do:
+- It can add names, spin, save winners, and undo a spin from the last 15 minutes ("Doesn't count").
+- It can't open the rest of the admin, delete older winners, or see anything else.
+- 8 wrong PINs in 15 minutes locks out that network for 15 minutes.
+- **Change the PIN** in Vercel (and redeploy) to lock every device at once, e.g. when someone leaves.
+- **Lock this device** button at the top locks just that phone or tablet.
+
+If you have a sign-in `middleware.js`, let `/giveaway-wheel` and `/api/giveaway-wheel` through.
 
 GitHub doesn't unzip uploads. Extract first, then drag the folders in.

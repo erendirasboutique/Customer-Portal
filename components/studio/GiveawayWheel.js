@@ -95,6 +95,9 @@ const css = '' +
 
 export default function GiveawayWheel(props) {
   const router = useRouter();
+  // The admin page uses the admin API; the PIN page passes its own.
+  const api = props.apiPath || '/api/admin/giveaways';
+  const canEditHistory = props.canEditHistory !== false;
   const stageRef = useRef(null);
   const timer = useRef(null);
 
@@ -190,12 +193,13 @@ export default function GiveawayWheel(props) {
 
   async function saveWinner(name, count) {
     try {
-      const res = await fetch('/api/admin/giveaways', {
+      const res = await fetch(api, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'save', title: title, winner: name, entries: count }),
       });
       const data = await res.json().catch(function () { return {}; });
+      if (res.status === 401 && props.onLocked) props.onLocked();
       if (!res.ok) throw new Error(data.error || 'Could not save the winner.');
       setHistory(function (h) { return [data.item].concat(h); });
       router.refresh();
@@ -244,7 +248,7 @@ export default function GiveawayWheel(props) {
   async function undoWinner() {
     if (!winner) return;
     if (winner.saved) {
-      await fetch('/api/admin/giveaways', {
+      await fetch(api, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'delete', id: winner.saved.id }),
       });
@@ -270,7 +274,7 @@ export default function GiveawayWheel(props) {
 
   async function removeHistory(h) {
     if (!confirm('Remove ' + h.winner + ' from the winners list?')) return;
-    await fetch('/api/admin/giveaways', {
+    await fetch(api, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'delete', id: h.id }),
     });
@@ -473,9 +477,11 @@ export default function GiveawayWheel(props) {
                     <span className="s">{sub}</span>
                   </span>
                   <span className="eba-pill ok">{h.title}</span>
-                  <span className="eba-rowbtns">
-                    <button className="eba-btn mini" type="button" onClick={function () { removeHistory(h); }}>Remove</button>
-                  </span>
+                  {canEditHistory && (
+                    <span className="eba-rowbtns">
+                      <button className="eba-btn mini" type="button" onClick={function () { removeHistory(h); }}>Remove</button>
+                    </span>
+                  )}
                 </div>
               );
             })}
