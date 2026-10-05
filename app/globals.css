@@ -4,14 +4,13 @@
    Background: #f6f4f1
    Primary buttons/text: #957f67
    Accent/borders: #cfbda9
-   Headings: Beyna Elavani
+   Headings: The Silver Editorial
    Body/UI: Cooper Lt BT
    ========================================================= */
 
 @font-face {
-  font-family: 'Beyna Elavani';
-  src: url('/fonts/BeynaElavani-Regular.ttf') format('truetype'),
-       url('/fonts/beyna_elvani_regular.ttf') format('truetype');
+  font-family: 'Silver Editorial';
+  src: url('/fonts/sltfthesilvereditorial-regular.otf') format('opentype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -27,27 +26,28 @@
 
 /* Old font names still used by admin pages or inline styles now load the new fonts */
 @font-face {
+  font-family: 'Beyna Elavani';
+  src: url('/fonts/sltfthesilvereditorial-regular.otf') format('opentype');
+  font-display: swap;
+}
+@font-face {
   font-family: 'LaLuxesSerif';
-  src: url('/fonts/BeynaElavani-Regular.ttf') format('truetype'),
-       url('/fonts/beyna_elvani_regular.ttf') format('truetype');
+  src: url('/fonts/sltfthesilvereditorial-regular.otf') format('opentype');
   font-display: swap;
 }
 @font-face {
   font-family: 'La Luxes Serif';
-  src: url('/fonts/BeynaElavani-Regular.ttf') format('truetype'),
-       url('/fonts/beyna_elvani_regular.ttf') format('truetype');
+  src: url('/fonts/sltfthesilvereditorial-regular.otf') format('opentype');
   font-display: swap;
 }
 @font-face {
   font-family: 'LaLuxes';
-  src: url('/fonts/BeynaElavani-Regular.ttf') format('truetype'),
-       url('/fonts/beyna_elvani_regular.ttf') format('truetype');
+  src: url('/fonts/sltfthesilvereditorial-regular.otf') format('opentype');
   font-display: swap;
 }
 @font-face {
   font-family: 'BringBoldNineties';
-  src: url('/fonts/BeynaElavani-Regular.ttf') format('truetype'),
-       url('/fonts/beyna_elvani_regular.ttf') format('truetype');
+  src: url('/fonts/sltfthesilvereditorial-regular.otf') format('opentype');
   font-display: swap;
 }
 @font-face {
@@ -82,7 +82,7 @@
   --radius-lg: 24px;
   --radius-md: 18px;
   --radius-sm: 12px;
-  --font-heading: 'Beyna Elavani', Georgia, serif;
+  --font-heading: 'Silver Editorial', Georgia, serif;
   --font-body: 'Cooper Lt BT', Georgia, serif;
 
   /* Compatibility variables from older versions */
