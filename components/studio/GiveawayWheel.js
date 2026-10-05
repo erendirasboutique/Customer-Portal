@@ -17,6 +17,61 @@ const COLORS = [
   { fill: '#f6d3a8', text: '#b4470c' },
 ];
 
+/* ---------------- Translations ---------------- */
+export const WHEEL_T = {
+  en: {
+    step: 'STEP 1', whoIn: 'Who\u2019s In?', prizeQ: 'What are they winning?', prizePh: '$50 gift card',
+    addName: 'Add a name', add: 'Add', pasteList: 'Or paste a list (one per line)', addList: 'Add list',
+    once: 'One spot per person', removeWin: 'Take the winner off for the next spin',
+    onceHint: 'Typed a name twice? It still gets one spot.',
+    multiHint: 'Each time you add a name counts as an extra entry \u2014 good for \u201cone entry per purchase.\u201d',
+    onWheel: 'On the wheel', shuffle: 'Shuffle', clearAll: 'Clear all', noNames: 'No names yet.',
+    clearConfirm: function (n) { return 'Clear all ' + n + ' names?'; },
+    removeLabel: function (n) { return 'Remove ' + n; },
+    giveaway: 'Giveaway', entry: 'entry', entries: 'entries',
+    emptyWheel: 'Add names on the left and they\u2019ll show up here.',
+    spinHub: 'SPIN', spinBtn: 'Spin the wheel', spinning: 'Spinning...', fullscreen: 'Full screen',
+    tooMany: 'Over 80 names, so they\u2019re hidden on the wheel. The winner still shows big.',
+    needTwo: 'Add at least 2 names to spin.',
+    saveFailed: 'Couldn\u2019t save the winner. The winner is still shown \u2014 write it down.',
+    winner: 'WINNER', pickedFrom: function (n) { return 'picked from ' + n + ' entries'; },
+    headsUp: function (w, prize, date) { return 'Heads up: ' + w + ' also won ' + prize + ' on ' + date + '.'; },
+    doneRemove: 'Done \u00b7 remove from wheel', done: 'Done', copy: 'Copy announcement', copied: 'Copied',
+    redo: 'Doesn\u2019t count \u00b7 spin again',
+    announce: function (w, prize) { return '\uD83C\uDF89 Congratulations ' + w + '! You won ' + (prize || 'our giveaway') + ' at Erendira\u2019s Boutique! Message us to claim your prize \uD83D\uDC9B'; },
+    history: 'HISTORY', pastWinners: 'Past Winners', remove: 'Remove', spunBy: 'Spun by',
+    removeConfirm: function (w) { return 'Remove ' + w + ' from the winners list?'; },
+    noHistory: 'Winners show up here after each spin.',
+    wheelLabel: 'Giveaway wheel', winnerLabel: 'Winner',
+  },
+  es: {
+    step: 'PASO 1', whoIn: '\u00bfQui\u00e9n Participa?', prizeQ: '\u00bfQu\u00e9 se van a ganar?', prizePh: 'Tarjeta de regalo de $50',
+    addName: 'Agregar un nombre', add: 'Agregar', pasteList: 'O pega una lista (uno por l\u00ednea)', addList: 'Agregar lista',
+    once: 'Un lugar por persona', removeWin: 'Quitar a la ganadora para el siguiente giro',
+    onceHint: '\u00bfEscribiste un nombre dos veces? Igual cuenta solo una vez.',
+    multiHint: 'Cada vez que agregas un nombre cuenta como otra entrada \u2014 ideal para \u201cuna entrada por compra.\u201d',
+    onWheel: 'En la ruleta', shuffle: 'Revolver', clearAll: 'Borrar todo', noNames: 'A\u00fan no hay nombres.',
+    clearConfirm: function (n) { return '\u00bfBorrar los ' + n + ' nombres?'; },
+    removeLabel: function (n) { return 'Quitar a ' + n; },
+    giveaway: 'Sorteo', entry: 'entrada', entries: 'entradas',
+    emptyWheel: 'Agrega nombres a la izquierda y aparecer\u00e1n aqu\u00ed.',
+    spinHub: 'GIRAR', spinBtn: 'Girar la ruleta', spinning: 'Girando...', fullscreen: 'Pantalla completa',
+    tooMany: 'M\u00e1s de 80 nombres, as\u00ed que no se ven en la ruleta. La ganadora igual aparece en grande.',
+    needTwo: 'Agrega al menos 2 nombres para girar.',
+    saveFailed: 'No se pudo guardar la ganadora. Igual se muestra \u2014 an\u00f3tala.',
+    winner: 'GANADORA', pickedFrom: function (n) { return 'elegida entre ' + n + ' entradas'; },
+    headsUp: function (w, prize, date) { return 'Ojo: ' + w + ' tambi\u00e9n gan\u00f3 ' + prize + ' el ' + date + '.'; },
+    doneRemove: 'Listo \u00b7 quitar de la ruleta', done: 'Listo', copy: 'Copiar anuncio', copied: 'Copiado',
+    redo: 'No cuenta \u00b7 girar otra vez',
+    announce: function (w, prize) { return '\uD83C\uDF89 \u00a1Felicidades ' + w + '! Ganaste ' + (prize || 'nuestro sorteo') + ' en Erendira\u2019s Boutique. \u00a1M\u00e1ndanos mensaje para reclamar tu premio! \uD83D\uDC9B'; },
+    history: 'HISTORIAL', pastWinners: 'Ganadoras Anteriores', remove: 'Quitar', spunBy: 'Girada por',
+    removeConfirm: function (w) { return '\u00bfQuitar a ' + w + ' de la lista de ganadoras?'; },
+    noHistory: 'Las ganadoras aparecen aqu\u00ed despu\u00e9s de cada giro.',
+    wheelLabel: 'Ruleta de regalos', winnerLabel: 'Ganadora',
+  },
+};
+const LOCALE = { en: 'en-US', es: 'es-MX' };
+
 /* Uniform random integer in [0, n) using crypto, no bias. */
 function fairIndex(n) {
   if (n <= 1) return 0;
@@ -98,6 +153,8 @@ export default function GiveawayWheel(props) {
   // The admin page uses the admin API; the PIN page passes its own.
   const api = props.apiPath || '/api/admin/giveaways';
   const canEditHistory = props.canEditHistory !== false;
+  const lang = props.lang === 'es' ? 'es' : 'en';
+  const t = WHEEL_T[lang];
   const stageRef = useRef(null);
   const timer = useRef(null);
 
@@ -180,7 +237,7 @@ export default function GiveawayWheel(props) {
   }
 
   function clearAll() {
-    if (entries.length && !confirm('Clear all ' + entries.length + ' names?')) return;
+    if (entries.length && !confirm(t.clearConfirm(entries.length))) return;
     setEntries([]);
     setWinner(null);
   }
@@ -200,19 +257,19 @@ export default function GiveawayWheel(props) {
       });
       const data = await res.json().catch(function () { return {}; });
       if (res.status === 401 && props.onLocked) props.onLocked();
-      if (!res.ok) throw new Error(data.error || 'Could not save the winner.');
+      if (!res.ok) throw new Error(data.error || 'save failed');
       setHistory(function (h) { return [data.item].concat(h); });
       router.refresh();
       return data.item;
     } catch (e) {
-      setError(e.message + ' The winner is still shown — write it down.');
+      setError(t.saveFailed);
       return null;
     }
   }
 
   function spin() {
     if (spinning || wheel.length < 2) {
-      if (wheel.length < 2) setError('Add at least 2 names to spin.');
+      if (wheel.length < 2) setError(t.needTwo);
       return;
     }
     setError('');
@@ -260,7 +317,7 @@ export default function GiveawayWheel(props) {
 
   async function copyAnnouncement() {
     if (!winner) return;
-    const text = '🎉 Congratulations ' + winner.name + '! You won ' + (title || 'our giveaway') + ' at Erendira’s Boutique! Message us to claim your prize 💛';
+    const text = t.announce(winner.name, title);
     try { await navigator.clipboard.writeText(text); setCopied(true); } catch (e) {}
   }
 
@@ -273,7 +330,7 @@ export default function GiveawayWheel(props) {
   }
 
   async function removeHistory(h) {
-    if (!confirm('Remove ' + h.winner + ' from the winners list?')) return;
+    if (!confirm(t.removeConfirm(h.winner))) return;
     await fetch(api, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'delete', id: h.id }),
@@ -302,32 +359,32 @@ export default function GiveawayWheel(props) {
 
       <div className="ebg-grid">
         <div className="eba-panel">
-          <p className="eba-eyebrow">STEP 1</p>
-          <h2>Who&rsquo;s In?</h2>
+          <p className="eba-eyebrow">{t.step}</p>
+          <h2>{t.whoIn}</h2>
 
           <div className="eba-field">
-            <span className="eba-lb">What are they winning?</span>
-            <input className="eba-in" value={title} maxLength={140} placeholder="$50 gift card"
+            <span className="eba-lb">{t.prizeQ}</span>
+            <input className="eba-in" value={title} maxLength={140} placeholder={t.prizePh}
               onChange={function (e) { setTitle(e.target.value); }} />
           </div>
 
           <div className="eba-field" style={{ marginTop: 12 }}>
-            <span className="eba-lb">Add a name</span>
+            <span className="eba-lb">{t.addName}</span>
             <form className="ebg-add" onSubmit={function (e) { e.preventDefault(); addNames(one); setOne(''); }}>
               <input className="eba-in" value={one} maxLength={60} placeholder="Maria Lopez" disabled={spinning}
                 onChange={function (e) { setOne(e.target.value); }} />
-              <button className="eba-btn eba-btn-dark" type="submit" disabled={!one.trim() || spinning}>Add</button>
+              <button className="eba-btn eba-btn-dark" type="submit" disabled={!one.trim() || spinning}>{t.add}</button>
             </form>
           </div>
 
           <div className="eba-field" style={{ marginTop: 12 }}>
-            <span className="eba-lb">Or paste a list (one per line)</span>
+            <span className="eba-lb">{t.pasteList}</span>
             <textarea className="eba-in" rows={4} value={bulk} disabled={spinning}
               placeholder={'Maria Lopez\nAna G.\nJessica R.'}
               onChange={function (e) { setBulk(e.target.value); }} />
             <div className="eba-actions" style={{ marginTop: 8 }}>
               <button className="eba-btn" type="button" disabled={!bulk.trim() || spinning} onClick={function () { addNames(bulk); setBulk(''); }}>
-                Add list
+                {t.addList}
               </button>
             </div>
           </div>
@@ -335,24 +392,22 @@ export default function GiveawayWheel(props) {
           <div className="eba-checks">
             <label className="eba-check">
               <input type="checkbox" checked={oncePerName} onChange={function (e) { setOncePerName(e.target.checked); }} />
-              <span>One spot per person</span>
+              <span>{t.once}</span>
             </label>
             <label className="eba-check">
               <input type="checkbox" checked={removeWinner} onChange={function (e) { setRemoveWinner(e.target.checked); }} />
-              <span>Take the winner off for the next spin</span>
+              <span>{t.removeWin}</span>
             </label>
           </div>
           <p className="eba-muted" style={{ margin: '8px 0 0' }}>
-            {oncePerName
-              ? 'Typed a name twice? It still gets one spot.'
-              : 'Each time you add a name counts as an extra entry — good for “one entry per purchase.”'}
+            {oncePerName ? t.onceHint : t.multiHint}
           </p>
 
           <div className="eba-panelhead" style={{ marginTop: 18 }}>
-            <div><span className="eba-lb" style={{ margin: 0 }}>On the wheel &middot; {wheel.length}</span></div>
+            <div><span className="eba-lb" style={{ margin: 0 }}>{t.onWheel} &middot; {wheel.length}</span></div>
             <span className="eba-rowbtns">
-              <button className="eba-btn mini" type="button" disabled={entries.length < 2 || spinning} onClick={shuffle}>Shuffle</button>
-              <button className="eba-btn mini" type="button" disabled={!entries.length || spinning} onClick={clearAll}>Clear all</button>
+              <button className="eba-btn mini" type="button" disabled={entries.length < 2 || spinning} onClick={shuffle}>{t.shuffle}</button>
+              <button className="eba-btn mini" type="button" disabled={!entries.length || spinning} onClick={clearAll}>{t.clearAll}</button>
             </span>
           </div>
           {grouped.length ? (
@@ -362,21 +417,21 @@ export default function GiveawayWheel(props) {
                   <span className="ebg-chip" key={g.name.toLowerCase()}>
                     <span>{g.name}</span>
                     {!oncePerName && g.count > 1 && <span className="c">&times;{g.count}</span>}
-                    <button className="x" type="button" aria-label={'Remove ' + g.name} disabled={spinning}
+                    <button className="x" type="button" aria-label={t.removeLabel(g.name)} disabled={spinning}
                       onClick={function () { oncePerName ? removeAll(g.name) : removeOne(g.name); }}>&times;</button>
                   </span>
                 );
               })}
             </div>
           ) : (
-            <div className="eba-empty" style={{ marginTop: 10, padding: '24px 14px' }}>No names yet.</div>
+            <div className="eba-empty" style={{ marginTop: 10, padding: '24px 14px' }}>{t.noNames}</div>
           )}
         </div>
 
         <div className="ebg-stagecol">
           <div className="ebg-stage" ref={stageRef}>
-            <p className="ebg-prize">{title || 'Giveaway'}</p>
-            <p className="ebg-count">{wheel.length} {wheel.length === 1 ? 'entry' : 'entries'}</p>
+            <p className="ebg-prize">{title || t.giveaway}</p>
+            <p className="ebg-count">{wheel.length} {wheel.length === 1 ? t.entry : t.entries}</p>
 
             <div className="ebg-wheelwrap">
               <span className="ebg-pointer" aria-hidden="true" />
@@ -385,7 +440,7 @@ export default function GiveawayWheel(props) {
                   transform: 'rotate(' + rotation + 'deg)',
                   transition: spinning ? 'transform ' + (reduced ? 900 : SPIN_MS) + 'ms cubic-bezier(.12,.62,.08,1)' : 'none',
                 }}>
-                  <svg viewBox="-1.02 -1.02 2.04 2.04" role="img" aria-label="Giveaway wheel">
+                  <svg viewBox="-1.02 -1.02 2.04 2.04" role="img" aria-label={t.wheelLabel}>
                     {wheel.length === 1 ? (
                       <circle r="1" fill={COLORS[0].fill} />
                     ) : (
@@ -408,45 +463,45 @@ export default function GiveawayWheel(props) {
                   </svg>
                 </div>
               ) : (
-                <div className="ebg-empty">Add names on the left and they&rsquo;ll show up here.</div>
+                <div className="ebg-empty">{t.emptyWheel}</div>
               )}
               <button className="ebg-hub" type="button" onClick={spin} disabled={spinning || wheel.length < 2}>
-                {spinning ? '…' : 'SPIN'}
+                {spinning ? '…' : t.spinHub}
               </button>
             </div>
 
             <div className="ebg-controls">
               <button className="eba-btn eba-btn-dark" type="button" onClick={spin} disabled={spinning || wheel.length < 2}>
-                {spinning ? 'Spinning...' : 'Spin the wheel'}
+                {spinning ? t.spinning : t.spinBtn}
               </button>
-              <button className="eba-btn" type="button" onClick={fullscreen}>Full screen</button>
+              <button className="eba-btn" type="button" onClick={fullscreen}>{t.fullscreen}</button>
             </div>
             {error && <div className="eba-err" style={{ textAlign: 'left' }}>{error}</div>}
-            {!showLabels && wheel.length > 0 && <p className="eba-muted" style={{ marginTop: 10 }}>Over 80 names, so they&rsquo;re hidden on the wheel. The winner still shows big.</p>}
+            {!showLabels && wheel.length > 0 && <p className="eba-muted" style={{ marginTop: 10 }}>{t.tooMany}</p>}
 
             {winner && (
-              <div className="ebg-win" role="dialog" aria-label="Winner">
+              <div className="ebg-win" role="dialog" aria-label={t.winnerLabel}>
                 <div className="ebg-confetti" aria-hidden="true">
                   {confetti.map(function (p, i) {
                     return <i key={i} style={{ left: p.left + '%', background: p.color, animationDelay: p.delay + 's', animationDuration: p.dur + 's', transform: 'rotate(' + p.rot + 'deg)' }} />;
                   })}
                 </div>
                 <div className="ebg-wincard">
-                  <span className="lb">WINNER</span>
+                  <span className="lb">{t.winner}</span>
                   <p className="nm">{winner.name}</p>
-                  <p className="pz">{title || 'Giveaway'} &middot; picked from {winner.count} entries</p>
+                  <p className="pz">{title || t.giveaway} &middot; {t.pickedFrom(winner.count)}</p>
                   {winner.previous && (
                     <p className="warn">
-                      Heads up: {winner.previous.winner} also won {winner.previous.title} on{' '}
-                      {new Date(winner.previous.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}.
+                      {t.headsUp(winner.previous.winner, winner.previous.title,
+                        new Date(winner.previous.created_at).toLocaleDateString(LOCALE[lang], { month: 'short', day: 'numeric' }))}
                     </p>
                   )}
                   <div className="eba-actions">
                     <button className="eba-btn eba-btn-dark" type="button" onClick={keepGoing}>
-                      {removeWinner ? 'Done · remove from wheel' : 'Done'}
+                      {removeWinner ? t.doneRemove : t.done}
                     </button>
-                    <button className="eba-btn" type="button" onClick={copyAnnouncement}>{copied ? 'Copied' : 'Copy announcement'}</button>
-                    <button className="eba-btn" type="button" onClick={undoWinner}>Doesn&rsquo;t count &middot; spin again</button>
+                    <button className="eba-btn" type="button" onClick={copyAnnouncement}>{copied ? t.copied : t.copy}</button>
+                    <button className="eba-btn" type="button" onClick={undoWinner}>{t.redo}</button>
                   </div>
                 </div>
               </div>
@@ -458,17 +513,17 @@ export default function GiveawayWheel(props) {
       <div className="eba-panel">
         <div className="eba-panelhead">
           <div>
-            <p className="eba-eyebrow">HISTORY</p>
-            <h2>Past Winners</h2>
+            <p className="eba-eyebrow">{t.history}</p>
+            <h2>{t.pastWinners}</h2>
           </div>
         </div>
         {history.length ? (
           <div className="eba-rows">
             {history.map(function (h) {
               const sub = [
-                new Date(h.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }),
-                h.entries ? h.entries + ' entries' : null,
-                h.picked_by ? 'Spun by ' + h.picked_by.split('@')[0] : null,
+                new Date(h.created_at).toLocaleString(LOCALE[lang], { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }),
+                h.entries ? h.entries + ' ' + t.entries : null,
+                h.picked_by ? t.spunBy + ' ' + h.picked_by.split('@')[0] : null,
               ].filter(Boolean).join(' · ');
               return (
                 <div className="eba-row" key={h.id}>
@@ -479,7 +534,7 @@ export default function GiveawayWheel(props) {
                   <span className="eba-pill ok">{h.title}</span>
                   {canEditHistory && (
                     <span className="eba-rowbtns">
-                      <button className="eba-btn mini" type="button" onClick={function () { removeHistory(h); }}>Remove</button>
+                      <button className="eba-btn mini" type="button" onClick={function () { removeHistory(h); }}>{t.remove}</button>
                     </span>
                   )}
                 </div>
@@ -487,7 +542,7 @@ export default function GiveawayWheel(props) {
             })}
           </div>
         ) : (
-          <div className="eba-empty">Winners show up here after each spin.</div>
+          <div className="eba-empty">{t.noHistory}</div>
         )}
       </div>
     </>
