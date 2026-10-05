@@ -1,128 +1,100 @@
-# Gift card shop · Live schedule · Admin Studio app
+# Bills & supplies · Document vault · Giveaway wheel
 
-Three features. Everything is a **new file**, except `components/AdminShell.js`,
-which is your current one with the new links added. Replace it with this one.
+All **new files**. Nothing in this zip replaces a file you already have,
+including `AdminShell.js`. The sidebar links are a small paste-in (below), so your
+Clover and Stripe terminal links stay put.
 
-## What's in the zip
-
-**Online gift card shop**
-| File | What it is |
+| Page | Address |
 |---|---|
-| `app/buy-gift-card/page.js` | Public shop: **/buy-gift-card** |
-| `app/buy-gift-card/thank-you/page.js` | After payment: shows the card, code and PDF |
-| `app/admin/gift-card-sales/page.js` | Admin: every online sale, with Retry / Resend |
-| `app/api/gift-card-shop/checkout/route.js` | Starts Stripe Checkout |
-| `app/api/gift-card-shop/webhook/route.js` | Stripe tells us the payment went through |
-| `app/api/cron/gift-card-deliveries/route.js` | Daily: emails cards scheduled for today |
-| `app/api/admin/gift-card-sales/route.js` | Retry / Resend buttons |
-| `components/shop/*` | The page layouts |
-| `lib/shop/gift-card-shop.js` | Making the card, emails, safety checks |
-| `lib/shop/service.js` | Supabase, Stripe, email helpers |
-
-**Live schedule**
-| File | What it is |
-|---|---|
-| `app/live-schedule/page.js` | Public page: **/live-schedule** |
-| `app/admin/live-schedule/page.js` | Admin: add, edit, hide, repeat weekly |
-| `app/api/admin/live-schedule/route.js` | Saves lives |
-| `components/live/*` | The page layouts |
-
-**Admin Studio app (home screen)**
-| File | What it is |
-|---|---|
-| `app/studio.webmanifest/route.js` | Tells phones the app's name, icon and colors |
-| `public/studio-sw.js` | Shows a friendly "offline" screen when there's no internet |
-| `public/studio-icons/*` | App icons (swap in your own anytime, same file names) |
-| `components/AdminShell.js` | **Replaces yours**: new nav links + app setup |
-
-`supabase/shop-and-live.sql` creates the two new tables.
-
----
+| Bills & supplies | `/admin/reminders` |
+| Document vault | `/admin/documents` |
+| Giveaway wheel | `/admin/giveaway` |
 
 ## Setup
 
 ### 1. Run the SQL
-Supabase → SQL Editor → paste `supabase/shop-and-live.sql` → Run.
+Supabase → SQL Editor → paste `supabase/studio-tools.sql` → Run.
+It creates the tables **and** a private storage bucket called `studio-documents` for your files.
 
-### 2. Stripe webhook (so cards get made even if the buyer closes the tab)
-Stripe → Developers → Webhooks → **Add endpoint**
-- URL: `https://YOUR-SITE/api/gift-card-shop/webhook`
-- Event: `checkout.session.completed`
+### 2. Keys
+Uses `SUPABASE_SERVICE_ROLE_KEY` and `NEXT_PUBLIC_SUPABASE_URL`, which you already have.
 
-Copy its **Signing secret** (`whsec_...`) into Vercel as `STRIPE_GIFT_CARD_WEBHOOK_SECRET`.
-Do this in **test mode first**, then again in live mode (they have different secrets).
+### 3. Add the three sidebar links to `components/AdminShell.js`
 
-### 3. Vercel environment variables
-| Variable | Needed? | What it's for |
-|---|---|---|
-| `STRIPE_SECRET_KEY` | already have | Payments |
-| `SUPABASE_SERVICE_ROLE_KEY` | already have (from Account pages) | Database |
-| `NEXT_PUBLIC_SITE_URL` | already have | Links in emails and PDFs |
-| `STRIPE_GIFT_CARD_WEBHOOK_SECRET` | **new, required** | Step 2 |
-| `RESEND_API_KEY` | optional | Emails the cards (resend.com, free tier is plenty) |
-| `GIFT_CARD_FROM_EMAIL` | optional, with Resend | e.g. `Erendira's Boutique <giftcards@erendirasboutique.com>` (domain must be verified in Resend) |
-| `GIFT_CARD_REPLY_TO` | optional | Where customer replies go |
-| `GIFT_CARD_ALERT_EMAIL` | optional | Emails you if a paid card fails to be created |
-| `CRON_SECRET` | optional, for scheduled delivery | Any long random text |
-
-**Without Resend** the shop still works: the buyer sees the card, code and PDF on
-the thank-you page and passes it along themselves. The "send it on a date" option
-only appears once email is set up.
-
-Redeploy after adding variables.
-
-### 4. Scheduled delivery (only if you set up Resend)
-Add this to your `vercel.json` (create the file at the project root if you don't have one;
-if you do, add the `crons` part to it):
-```json
-{
-  "crons": [
-    { "path": "/api/cron/gift-card-deliveries", "schedule": "5 15 * * *" }
-  ]
-}
+**a) Labels.** In the `en:` block add:
+```js
+    reminders: 'Bills & supplies',
+    documents: 'Documents',
+    giveaway: 'Giveaway wheel',
 ```
-That runs every day at 8:05am Pacific.
+In the `es:` block add:
+```js
+    reminders: 'Pagos y suministros',
+    documents: 'Documentos',
+    giveaway: 'Ruleta de regalos',
+```
 
-### 5. If you have a `middleware.js` that makes people sign in
-Let these through without signing in:
-`/buy-gift-card`, `/live-schedule`, `/api/gift-card-shop`, `/studio.webmanifest`,
-`/studio-sw.js`, `/studio-icons`, and `/gift-card-balance`.
-Keep `/api/cron/...` open too (it checks `CRON_SECRET` itself).
+**b) Icons.** Paste next to the other `const Icon... = function` lines:
+```jsx
+const IconBell = function () { return (<Icon><path d="M6 16V11a6 6 0 0112 0v5l1.5 2h-15L6 16z" /><path d="M10 20a2 2 0 004 0" /></Icon>); };
+const IconFolder = function () { return (<Icon><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" /><path d="M3 10h18" /></Icon>); };
+const IconWheel = function () { return (<Icon><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="2" /><path d="M12 3v7M12 14v7M3 12h7M14 12h7M5.6 5.6l5 5M13.4 13.4l5 5M18.4 5.6l-5 5M10.6 13.4l-5 5" /></Icon>); };
+```
 
-### 6. Replace `components/AdminShell.js`
-Two new sidebar links (Gift card sales, Live schedule) and the home-screen app setup.
-Nothing else changed.
+**c) Links.** In the `nav` array, add these where you want them (after Checks works well):
+```jsx
+    { key: 'reminders', href: '/admin/reminders', label: t.reminders, icon: <IconBell /> },
+    { key: 'documents', href: '/admin/documents', label: t.documents, icon: <IconFolder /> },
+    { key: 'giveaway', href: '/admin/giveaway', label: t.giveaway, icon: <IconWheel /> },
+```
 
----
+### 4. Daily reminder email (optional)
+One email each morning listing overdue/upcoming bills, supplies running low, and
+documents about to expire. Nothing is sent on days with nothing to do.
 
-## Test it (Stripe test mode)
-1. Open `/buy-gift-card`, pick $25, pay with card `4242 4242 4242 4242`, any future date, any CVC.
-2. The thank-you page shows the code and PDF.
-3. The card appears on **Gift cards** and the sale on **Gift card sales**.
-4. Use the code on one of your payment links: it takes $25 off.
+Vercel variables:
+| Variable | What it is |
+|---|---|
+| `RESEND_API_KEY` | Same one as the gift card shop, if you set that up |
+| `STUDIO_FROM_EMAIL` | e.g. `Admin Studio <studio@erendirasboutique.com>`. Can skip if `GIFT_CARD_FROM_EMAIL` is set |
+| `STUDIO_REMINDER_EMAIL` | Who gets it. Several emails separated by commas is fine |
+| `CRON_SECRET` | Any long random text (same one as before if you have it) |
 
-## Put the admin on your phone
-Open your admin on your phone and sign in, then:
-- **iPhone (Safari):** Share button → **Add to Home Screen**.
-- **Android (Chrome):** ⋮ menu → **Install app** (or Add to Home screen).
+Add to the `crons` list in `vercel.json` (keep any entries you already have):
+```json
+{ "path": "/api/cron/studio-reminders", "schedule": "0 15 * * *" }
+```
+That's 8am Pacific. If `/api/cron` is blocked by a sign-in `middleware.js`, let it through.
+It checks `CRON_SECRET` itself.
 
-It opens full screen with the EB Studio icon, like a regular app.
+## How each one works
 
----
+**Bills & supplies**
+- Three kinds: **Supply** (poly mailers, tape, labels...), **Bill** (rent, utilities...), **Other** (anything to remember).
+- Categories are free-typed. Pick a suggestion or type a new one, and it's remembered.
+- Supplies have an **on-hand count** with − / + buttons (or tap the number and type it), and a **reorder at** number.
+  At or below it, the item shows **Running low** and jumps to the top.
+- Bills and reminders can **repeat** weekly, every 2 weeks, monthly, every 3 months, yearly, or every N days.
+  **Mark paid** / **Reordered** / **Done** logs it in History and moves the date to the next one.
+- Save a **reorder link** (Amazon, Uline...) or **pay link** for one-tap ordering or paying.
+- Bills have a **Write check** button that goes to your New check page.
+- First visit shows a list of common items to add in one click.
 
-## Good to know
-- **One card per payment, always.** The webhook and the thank-you page can both run at
-  once; only one makes the card. If something fails after payment, the order shows
-  **Needs retry** on Gift card sales. Press Retry and it double-checks with Stripe first.
-- **Online cards work like your admin ones:** a Stripe promo code, one use, worth the
-  full amount. They show on your Gift cards page and work with Mark redeemed,
-  Deactivate and the balance page.
-- **The PDF link must stay public.** Customers open `/api/admin/gift-cards/[id]/pdf`.
-  If you add a sign-in check to that route later, customers can't download their card.
-- **Your dashboard ledger** may also record these payments if your main Stripe webhook
-  logs every checkout. That's expected; they're real sales.
-- **Amounts:** $25–$200 buttons, or any whole dollar from $10 to $500. Change `SHOP`
-  at the top of `lib/shop/gift-card-shop.js`.
-- **Live times** are typed in your phone or computer's time zone. Customers see them
-  in their own time zone.
-- GitHub doesn't unzip uploads. Extract first, then drag the folders in.
+**Document vault**
+- Drag a file in, or on your phone tap to take a photo. PDFs, photos, Word and Excel, up to 25 MB.
+- Files go straight to a **private** Supabase bucket. Open/Download only works when signed in to the admin,
+  and the link it uses expires after 2 minutes, so a forwarded link doesn't work.
+- Add an expiration date and when to be reminded (7–90 days before). The page and the daily email flag it.
+
+**Giveaway wheel**
+- Type names one at a time or paste a whole list. The list is kept if the page refreshes.
+- **One spot per person** (default) ignores duplicates. Turn it off for "one entry per purchase"; then
+  adding a name twice gives them two slices.
+- The winner is picked with the browser's secure random generator *before* the wheel moves,
+  so it's fair, and the wheel always lands on the winner (tested 40 spins in a row).
+- Every winner is saved. If someone already won in the last 30 days, you get a heads-up.
+- **Doesn't count · spin again** removes that result from history (e.g. they weren't eligible).
+- **Copy announcement** copies a ready-to-paste "Congratulations..." message.
+- **Full screen** shows only the wheel. Share your screen on the live so everyone watches it spin.
+
+GitHub doesn't unzip uploads. Extract first, then drag the folders in.
