@@ -11,6 +11,7 @@
 //   active     'overview' | 'payment-links' | 'sezzle' | 'card-terminal' | 'stripe-terminal' | 'receipts'
 //              | 'gift-cards' | 'gift-card-sales'
 //              | 'live-link' | 'live-schedule' | 'checks'
+//              | 'reminders' | 'documents' | 'giveaway'
 //              | 'team' | 'branding' | 'integrations' | 'settings' | 'help'  (profile menu pages)
 //   lang       'en' | 'es'   (optional — omit and the shell manages it itself)
 //   onLang     (l) => void   (optional — pass when the page owns lang state)
@@ -45,6 +46,9 @@ const T = {
     liveLink: 'Live link',
     liveSchedule: 'Live schedule',
     checks: 'Checks',
+    reminders: 'Bills & supplies',
+    documents: 'Documents',
+    giveaway: 'Giveaway wheel',
     orders: 'Orders',
     shipping: 'Shipping',
     logOut: 'Log out',
@@ -70,6 +74,9 @@ const T = {
     liveLink: 'Enlace en vivo',
     liveSchedule: 'Calendario de lives',
     checks: 'Cheques',
+    reminders: 'Pagos y suministros',
+    documents: 'Documentos',
+    giveaway: 'Ruleta de regalos',
     orders: 'Pedidos',
     shipping: 'Envíos',
     logOut: 'Cerrar sesión',
@@ -111,6 +118,9 @@ const IconBroadcast = function () { return (<Icon><circle cx="12" cy="12" r="2" 
 const IconBag = function () { return (<Icon><path d="M5 8h14l-1 12a1 1 0 01-1 1H7a1 1 0 01-1-1L5 8z" /><path d="M9 8V6a3 3 0 016 0v2" /></Icon>); };
 const IconCalendar = function () { return (<Icon><rect x="3.5" y="5" width="17" height="15" rx="2" /><path d="M3.5 10h17" /><path d="M8 3v4M16 3v4" /><circle cx="12" cy="15" r="1.4" /></Icon>); };
 const IconCheck = function () { return (<Icon><rect x="3" y="6" width="18" height="12" rx="2" /><path d="M3 10h18" /><path d="M7 14h4" /></Icon>); };
+const IconBell = function () { return (<Icon><path d="M6 16V11a6 6 0 0112 0v5l1.5 2h-15L6 16z" /><path d="M10 20a2 2 0 004 0" /></Icon>); };
+const IconFolder = function () { return (<Icon><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" /><path d="M3 10h18" /></Icon>); };
+const IconWheel = function () { return (<Icon><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="2" /><path d="M12 3v7M12 14v7M3 12h7M14 12h7M5.6 5.6l5 5M13.4 13.4l5 5M18.4 5.6l-5 5M10.6 13.4l-5 5" /></Icon>); };
 const IconBox = function () { return (<Icon><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z" /><path d="M12 12l8-4.5" /><path d="M12 12v9" /><path d="M12 12L4 7.5" /></Icon>); };
 const IconTruck = function () { return (<Icon><circle cx="7" cy="17" r="2" /><circle cx="17" cy="17" r="2" /><path d="M5 17H3V6a1 1 0 011-1h9v12M9 17h6M15 8h4l2 3v6h-2" /></Icon>); };
 const IconExternal = function () { return (<Icon size={11}><path d="M7 17L17 7" /><path d="M8 7h9v9" /></Icon>); };
@@ -492,6 +502,9 @@ export default function AdminShell(props) {
     { key: 'live-link', href: '/admin/live-link', label: t.liveLink, icon: <IconBroadcast /> },
     { key: 'live-schedule', href: '/admin/live-schedule', label: t.liveSchedule, icon: <IconCalendar /> },
     { key: 'checks', href: '/admin/checks', label: t.checks, icon: <IconCheck /> },
+    { key: 'reminders', href: '/admin/reminders', label: t.reminders, icon: <IconBell /> },
+    { key: 'documents', href: '/admin/documents', label: t.documents, icon: <IconFolder /> },
+    { key: 'giveaway', href: '/admin/giveaway', label: t.giveaway, icon: <IconWheel /> },
   ];
   const accountNav = [
     { key: 'team', href: '/admin/team', label: t.team, icon: <IconUsers /> },
