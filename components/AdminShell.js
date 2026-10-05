@@ -22,8 +22,11 @@
 //   tip        { label, body }            — sidebar quick tip (optional)
 //   children   page content
 //
-// NOTE: the sidebar is white now, so it needs the DARK logo.
-// Change LOGO_SRC below if your dark logo file is named something else.
+// NAVIGATION (changes with screen size, nothing to set):
+//   computer (1180px+)  top bar with dropdown menus
+//   iPad (700-1179px)   slim icon rail on the left; tap a section for its pages
+//   phone (under 700px) bottom tabs; tap a section for a sheet of its pages
+// Pages are grouped in SECTIONS below. Add a page there and every layout gets it.
 
 import { useEffect, useRef, useState } from 'react';
 
@@ -53,6 +56,13 @@ const T = {
     shipping: 'Shipping',
     logOut: 'Log out',
     account: 'Account',
+    home: 'Home',
+    secPayments: 'Payments',
+    secGifts: 'Gift cards',
+    secLives: 'Lives',
+    secBusiness: 'Business',
+    more: 'More',
+    menu: 'Menu',
     team: 'Team & permissions',
     branding: 'Branding',
     integrations: 'Integrations',
@@ -81,6 +91,13 @@ const T = {
     shipping: 'Envíos',
     logOut: 'Cerrar sesión',
     account: 'Cuenta',
+    home: 'Inicio',
+    secPayments: 'Pagos',
+    secGifts: 'Tarjetas',
+    secLives: 'Lives',
+    secBusiness: 'Negocio',
+    more: 'Más',
+    menu: 'Menú',
     team: 'Equipo y permisos',
     branding: 'Marca',
     integrations: 'Integraciones',
@@ -123,6 +140,8 @@ const IconFolder = function () { return (<Icon><path d="M3 7a2 2 0 012-2h4l2 2h8
 const IconWheel = function () { return (<Icon><circle cx="12" cy="12" r="9" /><circle cx="12" cy="12" r="2" /><path d="M12 3v7M12 14v7M3 12h7M14 12h7M5.6 5.6l5 5M13.4 13.4l5 5M18.4 5.6l-5 5M10.6 13.4l-5 5" /></Icon>); };
 const IconBox = function () { return (<Icon><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z" /><path d="M12 12l8-4.5" /><path d="M12 12v9" /><path d="M12 12L4 7.5" /></Icon>); };
 const IconTruck = function () { return (<Icon><circle cx="7" cy="17" r="2" /><circle cx="17" cy="17" r="2" /><path d="M5 17H3V6a1 1 0 011-1h9v12M9 17h6M15 8h4l2 3v6h-2" /></Icon>); };
+const IconWallet = function () { return (<Icon><path d="M4 7a2 2 0 012-2h11v4" /><rect x="3" y="8" width="18" height="11" rx="2" /><path d="M16 13.5h2" /></Icon>); };
+const IconDots = function () { return (<Icon><circle cx="5" cy="12" r="1.3" /><circle cx="12" cy="12" r="1.3" /><circle cx="19" cy="12" r="1.3" /></Icon>); };
 const IconExternal = function () { return (<Icon size={11}><path d="M7 17L17 7" /><path d="M8 7h9v9" /></Icon>); };
 const IconChevron = function () { return (<Icon size={13}><path d="M6 9l6 6 6-6" /></Icon>); };
 const IconLogout = function () { return (<Icon size={14}><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" /><path d="M16 17l5-5-5-5" /><path d="M21 12H9" /></Icon>); };
@@ -183,57 +202,81 @@ export const shellCss = '' +
 '.eba :focus-visible { outline:2px solid var(--taupe); outline-offset:2px; border-radius:8px; }' +
 
 /* layout */
-'.eba-shell { display:grid; grid-template-columns:272px minmax(0,1fr); gap:18px; align-items:start;' +
-'  max-width:1640px; margin:0 auto; padding:18px; }' +
+'.eba-shell { max-width:1640px; margin:0 auto; padding:10px 10px 104px; }' +
+'@media (min-width:700px) { .eba-shell { display:grid; grid-template-columns:86px minmax(0,1fr); gap:16px; align-items:start; padding:14px; } }' +
+'@media (min-width:1180px) { .eba-shell { display:block; padding:12px 18px 24px; } }' +
 
-/* sidebar */
-'.eba-side { position:sticky; top:18px; min-width:0; background:var(--card); border-radius:30px; padding:26px 20px 20px;' +
-'  display:flex; flex-direction:column; gap:4px; min-height:calc(100vh - 36px);' +
-'  box-shadow:0 1px 2px rgba(149,127,103,.04), 0 14px 40px rgba(149,127,103,.06); }' +
-'.eba-logo { width:150px; height:auto; display:block; object-fit:contain; margin:4px 0 22px 6px; }' +
-'.eba-brand { margin:0 0 2px 6px; font-size:9.5px; letter-spacing:.26em; color:var(--sand); }' +
-'.eba-studio { margin:0 0 4px 6px; font-size:34px; line-height:1.02; color:var(--taupe); }' +
-'.eba-hello { margin:8px 0 18px 6px; font-size:13px; color:var(--mute); }' +
-'.eba-hr { border-top:1px solid var(--line); margin:0 6px 16px; }' +
-'.eba-nav { display:grid; gap:8px; }' +
-'.eba-nav a, .eba-nav button { display:flex; align-items:center; gap:12px; width:100%; text-align:left;' +
-'  padding:9px 14px 9px 9px; border-radius:999px; border:1px solid transparent; background:var(--wash);' +
-'  color:var(--mute); font-size:14px; transition:background .16s ease, color .16s ease, box-shadow .16s ease; }' +
-'.eba-nav a:hover, .eba-nav button:hover { background:#efe8de; color:var(--ink); }' +
-'.eba-nav a.on { background:var(--card); border-color:var(--line); color:var(--ink);' +
-'  box-shadow:0 4px 16px rgba(149,127,103,.07); }' +
-'.eba-nav .ic { width:30px; height:30px; border-radius:50%; background:#efe8de; color:var(--taupe);' +
-'  display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; }' +
-'.eba-nav a.on .ic { background:var(--accent); color:var(--cream); }' +
-'.eba-nav .ext { margin-left:auto; opacity:.6; display:inline-flex; }' +
-'.eba-navlabel { margin:20px 6px 8px; font-size:9px; letter-spacing:.22em; color:var(--sand); }' +
-'.eba-tip { margin-top:18px; background:rgba(207,189,169,.16); border-radius:18px; padding:14px 16px; }' +
-'.eba-tip .lb { display:block; font-size:12.5px; color:var(--taupe); margin-bottom:4px; }' +
-'.eba-tip p { margin:0; font-size:12.5px; line-height:1.5; color:var(--mute); }' +
-'.eba-spacer { flex:1; min-height:18px; }' +
-
-/* profile */
-'.eba-profile { position:relative; }' +
-'.eba-userpill { display:flex; align-items:center; gap:11px; padding:9px 12px 9px 9px !important; border-radius:999px;' +
-'  border:1px solid var(--line) !important; background:var(--wash); width:100%; }' +
+/* ---------- navigation (phone first) ---------- */
+'.eba-top, .eba-rail { display:none; }' +
+'.eba-wrap { position:relative; }' +
+'.eba-chip { width:28px; height:28px; border-radius:50%; background:#efe8de; color:var(--taupe); display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; }' +
+'.eba-pop { background:var(--card); border:1px solid var(--line); border-radius:20px; padding:8px; box-shadow:0 18px 40px rgba(149,127,103,.18); }' +
+'.eba-pop a, .eba-pop button { display:flex; align-items:center; gap:10px; width:100%; padding:10px 12px; border:0; border-radius:14px; background:transparent;' +
+'  text-align:left; font-size:13.5px; color:var(--ink); }' +
+'.eba-pop a:hover, .eba-pop button:hover, .eba-pop a.on { background:var(--wash); }' +
+'.eba-pop a.on .eba-chip { background:var(--accent); color:var(--cream); }' +
+'.eba-pop .ext { margin-left:auto; opacity:.6; display:inline-flex; }' +
+'.eba-pop-label { margin:6px 12px 6px; font-size:9.5px; letter-spacing:.22em; color:#8c775f; text-transform:uppercase; }' +
+'.eba-pop-head { padding:8px 12px 10px; margin-bottom:4px; border-bottom:1px solid var(--line); }' +
+'.eba-pop-head p { margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }' +
+'.eba-pop-head .n { font-size:13.5px; color:var(--ink); }' +
+'.eba-pop-head .e { font-size:11px; color:#8c775f; margin-top:2px; }' +
+'.eba-pop-sep { border-top:1px solid var(--line); margin:6px 4px; }' +
 '.eba-avatar, .eba-avatar-fb { width:34px; height:34px; border-radius:50%; flex-shrink:0; display:block; object-fit:cover; }' +
 '.eba-avatar-fb { background:var(--accent); color:var(--cream); font-size:12px; display:flex; align-items:center; justify-content:center; }' +
-'.eba-utext { min-width:0; flex:1; }' +
-'.eba-uname, .eba-umail { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }' +
-'.eba-uname { font-size:13.5px; color:var(--ink); }' +
-'.eba-umail { font-size:10.5px; color:var(--sand); margin-top:1px; }' +
-'.eba-menu { position:absolute; left:0; right:0; bottom:calc(100% + 8px); z-index:60; background:var(--card);' +
-'  border:1px solid var(--line); border-radius:18px; overflow:hidden; box-shadow:0 18px 40px rgba(149,127,103,.16); }' +
-'.eba-menu-head { padding:12px 14px; border-bottom:1px solid var(--line); }' +
-'.eba-menu-head p { margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }' +
-'.eba-menu-head .n { font-size:13px; color:var(--ink); }' +
-'.eba-menu-head .e { font-size:11px; color:var(--sand); margin-top:2px !important; }' +
-'.eba-menu button { display:flex; align-items:center; gap:9px; width:100%; border:0; background:transparent;' +
-'  padding:12px 14px; text-align:left; color:var(--taupe); font-size:13px; }' +
-'.eba-menu button:hover { background:var(--wash); }' +
-'.eba-menu a { display:flex; align-items:center; gap:9px; width:100%; padding:11px 14px; color:var(--taupe); font-size:13px; }' +
-'.eba-menu a:hover, .eba-menu a.on { background:var(--wash); }' +
-'.eba-menu-sep { border-top:1px solid var(--line); }' +
+'.eba-brandmark { font-family:"La Luxes Serif","Recoleta",Georgia,serif; color:var(--taupe); line-height:1; }' +
+/* phone */
+'.eba-mhead { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:4px 4px 12px; }' +
+'.eba-mhead .eba-logo { width:110px; height:auto; display:block; }' +
+'.eba-iconbtn { border:0; background:transparent; padding:0; border-radius:50%; }' +
+'.eba-tabs { position:fixed; left:10px; right:10px; bottom:max(12px, env(safe-area-inset-bottom)); z-index:72; display:flex; gap:2px;' +
+'  background:var(--card); border-radius:26px; padding:6px; box-shadow:0 10px 30px rgba(149,127,103,.22); }' +
+'.eba-tab { flex:1; min-width:0; min-height:50px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;' +
+'  border:0; background:transparent; border-radius:20px; font-size:10.5px; color:var(--mute); }' +
+'.eba-tab svg { width:20px; height:20px; }' +
+'.eba-tab.on { background:#efe8de; color:var(--ink); }' +
+'.eba-tab.open { background:var(--accent); color:var(--cream); }' +
+'.eba-sheet-bg { position:fixed; inset:0; z-index:70; background:rgba(60,48,36,.22); border:0; }' +
+'.eba-sheet { position:fixed; left:0; right:0; bottom:0; z-index:71; max-height:78vh; overflow:auto; border-radius:26px 26px 0 0 !important;' +
+'  padding:10px 14px calc(92px + env(safe-area-inset-bottom)) !important; }' +
+'.eba-grab { display:block; width:40px; height:4px; border-radius:4px; background:var(--line); margin:2px auto 10px; }' +
+'.eba-sheet-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; }' +
+'.eba-sheet-grid a, .eba-sheet-grid button { background:var(--wash); }' +
+/* iPad: icon rail */
+'@media (min-width:700px) {' +
+' .eba-mhead, .eba-tabs, .eba-sheet, .eba-sheet-bg { display:none !important; }' +
+' .eba-rail { display:flex; flex-direction:column; align-items:center; gap:6px; position:sticky; top:14px; z-index:50;' +
+'   min-height:calc(100vh - 28px); background:var(--card); border-radius:28px; padding:16px 8px 14px;' +
+'   box-shadow:0 1px 2px rgba(149,127,103,.04), 0 14px 40px rgba(149,127,103,.06); }' +
+' .eba-rail .eba-brandmark { font-size:28px; margin:2px 0 12px; }' +
+' .eba-rb { display:flex; flex-direction:column; align-items:center; gap:4px; width:70px; padding:8px 2px; border:0; border-radius:16px;' +
+'   background:transparent; font-size:10.5px; line-height:1.15; color:var(--mute); text-align:center; }' +
+' .eba-rb .ic { width:40px; height:40px; border-radius:14px; background:#efe8de; color:var(--taupe); display:inline-flex; align-items:center; justify-content:center; }' +
+' .eba-rb:hover, .eba-rb.open { background:var(--wash); color:var(--ink); }' +
+' .eba-rb.on .ic { background:var(--accent); color:var(--cream); }' +
+' .eba-rb.on { color:var(--ink); }' +
+' .eba-rail-fill { flex:1; min-height:12px; }' +
+' .eba-fly { position:absolute; left:calc(100% + 12px); top:0; width:250px; z-index:60; }' +
+' .eba-fly.up { top:auto; bottom:0; }' +
+'}' +
+/* computer: top bar */
+'@media (min-width:1180px) {' +
+' .eba-rail { display:none; }' +
+' .eba-top { display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px; position:sticky; top:12px; z-index:50;' +
+'   background:var(--card); border-radius:999px; padding:8px 10px 8px 22px; margin-bottom:16px;' +
+'   box-shadow:0 1px 2px rgba(149,127,103,.04), 0 14px 40px rgba(149,127,103,.08); }' +
+' .eba-top .eba-logo { width:118px; height:auto; display:block; }' +
+' .eba-top nav { display:flex; flex-wrap:wrap; gap:2px; flex:1; min-width:0; }' +
+' .eba-tn { display:inline-flex; align-items:center; gap:7px; padding:10px 14px; border:0; border-radius:999px; background:transparent;' +
+'   font-size:14px; color:var(--mute); white-space:nowrap; }' +
+' .eba-tn:hover, .eba-tn.open { background:#efe8de; color:var(--ink); }' +
+' .eba-tn.on { background:var(--accent); color:var(--cream); }' +
+' .eba-tn .car { font-size:9px; opacity:.8; }' +
+' .eba-drop { position:absolute; top:calc(100% + 10px); left:0; min-width:270px; z-index:60; }' +
+' .eba-drop.right { left:auto; right:0; }' +
+' .eba-userpill { display:flex; align-items:center; gap:9px; padding:4px 12px 4px 4px; border:1px solid var(--line); border-radius:999px; background:var(--wash); }' +
+' .eba-userpill .nm { font-size:13px; color:var(--ink); max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }' +
+'}' +
 
 /* main */
 '.eba-main { min-width:0; display:grid; gap:16px; }' +
@@ -246,6 +289,8 @@ export const shellCss = '' +
 '.eba-hero .eyebrow { margin:0 0 6px; font-size:10px; letter-spacing:.28em; color:var(--sand); }' +
 '.eba-hero h1 { margin:0; font-size:clamp(32px,4.2vw,58px); line-height:1; color:var(--taupe); }' +
 '.eba-hero .sub { margin:12px 0 0; font-size:14.5px; color:var(--mute); }' +
+'.eba-hero .tip { margin:10px 0 0; font-size:12.5px; line-height:1.5; color:#8c775f; max-width:640px; }' +
+'.eba-hero .tip b { font-weight:400; color:var(--taupe); }' +
 '.eba-hero-right { position:relative; z-index:1; display:flex; align-items:center; gap:12px; flex-shrink:0; }' +
 '.eba-herostat { background:var(--wash); border:1px solid var(--line); border-radius:24px; padding:16px 30px;' +
 '  text-align:center; min-width:170px; }' +
@@ -290,6 +335,8 @@ export const shellCss = '' +
 '.eba-cta:hover { background:var(--accent-dark); }' +
 '.eba-cta > span { min-width:0; }' +
 '.eba-cta h3 { margin:0; font-size:clamp(24px,2.4vw,36px); line-height:1; overflow-wrap:anywhere; }' +
+'.eba-cta h3, .eba-cta p, .eba-cta .go { color:inherit; }' +
+'.eba a.eba-btn-dark, .eba a.eba-cta:not(.eba-cta-quiet) { color:var(--cream); }' +
 '.eba-cta p { margin:8px 0 0; font-size:13px; opacity:.82; }' +
 '.eba-cta .go { font-size:13px; white-space:nowrap; opacity:.9; }' +
 '.eba-cta-quiet { background:var(--wash); color:var(--ink); border:1px solid var(--line); margin-top:14px; }' +
@@ -369,19 +416,6 @@ export const shellCss = '' +
 
 /* tablet + phone: sidebar becomes a compact header bar */
 '@media (max-width:980px) {' +
-' .eba-shell { grid-template-columns:minmax(0,1fr); padding:10px; gap:10px; }' +
-' .eba-side { position:relative; top:auto; min-width:0; min-height:0; border-radius:22px; padding:16px 14px; gap:0; }' +
-' .eba-logo { width:112px; margin:0 0 14px 2px; }' +
-' .eba-brand, .eba-studio, .eba-hello, .eba-hr, .eba-tip, .eba-spacer { display:none; }' +
-' .eba-nav { display:grid; grid-auto-flow:column; grid-auto-columns:max-content; gap:8px; padding:2px 0;' +
-'   overflow-x:auto; overscroll-behavior-x:contain; -webkit-overflow-scrolling:touch; scrollbar-width:none; }' +
-' .eba-nav::-webkit-scrollbar { display:none; }' +
-' .eba-nav a, .eba-nav button { width:auto; white-space:nowrap; padding:8px 16px 8px 8px; }' +
-' .eba-navlabel { margin:12px 2px 6px; }' +
-' .eba-profile { position:absolute; top:14px; right:14px; width:auto; }' +
-' .eba-userpill { width:auto; padding:6px 10px 6px 6px !important; }' +
-' .eba-utext { display:none; }' +
-' .eba-menu { left:auto; right:0; bottom:auto; top:calc(100% + 8px); width:min(260px,72vw); }' +
 ' .eba-hero { flex-direction:column; align-items:stretch; gap:18px; padding:22px 20px; border-radius:22px; }' +
 ' .eba-hero::after { width:200px; height:200px; right:-60px; top:-70px; }' +
 ' .eba-hero h1 { font-size:clamp(30px,8vw,42px); }' +
@@ -438,9 +472,9 @@ export const shellCss = '' +
 ' .eba-langs { align-self:stretch; }' +
 ' .eba-langs button { flex:1; }' +
 '}' +
-'@media (display-mode:standalone) { .eba-shell { padding-top:max(18px, env(safe-area-inset-top)); padding-bottom:max(18px, env(safe-area-inset-bottom)); } }' +
+'@media (display-mode:standalone) { .eba-shell { padding-top:max(12px, env(safe-area-inset-top)); } }' +
 '@media (prefers-reduced-motion:reduce) { .eba * { transition:none !important; } }' +
-'@media print { .no-print { display:none !important; } .eba { background:#fff; } .eba-shell { display:block; padding:0; }' +
+'@media print { .no-print, .eba-top, .eba-rail, .eba-mhead, .eba-tabs, .eba-sheet { display:none !important; } .eba { background:#fff; } .eba-shell { display:block; padding:0; }' +
 ' .eba-panel, .eba-hero { box-shadow:none; padding:0; } }';
 
 /* ============================================================ */
@@ -450,8 +484,9 @@ export default function AdminShell(props) {
   const lang = props.lang || ownLang;
   const t = T[lang] || T.en;
 
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef(null);
+  // Which menu is open: 'top:payments', 'rail:lives', 'sheet:more', 'top:account'... or null.
+  const [open, setOpen] = useState(null);
+  function toggle(id) { setOpen(function (cur) { return cur === id ? null : id; }); }
 
   useEffect(function () {
     if (props.lang) return;
@@ -468,9 +503,9 @@ export default function AdminShell(props) {
 
   useEffect(function () {
     function close(e) {
-      if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false);
+      if (!e.target.closest || !e.target.closest('[data-eba-pop]')) setOpen(null);
     }
-    function esc(e) { if (e.key === 'Escape') setMenuOpen(false); }
+    function esc(e) { if (e.key === 'Escape') setOpen(null); }
     document.addEventListener('mousedown', close);
     document.addEventListener('keydown', esc);
     return function () {
@@ -490,21 +525,33 @@ export default function AdminShell(props) {
   }
 
   const avatarUrl = admin?.avatar_url || admin?.picture || admin?.avatar || null;
-  const nav = [
-    { key: 'overview', href: '/admin', label: t.overview, icon: <IconHome /> },
-    { key: 'payment-links', href: '/admin/payment-links', label: t.paymentLinks, icon: <IconLink /> },
-    { key: 'sezzle', href: '/admin/sezzle', label: t.sezzle, icon: <IconSezzle /> },
-    { key: 'card-terminal', href: '/admin/clover-terminal', label: t.cardTerminal, icon: <IconTerminal /> },
-    { key: 'stripe-terminal', href: '/admin/stripe-terminal', label: t.stripeTerminal, icon: <IconCard /> },
-    { key: 'receipts', href: '/admin/receipts', label: t.receipts, icon: <IconReceipt /> },
-    { key: 'gift-cards', href: '/admin/gift-cards', label: t.giftCards, icon: <IconGift /> },
-    { key: 'gift-card-sales', href: '/admin/gift-card-sales', label: t.giftCardSales, icon: <IconBag /> },
-    { key: 'live-link', href: '/admin/live-link', label: t.liveLink, icon: <IconBroadcast /> },
-    { key: 'live-schedule', href: '/admin/live-schedule', label: t.liveSchedule, icon: <IconCalendar /> },
-    { key: 'checks', href: '/admin/checks', label: t.checks, icon: <IconCheck /> },
-    { key: 'reminders', href: '/admin/reminders', label: t.reminders, icon: <IconBell /> },
-    { key: 'documents', href: '/admin/documents', label: t.documents, icon: <IconFolder /> },
-    { key: 'giveaway', href: '/admin/giveaway', label: t.giveaway, icon: <IconWheel /> },
+  // ---- the menu, grouped. Add a page to a section and every layout shows it. ----
+  const SECTIONS = [
+    { key: 'payments', label: t.secPayments, icon: <IconWallet />, items: [
+      { key: 'payment-links', href: '/admin/payment-links', label: t.paymentLinks, icon: <IconLink /> },
+      { key: 'sezzle', href: '/admin/sezzle', label: t.sezzle, icon: <IconSezzle /> },
+      { key: 'card-terminal', href: '/admin/clover-terminal', label: t.cardTerminal, icon: <IconTerminal /> },
+      { key: 'stripe-terminal', href: '/admin/stripe-terminal', label: t.stripeTerminal, icon: <IconCard /> },
+      { key: 'receipts', href: '/admin/receipts', label: t.receipts, icon: <IconReceipt /> },
+    ] },
+    { key: 'gifts', label: t.secGifts, icon: <IconGift />, items: [
+      { key: 'gift-cards', href: '/admin/gift-cards', label: t.giftCards, icon: <IconGift /> },
+      { key: 'gift-card-sales', href: '/admin/gift-card-sales', label: t.giftCardSales, icon: <IconBag /> },
+    ] },
+    { key: 'lives', label: t.secLives, icon: <IconBroadcast />, items: [
+      { key: 'live-link', href: '/admin/live-link', label: t.liveLink, icon: <IconBroadcast /> },
+      { key: 'live-schedule', href: '/admin/live-schedule', label: t.liveSchedule, icon: <IconCalendar /> },
+      { key: 'giveaway', href: '/admin/giveaway', label: t.giveaway, icon: <IconWheel /> },
+    ] },
+    { key: 'business', label: t.secBusiness, icon: <IconFolder />, items: [
+      { key: 'checks', href: '/admin/checks', label: t.checks, icon: <IconCheck /> },
+      { key: 'reminders', href: '/admin/reminders', label: t.reminders, icon: <IconBell /> },
+      { key: 'documents', href: '/admin/documents', label: t.documents, icon: <IconFolder /> },
+    ] },
+    { key: 'shipping', label: t.shipping, icon: <IconTruck />, external: true, items: [
+      { key: 'ship-orders', href: SHIP + '/orders', label: t.orders, icon: <IconBox />, external: true },
+      { key: 'ship-home', href: SHIP, label: t.shipping, icon: <IconTruck />, external: true },
+    ] },
   ];
   const accountNav = [
     { key: 'team', href: '/admin/team', label: t.team, icon: <IconUsers /> },
@@ -513,91 +560,183 @@ export default function AdminShell(props) {
     { key: 'settings', href: '/admin/settings', label: t.settings, icon: <IconGear /> },
     { key: 'help', href: '/admin/help', label: t.help, icon: <IconHelp /> },
   ];
+  const isHome = props.active === 'overview';
+  function sectionActive(sec) {
+    return sec.items.some(function (it) { return it.key === props.active; });
+  }
+  const accountActive = accountNav.some(function (it) { return it.key === props.active; });
+  const firstName = admin?.name?.split(' ')[0] || (admin?.email ? admin.email.split('@')[0] : '');
+
+  function avatar() {
+    return avatarUrl ? (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img src={avatarUrl} alt="" referrerPolicy="no-referrer" className="eba-avatar" />
+    ) : (
+      <span className="eba-avatar-fb">{initials(admin?.name || admin?.email)}</span>
+    );
+  }
+
+  function pageLinks(items) {
+    return items.map(function (it) {
+      const on = props.active === it.key;
+      return (
+        <a key={it.key} href={it.href} role="menuitem" className={on ? 'on' : ''} aria-current={on ? 'page' : undefined}
+          target={it.external ? '_blank' : undefined} rel={it.external ? 'noopener noreferrer' : undefined}>
+          <span className="eba-chip">{it.icon}</span>
+          <span>{it.label}</span>
+          {it.external && <span className="ext"><IconExternal /></span>}
+        </a>
+      );
+    });
+  }
+
+  function accountMenu() {
+    return (
+      <>
+        <div className="eba-pop-head">
+          <p className="n">{admin?.name || t.account}</p>
+          <p className="e">{admin?.email}{admin?.role ? ' \u00b7 ' + admin.role : ''}</p>
+        </div>
+        {pageLinks(accountNav)}
+        <div className="eba-pop-sep" />
+        <button role="menuitem" onClick={logout}><span className="eba-chip"><IconLogout /></span>{t.logOut}</button>
+      </>
+    );
+  }
+
+  const sheetSection = open && open.indexOf('sheet:') === 0 ? open.slice(6) : null;
+  const sheetSec = SECTIONS.find(function (s) { return s.key === sheetSection; });
 
   return (
     <main className="eba">
       <style>{shellCss}</style>
 
       <div className="eba-shell">
-        <aside className="eba-side no-print">
+        {/* ===== computer: top bar ===== */}
+        <header className="eba-top no-print" data-eba-pop>
           <a href="/admin" aria-label="Erendira&#8217;s Boutique admin home">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={LOGO_SRC} alt="Erendira&#8217;s Boutique" className="eba-logo" />
           </a>
-          <p className="eba-brand">{t.brand}</p>
-          <p className="eba-studio eba-display">{t.studio}</p>
-          <p className="eba-hello">{t.welcome}, {admin?.name?.split(' ')[0] || 'Erendira'}</p>
-          <div className="eba-hr" />
-
-          <nav className="eba-nav" aria-label="Admin">
-            {nav.map(function (item) {
+          <nav aria-label="Admin">
+            <a href="/admin" className={'eba-tn' + (isHome ? ' on' : '')} aria-current={isHome ? 'page' : undefined}>{t.overview}</a>
+            {SECTIONS.map(function (sec) {
+              const id = 'top:' + sec.key;
+              const isOpen = open === id;
               return (
-                <a key={item.key} href={item.href} className={props.active === item.key ? 'on' : ''} aria-current={props.active === item.key ? 'page' : undefined}>
-                  <span className="ic">{item.icon}</span>
-                  <span>{item.label}</span>
-                </a>
+                <div key={sec.key} className="eba-wrap">
+                  <button type="button" className={'eba-tn' + (sectionActive(sec) ? ' on' : '') + (isOpen ? ' open' : '')}
+                    aria-haspopup="menu" aria-expanded={isOpen} onClick={function () { toggle(id); }}>
+                    {sec.label}<span className="car">{sec.external ? '\u2197' : '\u25BE'}</span>
+                  </button>
+                  {isOpen && <div className="eba-pop eba-drop" role="menu">{pageLinks(sec.items)}</div>}
+                </div>
               );
             })}
           </nav>
-
-          <p className="eba-navlabel">{t.shipping.toUpperCase()}</p>
-          <nav className="eba-nav" aria-label="Shipping portal">
-            <a href={SHIP + '/orders'} target="_blank" rel="noopener noreferrer">
-              <span className="ic"><IconBox /></span><span>{t.orders}</span><span className="ext"><IconExternal /></span>
-            </a>
-            <a href={SHIP} target="_blank" rel="noopener noreferrer">
-              <span className="ic"><IconTruck /></span><span>{t.shipping}</span><span className="ext"><IconExternal /></span>
-            </a>
-          </nav>
-
-          {props.tip && (
-            <div className="eba-tip">
-              <span className="lb">{props.tip.label}</span>
-              <p>{props.tip.body}</p>
-            </div>
-          )}
-
-          <div className="eba-spacer" />
-
-          <div className="eba-profile" ref={menuRef}>
-            <button
-              className="eba-userpill"
-              onClick={function () { setMenuOpen(function (v) { return !v; }); }}
-              aria-haspopup="menu"
-              aria-expanded={menuOpen}
-            >
-              {avatarUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={avatarUrl} alt="" referrerPolicy="no-referrer" className="eba-avatar" />
-              ) : (
-                <span className="eba-avatar-fb">{initials(admin?.name || admin?.email)}</span>
-              )}
-              <span className="eba-utext">
-                <span className="eba-uname">{admin?.name || t.account}</span>
-                <span className="eba-umail">{admin?.email || '—'}</span>
-              </span>
-              <IconChevron />
+          <div className="eba-wrap">
+            <button type="button" className="eba-userpill" aria-haspopup="menu" aria-expanded={open === 'top:account'}
+              onClick={function () { toggle('top:account'); }}>
+              {avatar()}<span className="nm">{admin?.name || t.account}</span><IconChevron />
             </button>
+            {open === 'top:account' && <div className="eba-pop eba-drop right" role="menu">{accountMenu()}</div>}
+          </div>
+        </header>
 
-            {menuOpen && (
-              <div className="eba-menu" role="menu">
-                <div className="eba-menu-head">
-                  <p className="n">{admin?.name || t.account}</p>
-                  <p className="e">{admin?.email}{admin?.role ? ' · ' + admin.role : ''}</p>
-                </div>
-                {accountNav.map(function (item) {
-                  return (
-                    <a key={item.key} role="menuitem" href={item.href} className={props.active === item.key ? 'on' : ''} aria-current={props.active === item.key ? 'page' : undefined}>
-                      {item.icon}{item.label}
-                    </a>
-                  );
-                })}
-                <div className="eba-menu-sep" />
-                <button role="menuitem" onClick={logout}><IconLogout />{t.logOut}</button>
+        {/* ===== iPad: slim icon rail ===== */}
+        <aside className="eba-rail no-print" data-eba-pop aria-label="Admin">
+          <a href="/admin" className="eba-brandmark" aria-label="Erendira&#8217;s Boutique admin home">EB</a>
+          <a href="/admin" className={'eba-rb' + (isHome ? ' on' : '')} aria-current={isHome ? 'page' : undefined}>
+            <span className="ic"><IconHome /></span>{t.home}
+          </a>
+          {SECTIONS.map(function (sec) {
+            const id = 'rail:' + sec.key;
+            const isOpen = open === id;
+            return (
+              <div key={sec.key} className="eba-wrap">
+                <button type="button" className={'eba-rb' + (sectionActive(sec) ? ' on' : '') + (isOpen ? ' open' : '')}
+                  aria-haspopup="menu" aria-expanded={isOpen} onClick={function () { toggle(id); }}>
+                  <span className="ic">{sec.icon}</span>{sec.label}
+                </button>
+                {isOpen && (
+                  <div className="eba-pop eba-fly" role="menu">
+                    <p className="eba-pop-label">{sec.label}</p>
+                    {pageLinks(sec.items)}
+                  </div>
+                )}
               </div>
-            )}
+            );
+          })}
+          <div className="eba-rail-fill" />
+          <div className="eba-wrap">
+            <button type="button" className={'eba-iconbtn' + (accountActive ? ' on' : '')} aria-label={t.account}
+              aria-haspopup="menu" aria-expanded={open === 'rail:account'} onClick={function () { toggle('rail:account'); }}>
+              {avatar()}
+            </button>
+            {open === 'rail:account' && <div className="eba-pop eba-fly up" role="menu">{accountMenu()}</div>}
           </div>
         </aside>
+
+        {/* ===== phone: small header + bottom tabs ===== */}
+        <div className="eba-mhead no-print" data-eba-pop>
+          <a href="/admin" aria-label="Erendira&#8217;s Boutique admin home">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={LOGO_SRC} alt="Erendira&#8217;s Boutique" className="eba-logo" />
+          </a>
+          <button type="button" className="eba-iconbtn" aria-label={t.account} onClick={function () { toggle('sheet:account'); }}>{avatar()}</button>
+        </div>
+
+        {open && open.indexOf('sheet:') === 0 && (
+          <button type="button" className="eba-sheet-bg no-print" aria-label="Close" onClick={function () { setOpen(null); }} />
+        )}
+        {open && open.indexOf('sheet:') === 0 && (
+          <div className="eba-pop eba-sheet no-print" data-eba-pop role="menu">
+            <span className="eba-grab" />
+            {sheetSection === 'account' ? (
+              accountMenu()
+            ) : sheetSection === 'more' ? (
+              <>
+                {SECTIONS.filter(function (s) { return s.key === 'business' || s.key === 'shipping'; }).map(function (sec) {
+                  return (
+                    <div key={sec.key}>
+                      <p className="eba-pop-label">{sec.label}</p>
+                      <div className="eba-sheet-grid">{pageLinks(sec.items)}</div>
+                    </div>
+                  );
+                })}
+                <p className="eba-pop-label">{t.account}</p>
+                <div className="eba-sheet-grid">{pageLinks(accountNav)}</div>
+              </>
+            ) : sheetSec ? (
+              <>
+                <p className="eba-pop-label">{sheetSec.label}</p>
+                <div className="eba-sheet-grid">{pageLinks(sheetSec.items)}</div>
+              </>
+            ) : null}
+          </div>
+        )}
+
+        <nav className="eba-tabs no-print" data-eba-pop aria-label="Admin">
+          <a href="/admin" className={'eba-tab' + (isHome ? ' on' : '')} aria-current={isHome ? 'page' : undefined}><IconHome />{t.home}</a>
+          {SECTIONS.filter(function (s) { return s.key === 'payments' || s.key === 'gifts' || s.key === 'lives'; }).map(function (sec) {
+            const id = 'sheet:' + sec.key;
+            return (
+              <button key={sec.key} type="button" className={'eba-tab' + (sectionActive(sec) ? ' on' : '') + (open === id ? ' open' : '')}
+                aria-haspopup="menu" aria-expanded={open === id} onClick={function () { toggle(id); }}>
+                {sec.icon}{sec.label}
+              </button>
+            );
+          })}
+          {(function () {
+            const moreOn = SECTIONS.some(function (s) { return (s.key === 'business' || s.key === 'shipping') && sectionActive(s); }) || accountActive;
+            return (
+              <button type="button" className={'eba-tab' + (moreOn ? ' on' : '') + (open === 'sheet:more' ? ' open' : '')}
+                aria-haspopup="menu" aria-expanded={open === 'sheet:more'} onClick={function () { toggle('sheet:more'); }}>
+                <IconDots />{t.more}
+              </button>
+            );
+          })()}
+        </nav>
 
         <section className="eba-main">
           <div className="eba-hero">
@@ -605,6 +744,7 @@ export default function AdminShell(props) {
               {props.eyebrow && <p className="eyebrow">{props.eyebrow}</p>}
               <h1>{props.title}</h1>
               {props.subtitle && <p className="sub">{props.subtitle}</p>}
+              {props.tip && <p className="tip no-print"><b>{props.tip.label}:</b> {props.tip.body}</p>}
             </div>
             <div className="eba-hero-right no-print">
               {props.heroStat && (
