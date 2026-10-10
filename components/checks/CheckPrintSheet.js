@@ -2,10 +2,11 @@ import { formatMoney } from "@/lib/checks/amount-to-words";
 
 /* ============================================================
    Business check — prints on one US Letter sheet (8.5" × 11"):
-     top    3.50"  the check
-     middle 3.75"  Payment Detail  (goes to the payee)
-     bottom 3.75"  Business Copy   (stays with you)
-   Works with standard "check on top" voucher stock (QuickBooks-style).
+     top    3.5"  the check                 (perforation at 3.5")
+     middle 3.5"  Payment Detail → payee    (perforation at 7")
+     bottom 4.0"  Business Copy → you
+   Made for DocuGard Standard Top Check paper (04501, blue marble),
+   which is perforated at 3-1/2" and 7" from the top.
    Every position is in inches so it lines up the same on every printer.
    Use the alignment controls on the print page if your printer shifts.
    ============================================================ */
@@ -264,9 +265,9 @@ const css = `
 .ck-sample { display:none; left:0; right:0; top:2.15in; text-align:center; font:bold 22pt Arial, Helvetica, sans-serif; letter-spacing:.2em; color:rgba(160,60,40,.18); }
 
 /* ---------------- stubs (2 × 3.75") ---------------- */
-.ck-stub { position:absolute; left:0; width:8.5in; height:3.75in; }
+.ck-stub { position:absolute; left:0; width:8.5in; height:3.5in; }
 .ck-stub:nth-of-type(2) { top:3.5in; }
-.ck-stub:nth-of-type(3) { top:7.25in; }
+.ck-stub:nth-of-type(3) { top:7in; height:4in; }
 .ck-stub-in { position:absolute; inset:0.38in 0.45in 0.3in; font-size:9.5pt; }
 .ck-stub-head { display:flex; justify-content:space-between; align-items:flex-start; padding-bottom:6pt; border-bottom:0.75pt solid var(--soft); }
 .ck-stub-brand { font-size:11pt; color:var(--brand); }
