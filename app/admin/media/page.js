@@ -1,13 +1,41 @@
 export default function MediaPage() {
   return (
-    <div className="flex h-[calc(100vh-2rem)] flex-col gap-3 p-4">
-      <div className="flex items-center justify-between">
-        <h1 className="font-display text-2xl text-ink">Media</h1>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 12,
+        padding: 16,
+        height: "calc(100vh - 2rem)",
+        boxSizing: "border-box",
+        width: "100%",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 12,
+        }}
+      >
+        <h1 style={{ margin: 0, fontSize: 28, lineHeight: 1.1, color: "#8B7D6B" }}>
+          Media
+        </h1>
         <a
           href="https://media.erendirasboutique.com/"
           target="_blank"
           rel="noopener noreferrer"
-          className="rounded-lg border border-sand bg-cream px-3 py-1.5 text-sm text-taupe hover:bg-sand/40"
+          style={{
+            padding: "6px 12px",
+            border: "1px solid #D9CFC1",
+            borderRadius: 8,
+            background: "#F5F3EF",
+            color: "#8B7D6B",
+            fontSize: 14,
+            textDecoration: "none",
+            whiteSpace: "nowrap",
+          }}
         >
           Open in new tab ↗
         </a>
@@ -16,7 +44,15 @@ export default function MediaPage() {
         src="https://media.erendirasboutique.com/"
         title="Media uploads"
         allow="clipboard-write"
-        className="w-full flex-1 rounded-xl border border-sand bg-cream"
+        style={{
+          flex: 1,
+          width: "100%",
+          minHeight: 600,
+          border: "1px solid #D9CFC1",
+          borderRadius: 12,
+          background: "#F5F3EF",
+          display: "block",
+        }}
       />
     </div>
   );
