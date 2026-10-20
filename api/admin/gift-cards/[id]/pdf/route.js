@@ -12,23 +12,21 @@ export const runtime = 'nodejs';
    Erendira's Boutique — gift card PDF
    Renders on demand, so design changes hit every card at once.
 
-   The card at the top is built to stand on its own: brand, amount,
-   and code all inside one frame, so a screenshot of just that
-   rectangle is a complete, usable gift card. Everything below it
-   is for the person holding it — the note, and how to spend it.
-
    FONTS: drop the .otf/.ttf files in public/fonts/ and list the
    filenames in FONT_FILES below. Names are tried in order and the
    first one found wins; if none load, it falls back to Times and
    Helvetica so the route never breaks.
 
-   Requires "@pdf-lib/fontkit" in package.json. If it's missing the
-   route still renders, just with the fallback fonts.
+   NOTE: fonts are embedded WITHOUT subsetting. pdf-lib's subsetter
+   scrambles glyph mapping on many .otf (CFF) fonts, which is what
+   produced the "%&'(!)*" garbage text.
+
+   Requires "@pdf-lib/fontkit" in package.json.
    ============================================================ */
 
 const FONT_FILES = {
-  display: ['LaLuxesSerif.otf', 'la-luxes-serif.otf', 'LaLuxes-Serif.otf', 'LaLuxesSerif.ttf'],
-  body: ['recoleta-regular.otf', 'Recoleta.otf', 'Recoleta-Regular.ttf', 'Recoleta.ttf'],
+  display: ['LaLuxesSerif.otf', 'la-luxes-serif.otf', 'LaLuxes-Serif.otf', 'LaLuxesSerif.ttf', 'LaLuxesSerif-Regular.otf'],
+  body: ['recoleta-regular.otf', 'Recoleta-Regular.otf', 'Recoleta.otf', 'Recoleta-Regular.ttf', 'Recoleta.ttf'],
   bodyItalic: ['Recoleta-RegularItalic.otf', 'Recoleta-Italic.otf', 'Recoleta-Italic.ttf'],
 };
 
@@ -40,6 +38,16 @@ const COLORS = {
   cream: rgb(0.961, 0.953, 0.937),   // card text
   white: rgb(1, 1, 1),
 };
+
+// Blend two colors so overlapping shapes don't show darker/lighter seams
+// (semi-transparent overlapping shapes stack their opacity).
+function mix(a, b, t) {
+  return rgb(
+    a.red + (b.red - a.red) * t,
+    a.green + (b.green - a.green) * t,
+    a.blue + (b.blue - a.blue) * t
+  );
+}
 
 const PAGE_W = 612;
 const PAGE_H = 792;
@@ -76,19 +84,33 @@ const T = {
 
 /* ---------------- Text helpers ---------------- */
 
-// Strips control characters and emoji — the brand fonts can't encode them
+// Strips control characters and emoji — the fonts can't encode them
 // and pdf-lib throws rather than skipping.
 function clean(value) {
   return String(value == null ? '' : value)
-    .replace(/[\u0000-\u001F\u007F]/g, '')
-    .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{2190}-\u{21FF}]/gu, '')
-    .replace(/\s+/g, ' ')
+    .replace(/[\u0000-\u001F\u007F]/g, ' ')
+    .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}\u{2190}-\u{21FF}]/gu, '')
+    .replace(/[\u00A0\u2000-\u200A\u202F]/g, ' ')
+    .replace(/ {2,}/g, ' ')
     .trim();
 }
 
-// pdf-lib has no letter-spacing, so wide caps get spaced by hand.
-function spaced(value) {
-  return String(value).split('').join('\u2009\u2009');
+// pdf-lib has no letter-spacing, so tracked caps are drawn one glyph at a time.
+function drawTracked(page, text, y, font, size, color, opacity, tracking, centerX) {
+  const chars = clean(text).split('');
+  if (!chars.length) return;
+  const widths = chars.map((c) => font.widthOfTextAtSize(c, size));
+  const gap = (c) => (c === ' ' ? tracking * 2.5 : tracking);
+  let total = 0;
+  chars.forEach((c, i) => {
+    total += widths[i];
+    if (i < chars.length - 1) total += gap(c);
+  });
+  let x = (centerX == null ? PAGE_W / 2 : centerX) - total / 2;
+  chars.forEach((c, i) => {
+    if (c !== ' ') page.drawText(c, { x, y, size, font, color, opacity: opacity == null ? 1 : opacity });
+    x += widths[i] + gap(c);
+  });
 }
 
 function wrap(text, font, size, maxWidth) {
@@ -115,9 +137,9 @@ function drawCenter(page, text, y, font, size, color, opacity, centerX) {
   const w = font.widthOfTextAtSize(value, size);
   page.drawText(value, {
     x: cx - w / 2,
-    y: y,
-    size: size,
-    font: font,
+    y,
+    size,
+    font,
     color: color || COLORS.ink,
     opacity: opacity == null ? 1 : opacity,
   });
@@ -127,33 +149,29 @@ function drawParagraph(page, text, x, y, font, size, color, maxWidth, leading, c
   let cursor = y;
   for (const line of wrap(text, font, size, maxWidth)) {
     if (centerX != null) drawCenter(page, line, cursor, font, size, color, 1, centerX);
-    else page.drawText(line, { x: x, y: cursor, size: size, font: font, color: color });
+    else page.drawText(line, { x, y: cursor, size, font, color });
     cursor -= leading;
   }
   return cursor;
 }
 
-// Rounded pill — pdf-lib rectangles have square corners, so the ends
-// are circles. Same pill language as the admin UI.
-function drawPill(page, x, y, w, h, opts) {
+// Rounded pill, solid color (no opacity) so the rect/circle overlaps don't show.
+function drawPill(page, x, y, w, h, color) {
   const r = h / 2;
-  const options = opts || {};
-  const fill = { color: options.color, opacity: options.opacity };
-  page.drawRectangle({ x: x + r, y: y, width: w - h, height: h, ...fill });
-  page.drawCircle({ x: x + r, y: y + r, size: r, ...fill });
-  page.drawCircle({ x: x + w - r, y: y + r, size: r, ...fill });
+  page.drawRectangle({ x: x + r, y, width: w - h, height: h, color });
+  page.drawCircle({ x: x + r, y: y + r, size: r, color });
+  page.drawCircle({ x: x + w - r, y: y + r, size: r, color });
 }
 
-// Four-petal flower mark, same as the portal card art.
-function drawFlower(page, cx, cy, scale, color, opacity) {
+// Four-petal flower mark. Solid pre-blended color so petals don't stack.
+function drawFlower(page, cx, cy, scale, color) {
   const long = 9 * scale;
   const short = 4.5 * scale;
   const off = 8 * scale;
-  page.drawEllipse({ x: cx, y: cy + off, xScale: short, yScale: long, color: color, opacity: opacity });
-  page.drawEllipse({ x: cx, y: cy - off, xScale: short, yScale: long, color: color, opacity: opacity });
-  page.drawEllipse({ x: cx + off, y: cy, xScale: long, yScale: short, color: color, opacity: opacity });
-  page.drawEllipse({ x: cx - off, y: cy, xScale: long, yScale: short, color: color, opacity: opacity });
-  page.drawEllipse({ x: cx, y: cy, xScale: 3.5 * scale, yScale: 3.5 * scale, color: color, opacity: opacity });
+  page.drawEllipse({ x: cx, y: cy + off, xScale: short, yScale: long, color });
+  page.drawEllipse({ x: cx, y: cy - off, xScale: short, yScale: long, color });
+  page.drawEllipse({ x: cx + off, y: cy, xScale: long, yScale: short, color });
+  page.drawEllipse({ x: cx - off, y: cy, xScale: long, yScale: short, color });
 }
 
 function money(value) {
@@ -171,13 +189,10 @@ async function loadFont(pdfDoc, candidates) {
       continue;
     }
     try {
-      return await pdfDoc.embedFont(bytes, { subset: true });
+      // subset: false — subsetting garbles many OTF fonts
+      return await pdfDoc.embedFont(bytes, { subset: false });
     } catch {
-      try {
-        return await pdfDoc.embedFont(bytes);
-      } catch {
-        continue;
-      }
+      continue;
     }
   }
   return null;
@@ -217,9 +232,13 @@ export async function GET(req, { params }) {
     const fallbackItalic = await pdfDoc.embedFont(StandardFonts.TimesRomanItalic);
     const sans = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
-    const display = (fontkit && (await loadFont(pdfDoc, FONT_FILES.display))) || fallbackSerif;
-    const body = (fontkit && (await loadFont(pdfDoc, FONT_FILES.body))) || fallbackSerif;
-    const bodyItalic = (fontkit && (await loadFont(pdfDoc, FONT_FILES.bodyItalic))) || body || fallbackItalic;
+    const customDisplay = fontkit ? await loadFont(pdfDoc, FONT_FILES.display) : null;
+    const customBody = fontkit ? await loadFont(pdfDoc, FONT_FILES.body) : null;
+    const customItalic = fontkit ? await loadFont(pdfDoc, FONT_FILES.bodyItalic) : null;
+
+    const display = customDisplay || fallbackSerif;
+    const body = customBody || fallbackSerif;
+    const bodyItalic = customItalic || customBody || fallbackItalic;
 
     const page = pdfDoc.addPage([PAGE_W, PAGE_H]);
     page.drawRectangle({ x: 0, y: 0, width: PAGE_W, height: PAGE_H, color: COLORS.bg });
@@ -257,22 +276,22 @@ export async function GET(req, { params }) {
       borderColor: COLORS.cream, borderWidth: 1, borderOpacity: 0.45,
       borderDashArray: [4, 5],
     });
-    drawFlower(page, cardX + 62, cardY + cardH - 60, 2.1, COLORS.cream, 0.16);
-    drawFlower(page, cardX + cardW - 58, cardY + 56, 1.5, COLORS.cream, 0.14);
+    drawFlower(page, cardX + 62, cardY + cardH - 60, 2.1, mix(COLORS.taupe, COLORS.cream, 0.16));
+    drawFlower(page, cardX + cardW - 58, cardY + 56, 1.5, mix(COLORS.taupe, COLORS.cream, 0.14));
 
     drawCenter(page, t.brand, cardY + cardH - 56, display, 19, COLORS.cream);
-    drawCenter(page, spaced(t.giftCard), cardY + cardH - 76, sans, 7, COLORS.cream, 0.7);
+    drawTracked(page, t.giftCard, cardY + cardH - 76, sans, 7, COLORS.cream, 0.7, 2.2);
 
     drawCenter(page, money(giftCard.amount), cardY + 132, display, 68, COLORS.cream);
 
     const code = clean(giftCard.code);
     const codeSize = 15;
     const codeW = sans.widthOfTextAtSize(code, codeSize) + 52;
-    drawPill(page, (PAGE_W - codeW) / 2, cardY + 66, codeW, 34, { color: COLORS.cream, opacity: 0.95 });
+    drawPill(page, (PAGE_W - codeW) / 2, cardY + 66, codeW, 34, mix(COLORS.taupe, COLORS.cream, 0.95));
     drawCenter(page, code, cardY + 77, sans, codeSize, COLORS.taupe);
 
     if (giftCard.never_expires) {
-      drawCenter(page, spaced(t.neverExpires), cardY + 38, sans, 6.5, COLORS.cream, 0.55);
+      drawTracked(page, t.neverExpires, cardY + 38, sans, 6.5, COLORS.cream, 0.55, 2);
     }
 
     y = cardY - 40;
@@ -294,8 +313,8 @@ export async function GET(req, { params }) {
     /* ---- divider ---- */
     y -= 12;
     page.drawLine({
-      start: { x: MARGIN, y: y },
-      end: { x: PAGE_W - MARGIN, y: y },
+      start: { x: MARGIN, y },
+      end: { x: PAGE_W - MARGIN, y },
       thickness: 1,
       color: COLORS.sand,
       opacity: 0.8,
@@ -305,7 +324,11 @@ export async function GET(req, { params }) {
 
     /* ---- redeem block: QR left, copy right ---- */
     const qrTarget = giftCard.gift_card_url || code;
-    const qrDataUrl = await QRCode.toDataURL(qrTarget, { margin: 1, width: 300 });
+    const qrDataUrl = await QRCode.toDataURL(qrTarget, {
+      margin: 1,
+      width: 300,
+      color: { dark: '#3d3428', light: '#F5F3EF' },
+    });
     const qrImage = await pdfDoc.embedPng(Buffer.from(qrDataUrl.split(',')[1], 'base64'));
     const qrSize = 104;
     const qrY = y - qrSize;
@@ -320,7 +343,7 @@ export async function GET(req, { params }) {
     copyY = drawParagraph(page, t.redeemBody, copyX, copyY, body, 11, COLORS.ink, copyW, 16);
     if (giftCard.gift_card_url) {
       copyY -= 4;
-      drawParagraph(page, t.scanBody, copyX, copyY, body, 11, COLORS.sand, copyW, 16);
+      drawParagraph(page, t.scanBody, copyX, copyY, body, 11, COLORS.taupe, copyW, 16);
     }
 
     /* ---- footer ---- */
