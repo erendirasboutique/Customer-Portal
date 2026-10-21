@@ -9,17 +9,21 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 /* ============================================================
-   Erendira's Boutique — gift card PDF
+   Erendira's Boutique — gift card PDF ("Keepsake" layout)
    Renders on demand, so design changes hit every card at once.
 
-   FONTS: drop the .otf/.ttf files in public/fonts/ and list the
-   filenames in FONT_FILES below. Names are tried in order and the
-   first one found wins; if none load, it falls back to Times and
-   Helvetica so the route never breaks.
+   Layout, top to bottom: flower mark + brand, the personal note
+   ("For ___" and the message), the card itself (brand, amount,
+   code — a screenshot of just the card is a complete gift card),
+   then how to redeem with the QR code.
 
-   NOTE: fonts are embedded WITHOUT subsetting. pdf-lib's subsetter
-   scrambles glyph mapping on many .otf (CFF) fonts, which is what
-   produced the "%&'(!)*" garbage text.
+   Colors are only the brand palette: taupe, sand, cream.
+
+   FONTS: drop the .otf/.ttf files in public/fonts/ and list the
+   filenames in FONT_FILES. First one found wins; if none load it
+   falls back to Times / Helvetica so the route never breaks.
+   Fonts are embedded WITHOUT subsetting — pdf-lib's subsetter
+   garbles many .otf fonts.
 
    Requires "@pdf-lib/fontkit" in package.json.
    ============================================================ */
@@ -30,55 +34,60 @@ const FONT_FILES = {
   bodyItalic: ['Recoleta-RegularItalic.otf', 'Recoleta-Italic.otf', 'Recoleta-Italic.ttf'],
 };
 
-const COLORS = {
-  bg: rgb(0.961, 0.953, 0.937),      // #F5F3EF cream
-  taupe: rgb(0.502, 0.416, 0.322),   // #806a52
-  sand: rgb(0.741, 0.659, 0.569),    // #bda891
-  ink: rgb(0.239, 0.204, 0.157),     // #3d3428
-  cream: rgb(0.961, 0.953, 0.937),   // card text
-  white: rgb(1, 1, 1),
+const HEX = {
+  taupe: '#806a52',
+  sand: '#bda891',
+  cream: '#F5F3EF',
 };
 
-// Blend two colors so overlapping shapes don't show darker/lighter seams
-// (semi-transparent overlapping shapes stack their opacity).
-function mix(a, b, t) {
-  return rgb(
-    a.red + (b.red - a.red) * t,
-    a.green + (b.green - a.green) * t,
-    a.blue + (b.blue - a.blue) * t
-  );
+function hexToRgb(hex) {
+  const n = parseInt(hex.slice(1), 16);
+  return rgb(((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255);
 }
+
+// Blend two colors (used for the faint flower on the card, so it's
+// a solid tint instead of stacked transparent shapes).
+function mix(a, b, t) {
+  return rgb(a.red + (b.red - a.red) * t, a.green + (b.green - a.green) * t, a.blue + (b.blue - a.blue) * t);
+}
+
+const C = {
+  taupe: hexToRgb(HEX.taupe),
+  sand: hexToRgb(HEX.sand),
+  cream: hexToRgb(HEX.cream),
+};
 
 const PAGE_W = 612;
 const PAGE_H = 792;
-const MARGIN = 54;
-const CONTENT_W = PAGE_W - MARGIN * 2;
+const CX = PAGE_W / 2;
 
 /* ---------------- Copy ---------------- */
 const T = {
   en: {
     giftCard: 'GIFT CARD',
     brand: "Erendira's Boutique",
+    brandCaps: "ERENDIRA'S BOUTIQUE",
     neverExpires: 'NEVER EXPIRES',
     forWord: 'For',
     redeemTitle: 'How to redeem',
     redeemBody:
-      'Send a screenshot of the card above through Messenger, bring it with you in person, or enter the code at checkout when promotion codes are allowed.',
-    scanBody: 'Scan the square to open this gift card online.',
+      'Screenshot the card and send it through Messenger, show it in person, or enter the code at checkout where promo codes apply.',
+    scanBody: 'Scan the square to open it online.',
     footerNever: 'This gift card never expires.',
     footerExpires: "Use before the expiration date shown by Erendira's Boutique.",
   },
   es: {
     giftCard: 'TARJETA DE REGALO',
     brand: "Erendira's Boutique",
+    brandCaps: "ERENDIRA'S BOUTIQUE",
     neverExpires: 'NUNCA VENCE',
     forWord: 'Para',
-    redeemTitle: 'C\u00f3mo canjearla',
+    redeemTitle: 'Cómo canjearla',
     redeemBody:
-      'Manda una captura de la tarjeta de arriba por Messenger, tr\u00e1ela contigo en persona, o escribe el c\u00f3digo al pagar cuando se permitan c\u00f3digos promocionales.',
-    scanBody: 'Escanea el cuadro para abrir tu tarjeta en l\u00ednea.',
+      'Manda una captura de la tarjeta por Messenger, muéstrala en persona, o escribe el código al pagar donde se permitan códigos promocionales.',
+    scanBody: 'Escanea el cuadro para abrirla en línea.',
     footerNever: 'Esta tarjeta de regalo nunca vence.',
-    footerExpires: "\u00dasala antes de la fecha de vencimiento que indique Erendira's Boutique.",
+    footerExpires: "Úsala antes de la fecha de vencimiento que indique Erendira's Boutique.",
   },
 };
 
@@ -90,31 +99,68 @@ function clean(value) {
   return String(value == null ? '' : value)
     .replace(/[\u0000-\u001F\u007F]/g, ' ')
     .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}\u{2190}-\u{21FF}]/gu, '')
-    .replace(/[\u00A0\u2000-\u200A\u202F]/g, ' ')
+    .replace(/[  -  ]/g, ' ')
     .replace(/ {2,}/g, ' ')
     .trim();
 }
 
-// pdf-lib has no letter-spacing, so tracked caps are drawn one glyph at a time.
-function drawTracked(page, text, y, font, size, color, opacity, tracking, centerX) {
-  const chars = clean(text).split('');
+// Drops any character the font can't encode, so a stray symbol in a
+// customer's message can never crash the route.
+function encodable(font, text) {
+  let out = '';
+  for (const ch of text) {
+    try {
+      font.encodeText(ch);
+      out += ch;
+    } catch {
+      // skip
+    }
+  }
+  return out;
+}
+
+function width(font, text, size) {
+  return font.widthOfTextAtSize(encodable(font, text), size);
+}
+
+function draw(page, text, x, y, font, size, color) {
+  const value = encodable(font, clean(text));
+  if (value) page.drawText(value, { x, y, size, font, color });
+}
+
+function drawCenter(page, text, y, font, size, color, centerX) {
+  const value = encodable(font, clean(text));
+  if (!value) return;
+  const w = font.widthOfTextAtSize(value, size);
+  page.drawText(value, { x: (centerX == null ? CX : centerX) - w / 2, y, size, font, color });
+}
+
+function drawRight(page, text, rightX, y, font, size, color) {
+  const value = encodable(font, clean(text));
+  if (!value) return;
+  page.drawText(value, { x: rightX - font.widthOfTextAtSize(value, size), y, size, font, color });
+}
+
+// pdf-lib has no letter-spacing, so tracked caps are drawn glyph by glyph.
+// align: 'center' (x = center), 'left' (x = start), 'right' (x = end).
+function drawTracked(page, text, x, y, font, size, color, tracking, align) {
+  const chars = encodable(font, clean(text)).split('');
   if (!chars.length) return;
-  const widths = chars.map((c) => font.widthOfTextAtSize(c, size));
   const gap = (c) => (c === ' ' ? tracking * 2.5 : tracking);
+  const widths = chars.map((c) => font.widthOfTextAtSize(c, size));
   let total = 0;
   chars.forEach((c, i) => {
-    total += widths[i];
-    if (i < chars.length - 1) total += gap(c);
+    total += widths[i] + (i < chars.length - 1 ? gap(c) : 0);
   });
-  let x = (centerX == null ? PAGE_W / 2 : centerX) - total / 2;
+  let cursor = align === 'left' ? x : align === 'right' ? x - total : x - total / 2;
   chars.forEach((c, i) => {
-    if (c !== ' ') page.drawText(c, { x, y, size, font, color, opacity: opacity == null ? 1 : opacity });
-    x += widths[i] + gap(c);
+    if (c !== ' ') page.drawText(c, { x: cursor, y, size, font, color });
+    cursor += widths[i] + gap(c);
   });
 }
 
-function wrap(text, font, size, maxWidth) {
-  const words = clean(text).split(' ').filter(Boolean);
+function wrap(text, font, size, maxWidth, maxLines) {
+  const words = encodable(font, clean(text)).split(' ').filter(Boolean);
   const lines = [];
   let line = '';
   for (const word of words) {
@@ -127,47 +173,30 @@ function wrap(text, font, size, maxWidth) {
     }
   }
   if (line) lines.push(line);
+  if (maxLines && lines.length > maxLines) {
+    const kept = lines.slice(0, maxLines);
+    kept[maxLines - 1] = kept[maxLines - 1].replace(/\s*\S*$/, '') + '…';
+    return kept;
+  }
   return lines;
 }
 
-function drawCenter(page, text, y, font, size, color, opacity, centerX) {
-  const value = clean(text);
-  if (!value) return;
-  const cx = centerX == null ? PAGE_W / 2 : centerX;
-  const w = font.widthOfTextAtSize(value, size);
-  page.drawText(value, {
-    x: cx - w / 2,
-    y,
-    size,
-    font,
-    color: color || COLORS.ink,
-    opacity: opacity == null ? 1 : opacity,
-  });
+/* ---------------- Shapes ---------------- */
+
+// Rounded rectangle via an SVG path. pdf-lib draws SVG paths with y
+// pointing DOWN from the (x, y) you pass, so (x, top) is the corner.
+function roundedRect(page, x, top, w, h, r, opts) {
+  const d =
+    `M ${r} 0 H ${w - r} A ${r} ${r} 0 0 1 ${w} ${r} V ${h - r} A ${r} ${r} 0 0 1 ${w - r} ${h} ` +
+    `H ${r} A ${r} ${r} 0 0 1 0 ${h - r} V ${r} A ${r} ${r} 0 0 1 ${r} 0 Z`;
+  page.drawSvgPath(d, { x, y: top, ...opts });
 }
 
-function drawParagraph(page, text, x, y, font, size, color, maxWidth, leading, centerX) {
-  let cursor = y;
-  for (const line of wrap(text, font, size, maxWidth)) {
-    if (centerX != null) drawCenter(page, line, cursor, font, size, color, 1, centerX);
-    else page.drawText(line, { x, y: cursor, size, font, color });
-    cursor -= leading;
-  }
-  return cursor;
-}
-
-// Rounded pill, solid color (no opacity) so the rect/circle overlaps don't show.
-function drawPill(page, x, y, w, h, color) {
-  const r = h / 2;
-  page.drawRectangle({ x: x + r, y, width: w - h, height: h, color });
-  page.drawCircle({ x: x + r, y: y + r, size: r, color });
-  page.drawCircle({ x: x + w - r, y: y + r, size: r, color });
-}
-
-// Four-petal flower mark. Solid pre-blended color so petals don't stack.
+// Four-petal flower mark.
 function drawFlower(page, cx, cy, scale, color) {
   const long = 9 * scale;
   const short = 4.5 * scale;
-  const off = 8 * scale;
+  const off = 9 * scale;
   page.drawEllipse({ x: cx, y: cy + off, xScale: short, yScale: long, color });
   page.drawEllipse({ x: cx, y: cy - off, xScale: short, yScale: long, color });
   page.drawEllipse({ x: cx + off, y: cy, xScale: long, yScale: short, color });
@@ -189,7 +218,6 @@ async function loadFont(pdfDoc, candidates) {
       continue;
     }
     try {
-      // subset: false — subsetting garbles many OTF fonts
       return await pdfDoc.embedFont(bytes, { subset: false });
     } catch {
       continue;
@@ -204,11 +232,7 @@ export async function GET(req, { params }) {
     const { id } = await params;
     const supabase = getSupabaseAdmin();
 
-    const { data: giftCard, error } = await supabase
-      .from('gift_cards')
-      .select('*')
-      .eq('id', id)
-      .single();
+    const { data: giftCard, error } = await supabase.from('gift_cards').select('*').eq('id', id).single();
 
     if (error || !giftCard) {
       return NextResponse.json({ error: error?.message || 'Gift card not found.' }, { status: 404 });
@@ -218,145 +242,8 @@ export async function GET(req, { params }) {
     const lang = requested === 'es' || (!requested && giftCard.language === 'es') ? 'es' : 'en';
     const t = T[lang];
 
-    const pdfDoc = await PDFDocument.create();
-
-    let fontkit = null;
-    try {
-      fontkit = (await import('@pdf-lib/fontkit')).default;
-    } catch {
-      // package not installed — fall through to the standard fonts
-    }
-    if (fontkit) pdfDoc.registerFontkit(fontkit);
-
-    const fallbackSerif = await pdfDoc.embedFont(StandardFonts.TimesRoman);
-    const fallbackItalic = await pdfDoc.embedFont(StandardFonts.TimesRomanItalic);
-    const sans = await pdfDoc.embedFont(StandardFonts.Helvetica);
-
-    const customDisplay = fontkit ? await loadFont(pdfDoc, FONT_FILES.display) : null;
-    const customBody = fontkit ? await loadFont(pdfDoc, FONT_FILES.body) : null;
-    const customItalic = fontkit ? await loadFont(pdfDoc, FONT_FILES.bodyItalic) : null;
-
-    const display = customDisplay || fallbackSerif;
-    const body = customBody || fallbackSerif;
-    const bodyItalic = customItalic || customBody || fallbackItalic;
-
-    const page = pdfDoc.addPage([PAGE_W, PAGE_H]);
-    page.drawRectangle({ x: 0, y: 0, width: PAGE_W, height: PAGE_H, color: COLORS.bg });
-
-    let y = PAGE_H - MARGIN;
-
-    /* ---- logo ---- */
-    let logoDrawn = false;
-    try {
-      const logoBytes = await fs.readFile(path.join(process.cwd(), 'public', 'logo.png'));
-      const logo = await pdfDoc.embedPng(logoBytes);
-      const w = 108;
-      const h = (logo.height / logo.width) * w;
-      page.drawImage(logo, { x: (PAGE_W - w) / 2, y: y - h, width: w, height: h });
-      y -= h + 30;
-      logoDrawn = true;
-    } catch {
-      // no logo file — the card carries the brand name anyway
-    }
-    if (!logoDrawn) {
-      drawCenter(page, t.brand, y - 20, display, 22, COLORS.taupe);
-      y -= 48;
-    }
-
-    /* ---- the card ---- */
-    const cardW = CONTENT_W;
-    const cardH = 300;
-    const cardX = MARGIN;
-    const cardY = y - cardH;
-
-    page.drawRectangle({ x: cardX + 5, y: cardY - 6, width: cardW, height: cardH, color: COLORS.ink, opacity: 0.16 });
-    page.drawRectangle({ x: cardX, y: cardY, width: cardW, height: cardH, color: COLORS.taupe });
-    page.drawRectangle({
-      x: cardX + 14, y: cardY + 14, width: cardW - 28, height: cardH - 28,
-      borderColor: COLORS.cream, borderWidth: 1, borderOpacity: 0.45,
-      borderDashArray: [4, 5],
-    });
-    drawFlower(page, cardX + 62, cardY + cardH - 60, 2.1, mix(COLORS.taupe, COLORS.cream, 0.16));
-    drawFlower(page, cardX + cardW - 58, cardY + 56, 1.5, mix(COLORS.taupe, COLORS.cream, 0.14));
-
-    drawCenter(page, t.brand, cardY + cardH - 56, display, 19, COLORS.cream);
-    drawTracked(page, t.giftCard, cardY + cardH - 76, sans, 7, COLORS.cream, 0.7, 2.2);
-
-    drawCenter(page, money(giftCard.amount), cardY + 132, display, 68, COLORS.cream);
-
-    const code = clean(giftCard.code);
-    const codeSize = 15;
-    const codeW = sans.widthOfTextAtSize(code, codeSize) + 52;
-    drawPill(page, (PAGE_W - codeW) / 2, cardY + 66, codeW, 34, mix(COLORS.taupe, COLORS.cream, 0.95));
-    drawCenter(page, code, cardY + 77, sans, codeSize, COLORS.taupe);
-
-    if (giftCard.never_expires) {
-      drawTracked(page, t.neverExpires, cardY + 38, sans, 6.5, COLORS.cream, 0.55, 2);
-    }
-
-    y = cardY - 40;
-
-    /* ---- the note ---- */
-    const recipient = clean(giftCard.customer_name);
-    const message = clean(giftCard.message);
-
-    if (recipient) {
-      drawCenter(page, t.forWord + ' ' + recipient, y, display, 20, COLORS.taupe);
-      y -= message ? 26 : 20;
-    }
-    if (message) {
-      y = drawParagraph(page, '\u201c' + message + '\u201d', 0, y, bodyItalic, 12.5, COLORS.ink, 380, 18, PAGE_W / 2);
-      y -= 6;
-    }
-    if (!recipient && !message) y += 12;
-
-    /* ---- divider ---- */
-    y -= 12;
-    page.drawLine({
-      start: { x: MARGIN, y },
-      end: { x: PAGE_W - MARGIN, y },
-      thickness: 1,
-      color: COLORS.sand,
-      opacity: 0.8,
-      dashArray: [3, 5],
-    });
-    y -= 34;
-
-    /* ---- redeem block: QR left, copy right ---- */
-    const qrTarget = giftCard.gift_card_url || code;
-    const qrDataUrl = await QRCode.toDataURL(qrTarget, {
-      margin: 1,
-      width: 300,
-      color: { dark: '#3d3428', light: '#F5F3EF' },
-    });
-    const qrImage = await pdfDoc.embedPng(Buffer.from(qrDataUrl.split(',')[1], 'base64'));
-    const qrSize = 104;
-    const qrY = y - qrSize;
-    page.drawImage(qrImage, { x: MARGIN, y: qrY, width: qrSize, height: qrSize });
-
-    const copyX = MARGIN + qrSize + 26;
-    const copyW = PAGE_W - MARGIN - copyX;
-    let copyY = y - 14;
-
-    page.drawText(clean(t.redeemTitle), { x: copyX, y: copyY, size: 16, font: display, color: COLORS.taupe });
-    copyY -= 22;
-    copyY = drawParagraph(page, t.redeemBody, copyX, copyY, body, 11, COLORS.ink, copyW, 16);
-    if (giftCard.gift_card_url) {
-      copyY -= 4;
-      drawParagraph(page, t.scanBody, copyX, copyY, body, 11, COLORS.taupe, copyW, 16);
-    }
-
-    /* ---- footer ---- */
-    drawCenter(
-      page,
-      giftCard.never_expires ? t.footerNever : t.footerExpires,
-      MARGIN - 12,
-      bodyItalic,
-      10.5,
-      COLORS.sand
-    );
-
-    const pdfBytes = await pdfDoc.save();
+    const pdfBytes = await renderGiftCard(giftCard, t);
+    const code = clean(giftCard.code) || 'gift-card';
 
     return new NextResponse(Buffer.from(pdfBytes), {
       status: 200,
@@ -368,4 +255,134 @@ export async function GET(req, { params }) {
   } catch (error) {
     return NextResponse.json({ error: error.message || 'Could not generate gift card PDF.' }, { status: 500 });
   }
+}
+
+async function renderGiftCard(giftCard, t) {
+  const pdfDoc = await PDFDocument.create();
+
+  let fontkit = null;
+  try {
+    fontkit = (await import('@pdf-lib/fontkit')).default;
+  } catch {
+    // not installed — standard fonts only
+  }
+  if (fontkit) pdfDoc.registerFontkit(fontkit);
+
+  const fbSerif = await pdfDoc.embedFont(StandardFonts.TimesRoman);
+  const fbItalic = await pdfDoc.embedFont(StandardFonts.TimesRomanItalic);
+  const sans = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const sansBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+  const customDisplay = fontkit ? await loadFont(pdfDoc, FONT_FILES.display) : null;
+  const customBody = fontkit ? await loadFont(pdfDoc, FONT_FILES.body) : null;
+  const customItalic = fontkit ? await loadFont(pdfDoc, FONT_FILES.bodyItalic) : null;
+
+  const display = customDisplay || fbSerif;
+  const body = customBody || fbSerif;
+  const italic = customItalic || customBody || fbItalic;
+
+  const page = pdfDoc.addPage([PAGE_W, PAGE_H]);
+
+  /* ---- page + frame ---- */
+  page.drawRectangle({ x: 0, y: 0, width: PAGE_W, height: PAGE_H, color: C.cream });
+  roundedRect(page, 30, PAGE_H - 30, PAGE_W - 60, PAGE_H - 60, 5, { borderColor: C.sand, borderWidth: 1.2 });
+
+  let y = PAGE_H - 30 - 58;
+
+  /* ---- mark + brand ---- */
+  drawFlower(page, CX, y, 1.05, C.taupe);
+  y -= 38;
+  drawTracked(page, t.brandCaps, CX, y, sansBold, 9, C.taupe, 3.6, 'center');
+  y -= 64;
+
+  /* ---- the note ---- */
+  const recipient = clean(giftCard.customer_name);
+  const message = clean(giftCard.message);
+
+  if (recipient) {
+    drawCenter(page, t.forWord + ' ' + recipient, y, italic, 46, C.taupe);
+    y -= message ? 40 : 24;
+  }
+  if (message) {
+    const lines = wrap('“' + message + '”', body, 16.5, 370, 4);
+    for (const line of lines) {
+      drawCenter(page, line, y, body, 16.5, C.taupe);
+      y -= 25;
+    }
+    y -= 4;
+  }
+  if (!recipient && !message) y += 40;
+
+  /* ---- the card ---- */
+  const cardW = 420;
+  const cardH = 226;
+  const cardX = CX - cardW / 2;
+  const cardTop = y - 14;
+  const cardY = cardTop - cardH; // bottom edge
+  const pad = 28;
+  const left = cardX + pad;
+  const right = cardX + cardW - pad;
+
+  roundedRect(page, cardX, cardTop, cardW, cardH, 14, { color: C.taupe });
+  drawFlower(page, cardX + cardW - 38, cardY + 52, 2.3, mix(C.taupe, C.cream, 0.1));
+
+  // top row
+  draw(page, t.brand, left, cardTop - pad - 14, display, 17, C.cream);
+  drawTracked(page, t.giftCard, right, cardTop - pad - 12, sansBold, 9.5, C.cream, 3, 'right');
+
+  // amount
+  draw(page, money(giftCard.amount), left - 3, cardY + 78, display, 84, C.cream);
+
+  // bottom row: code chip + expiry
+  const code = clean(giftCard.code);
+  const codeSize = 13.5;
+  const chipH = 30;
+  const chipW = width(sansBold, code, codeSize) + 28;
+  roundedRect(page, left, cardY + pad + chipH, chipW, chipH, 6, { color: C.cream });
+  draw(page, code, left + 14, cardY + pad + 10.5, sansBold, codeSize, C.taupe);
+
+  if (giftCard.never_expires) {
+    drawTracked(page, t.neverExpires, right, cardY + pad + 11, sansBold, 9.5, C.cream, 2.2, 'right');
+  }
+
+  /* ---- redeem (pinned to the bottom) ---- */
+  const footerY = 30 + 24;
+  const qrSize = 74;
+  const qrY = footerY + 32;
+  const dividerY = qrY + qrSize + 22;
+  const innerL = 30 + 48;
+  const innerR = PAGE_W - 30 - 48;
+
+  page.drawLine({
+    start: { x: innerL, y: dividerY },
+    end: { x: innerR, y: dividerY },
+    thickness: 1,
+    color: C.sand,
+    dashArray: [3, 4],
+  });
+
+  const qrTarget = giftCard.gift_card_url || code;
+  const qrDataUrl = await QRCode.toDataURL(qrTarget, {
+    margin: 0,
+    width: 300,
+    color: { dark: HEX.taupe, light: HEX.cream },
+  });
+  const qrImage = await pdfDoc.embedPng(Buffer.from(qrDataUrl.split(',')[1], 'base64'));
+  page.drawImage(qrImage, { x: innerL, y: qrY, width: qrSize, height: qrSize });
+
+  const copyX = innerL + qrSize + 22;
+  const copyW = innerR - copyX;
+  let copyY = qrY + qrSize - 14;
+  draw(page, t.redeemTitle, copyX, copyY, display, 16.5, C.taupe);
+  copyY -= 20;
+  const redeem = t.redeemBody + (giftCard.gift_card_url ? ' ' + t.scanBody : '');
+  for (const line of wrap(redeem, body, 11.5, copyW, 4)) {
+    draw(page, line, copyX, copyY, body, 11.5, C.taupe);
+    copyY -= 16;
+  }
+
+  /* ---- footer ---- */
+  drawCenter(page, giftCard.never_expires ? t.footerNever : t.footerExpires, footerY, italic, 11, C.taupe);
+
+  return pdfDoc.save();
 }
