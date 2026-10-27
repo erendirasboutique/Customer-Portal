@@ -1,0 +1,12 @@
+Put a copy of your two brand font files in this folder, named exactly:
+
+  display.otf   ← La Luxes Serif   (used for the big amount)
+  body.otf      ← Recoleta         (used for all other text)
+
+If your files end in .ttf or .woff instead, keep that ending:
+  display.ttf / body.ttf   or   display.woff / body.woff
+
+.woff2 files do NOT work for share pictures. If you only have .woff2,
+use the .otf or .ttf from where you bought/downloaded the font.
+
+You can delete this text file after adding the fonts.

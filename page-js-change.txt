@@ -1,0 +1,39 @@
+// In app/receipt/[token]/page.js:
+// DELETE this block:
+//
+//   export const metadata = {
+//     title: "Receipt — Erendira's Boutique",
+//     robots: { index: false, follow: false },
+//   };
+//
+// and PASTE this in the same spot:
+
+export async function generateMetadata(props) {
+  const params = await props.params;
+  let r = null;
+  try {
+    r = await getReceiptByToken(params.token);
+  } catch (e) {}
+
+  const title = r ? "Recibo de pago · " + money(r.amount, r.currency) : "Recibo de pago";
+  const description = "Erendira's Boutique · Toca para ver tu recibo / Tap to view your receipt";
+
+  return {
+    metadataBase: new URL("https://receipts.erendirasboutique.com"),
+    title: title + " — Erendira's Boutique",
+    description: description,
+    robots: { index: false, follow: false },
+    openGraph: {
+      title: title,
+      description: description,
+      siteName: "Erendira's Boutique",
+      type: "website",
+      locale: "es_MX",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: title,
+      description: description,
+    },
+  };
+}
