@@ -8,7 +8,8 @@ export const runtime = "nodejs";
 /* GET /api/account/shipments?t=<portal_token>
    Returns the shipments for the customer that owns this link.
    Only safe fields go back to the browser (status, carrier, tracking,
-   dates, item count) — never addresses, prices or other customers. */
+   dates, item count, the packaging photo, ship-to city/state) — never
+   street addresses, prices, staff names or other customers. */
 
 const CUSTOMERS_TABLE = "shipping_customers";
 const CUSTOMER_TOKEN_COL = "portal_token";
@@ -93,19 +94,44 @@ function isHidden(row) {
   if (row.archived === true || row.deleted === true) return true;
   if (row.deleted_at) return true;
   const s = String(pick(row, ["status", "label_status"]) || "").toLowerCase();
-  return /(void|cancel|refunded_label|draft)/.test(s);
+  // "refund" catches the shipping portal's own "refunded" status. A
+  // refunded label never shipped, so its tracking number goes nowhere.
+  if (/(void|cancel|refund|draft)/.test(s)) return true;
+  const r = String(row.refund_status || "").toLowerCase();
+  return /(submitted|refunded|approved)/.test(r);
+}
+
+// Order numbers are stored as a bare number; customers see "#1234".
+function orderNumber(row) {
+  const n = pick(row, ["order_number"]);
+  if (n === null) return null;
+  const s = String(n);
+  return s.charAt(0) === "#" ? s : "#" + s;
+}
+
+// Only a real http(s) link goes to the browser as an <img src>.
+function safeUrl(u) {
+  return typeof u === "string" && /^https:\/\//i.test(u) ? u : null;
 }
 
 function toShipment(row) {
   return {
     id: String(pick(row, ["id", "tracking_number"]) || ""),
+    order_number: orderNumber(row),
     status: pick(row, ["tracking_status", "status", "label_status"]),
     carrier: pick(row, ["carrier", "provider", "carrier_name"]),
+    mail_class: pick(row, ["mail_class", "service", "service_level"]),
     tracking_number: pick(row, ["tracking_number", "tracking", "tracking_code"]),
     tracking_url: pick(row, ["tracking_url", "tracking_url_provider", "public_tracking_url"]),
     shipped_at: pick(row, ["shipped_at", "ship_date", "label_created_at", "created_at"]),
+    // Photo of the packed box and when it was taken — saved by Scan & Send
+    // in the shipping portal.
+    package_photo_url: safeUrl(row.package_photo_url),
+    packed_at: pick(row, ["packed_at"]),
     eta: pick(row, ["eta", "estimated_delivery", "estimated_delivery_date", "delivery_eta"]),
     delivered_at: pick(row, ["delivered_at"]),
+    // City and state only — never the street.
+    ship_to: [row.to_city, row.to_state].filter(Boolean).join(", ") || null,
     items_count: itemCount(row),
     description: description(row),
   };

@@ -59,6 +59,21 @@ const T = {
     missing: "Street address, city, state and ZIP are required.",
     invalidEmail: "Please enter a valid email address.",
     track: "Track",
+    trackPackage: "Track package",
+    order: "Order",
+    packed: "Packed",
+    shipped: "Shipped",
+    delivered: "Delivered",
+    eta: "Arriving",
+    carrier: "Carrier",
+    tracking: "Tracking #",
+    shipTo: "Shipped to",
+    copy: "Copy",
+    copied: "Copied ✓",
+    photoCap: "Your package, the day we packed it",
+    photoAlt: "Photo of your package",
+    close: "Close",
+    at: " at ",
     questions: "Questions?",
     langSwitch: "Español",
     status: { shipped: "Shipped", in_transit: "On the way", delivered: "Delivered", returned: "Returned", preparing: "Preparing", problem: "Delivery issue" },
@@ -105,6 +120,21 @@ const T = {
     missing: "Dirección, ciudad, estado y código postal son obligatorios.",
     invalidEmail: "Ingresa un correo electrónico válido.",
     track: "Rastrear",
+    trackPackage: "Rastrear paquete",
+    order: "Pedido",
+    packed: "Empacado",
+    shipped: "Enviado",
+    delivered: "Entregado",
+    eta: "Llega",
+    carrier: "Paquetería",
+    tracking: "Núm. de rastreo",
+    shipTo: "Enviado a",
+    copy: "Copiar",
+    copied: "Copiado ✓",
+    photoCap: "Tu paquete, el día que lo empacamos",
+    photoAlt: "Foto de tu paquete",
+    close: "Cerrar",
+    at: " a las ",
     questions: "¿Preguntas?",
     langSwitch: "English",
     status: { shipped: "Enviado", in_transit: "En camino", delivered: "Entregado", returned: "Devuelto", preparing: "Preparando", problem: "Problema" },
@@ -138,6 +168,9 @@ export default function AccountPage() {
   const [notice, setNotice] = useState(""); // "" | confirmed | saved
   const [ships, setShips] = useState([]);
   const [showAll, setShowAll] = useState(false);
+  const [openShip, setOpenShip] = useState(""); // id of the expanded shipment
+  const [bigPhoto, setBigPhoto] = useState(""); // photo shown full screen
+  const [copiedId, setCopiedId] = useState("");
 
   const t = T[lang];
 
@@ -463,11 +496,80 @@ export default function AccountPage() {
                 <p className="ac-cap ac-cap-gap">{t.myShips}</p>
                 <div className="ac-panel ac-list">
                   {shownShips.map(function (s) {
+                    const open = openShip === s.id;
                     return (
-                      <div className="ac-row ac-row-static" key={s.id}>
-                        <span>{s.date ? fmtDate(s.date, t.locale) : "—"} · {t.status[s.stage]}</span>
-                        {s.trackUrl ? (
-                          <a href={s.trackUrl} target="_blank" rel="noopener noreferrer">{t.track}</a>
+                      <div className="ac-ship" key={s.id}>
+                        <button
+                          type="button"
+                          className="ac-row ac-ship-row"
+                          aria-expanded={open}
+                          onClick={function () { setOpenShip(open ? "" : s.id); }}
+                        >
+                          {s.photo ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={s.photo} alt="" className="ac-thumb" loading="lazy" />
+                          ) : (
+                            <span className="ac-thumb ac-thumb-empty" aria-hidden="true">📦</span>
+                          )}
+                          <span className="ac-ship-main">
+                            <span>{s.date ? fmtDate(s.date, t.locale) : "—"} · {t.status[s.stage]}</span>
+                            {s.orderNumber ? <span className="ac-ship-sub">{t.order} {s.orderNumber}</span> : null}
+                          </span>
+                          <i className={open ? "ac-chev open" : "ac-chev"}>&rsaquo;</i>
+                        </button>
+
+                        {open ? (
+                          <div className="ac-ship-detail">
+                            {s.photo ? (
+                              <figure className="ac-photo">
+                                <button type="button" onClick={function () { setBigPhoto(s.photo); }}>
+                                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                                  <img src={s.photo} alt={t.photoAlt} loading="lazy" />
+                                </button>
+                                <figcaption>{t.photoCap}</figcaption>
+                              </figure>
+                            ) : null}
+
+                            <dl className="ac-dl">
+                              {s.orderNumber ? <Detail k={t.order} v={s.orderNumber} /> : null}
+                              {s.packedAt ? <Detail k={t.packed} v={fmtDateTime(s.packedAt, t)} /> : null}
+                              {s.date ? <Detail k={t.shipped} v={fmtDateTime(s.date, t)} /> : null}
+                              {s.deliveredAt ? (
+                                <Detail k={t.delivered} v={fmtDateTime(s.deliveredAt, t)} />
+                              ) : s.eta && s.stage !== "delivered" ? (
+                                <Detail k={t.eta} v={fmtDate(s.eta, t.locale)} />
+                              ) : null}
+                              {s.carrier ? <Detail k={t.carrier} v={s.carrier + (s.mailClass ? " · " + s.mailClass : "")} /> : null}
+                              {s.tracking ? (
+                                <Detail
+                                  k={t.tracking}
+                                  v={
+                                    <span className="ac-trk">
+                                      <span className="ac-mono">{s.tracking}</span>
+                                      <button
+                                        type="button"
+                                        className="ac-copy"
+                                        onClick={function () {
+                                          copyText(s.tracking);
+                                          setCopiedId(s.id);
+                                          setTimeout(function () { setCopiedId(""); }, 1800);
+                                        }}
+                                      >
+                                        {copiedId === s.id ? t.copied : t.copy}
+                                      </button>
+                                    </span>
+                                  }
+                                />
+                              ) : null}
+                              {s.shipTo ? <Detail k={t.shipTo} v={s.shipTo} /> : null}
+                            </dl>
+
+                            {s.trackUrl ? (
+                              <a className="ac-btn ac-btn-ghost ac-track" href={s.trackUrl} target="_blank" rel="noopener noreferrer">
+                                {t.trackPackage}
+                              </a>
+                            ) : null}
+                          </div>
                         ) : null}
                       </div>
                     );
@@ -616,6 +718,14 @@ export default function AccountPage() {
           </div>
         )}
 
+        {bigPhoto ? (
+          <div className="ac-lightbox" role="dialog" aria-modal="true" onClick={function () { setBigPhoto(""); }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={bigPhoto} alt={t.photoAlt} />
+            <button type="button" className="ac-lightbox-x" onClick={function () { setBigPhoto(""); }}>{t.close} ✕</button>
+          </div>
+        ) : null}
+
         <p className="ac-foot">
           {t.questions} <a href={"mailto:" + SHOP_EMAIL}>{SHOP_EMAIL}</a>
         </p>
@@ -631,6 +741,35 @@ function Field(props) {
       {props.children}
     </label>
   );
+}
+
+function Detail(props) {
+  return (
+    <div className="ac-dl-row">
+      <dt>{props.k}</dt>
+      <dd>{props.v}</dd>
+    </div>
+  );
+}
+
+function copyText(text) {
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text);
+      return;
+    }
+  } catch (e) {
+    // fall through to the old way
+  }
+  const el = document.createElement("textarea");
+  el.value = text;
+  el.setAttribute("readonly", "");
+  el.style.position = "fixed";
+  el.style.opacity = "0";
+  document.body.appendChild(el);
+  el.select();
+  try { document.execCommand("copy"); } catch (e) { /* ignore */ }
+  document.body.removeChild(el);
 }
 
 function isValidEmail(email) {
@@ -672,12 +811,45 @@ function trackingUrl(carrier, num) {
 function normalizeShipment(s, i) {
   const carrier = pick(s, ["carrier", "provider", "carrier_name"]);
   const tracking = pick(s, ["tracking_number", "tracking", "tracking_code"]);
+  const deliveredAt = pick(s, ["delivered_at"]);
   return {
-    id: pick(s, ["id", "tracking_number"]) || "s" + i,
-    stage: stageOf(pick(s, ["status", "tracking_status", "state"])),
+    id: String(pick(s, ["id", "tracking_number"]) || "s" + i),
+    stage: deliveredAt ? "delivered" : stageOf(pick(s, ["status", "tracking_status", "state"])),
     date: pick(s, ["shipped_at", "ship_date", "created_at", "date"]),
     trackUrl: pick(s, ["tracking_url", "tracking_url_provider", "public_url"]) || trackingUrl(carrier, tracking),
+    orderNumber: pick(s, ["order_number"]),
+    photo: pick(s, ["package_photo_url", "photo_url"]),
+    packedAt: pick(s, ["packed_at"]),
+    deliveredAt: deliveredAt,
+    eta: pick(s, ["eta"]),
+    carrier: carrier ? String(carrier).toUpperCase() === carrier ? carrier : prettyWords(carrier) : null,
+    mailClass: pick(s, ["mail_class"]) ? prettyWords(pick(s, ["mail_class"])) : null,
+    tracking: tracking,
+    shipTo: pick(s, ["ship_to"]),
   };
+}
+
+// "GroundAdvantage" / "ground_advantage" -> "Ground Advantage"
+function prettyWords(v) {
+  return String(v)
+    .replace(/[_-]+/g, " ")
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/\b([a-z])/g, function (m) { return m.toUpperCase(); });
+}
+
+// "Nov 5, 2026 at 3:42 PM" / "5 nov 2026 a las 15:42"
+function fmtDateTime(iso, t) {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(String(iso))) return fmtDate(iso, t.locale);
+  const d = new Date(iso);
+  if (isNaN(d)) return String(iso);
+  const time = new Intl.DateTimeFormat(t.locale, {
+    timeZone: "America/Los_Angeles",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(d);
+  return fmtDate(iso, t.locale) + t.at + time;
 }
 
 function byNewest(a, b) {
@@ -746,6 +918,32 @@ const css = `
 .ac-3 { display:grid; grid-template-columns:1.6fr 0.8fr 1fr; gap:8px; }
 .ac-err { margin:4px 0 12px; font-size:14px; line-height:1.45; color:var(--err); }
 .ac-foot { margin:28px 0 0; text-align:center; font-size:13px; color:var(--muted); }
+.ac-ship { border-top:1px solid var(--line2); }
+.ac-ship:first-child { border-top:0; }
+.ac-ship + .ac-row { border-top:1px solid var(--line2); }
+.ac-ship-row { border-top:0 !important; justify-content:flex-start; }
+.ac-thumb { width:44px; height:44px; border-radius:10px; object-fit:cover; flex-shrink:0; background:#f3eee7; }
+.ac-thumb-empty { display:flex; align-items:center; justify-content:center; font-size:20px; }
+.ac-ship-main { display:flex; flex-direction:column; min-width:0; flex:1; }
+.ac-ship-sub { font-size:13px; color:var(--muted); }
+.ac-chev { font-style:normal; color:#cfbda9; font-size:20px; transition:transform .15s; }
+.ac-chev.open { transform:rotate(90deg); }
+.ac-ship-detail { padding:2px 0 16px; }
+.ac-photo { margin:0 0 14px; }
+.ac-photo button { display:block; width:100%; padding:0; border:0; background:none; }
+.ac-photo img { display:block; width:100%; max-height:360px; object-fit:cover; border-radius:14px; background:#f3eee7; }
+.ac-photo figcaption { margin-top:6px; font-size:12.5px; color:var(--muted); text-align:center; }
+.ac-dl { margin:0; }
+.ac-dl-row { display:flex; justify-content:space-between; gap:14px; padding:7px 0; font-size:14.5px; line-height:1.4; }
+.ac-dl-row dt { color:var(--muted); flex-shrink:0; }
+.ac-dl-row dd { margin:0; text-align:right; min-width:0; overflow-wrap:anywhere; }
+.ac-trk { display:inline-flex; flex-wrap:wrap; justify-content:flex-end; align-items:center; gap:6px; }
+.ac-mono { font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:13px; letter-spacing:.02em; }
+.ac-copy { border:1px solid var(--line); background:#FAF9F6; color:var(--brand-dark); border-radius:999px; padding:4px 10px; font-size:12.5px; }
+.ac-track { display:flex; align-items:center; justify-content:center; margin-top:12px; text-decoration:none; }
+.ac-lightbox { position:fixed; inset:0; z-index:50; background:rgba(30,24,18,.88); display:flex; align-items:center; justify-content:center; padding:16px; }
+.ac-lightbox img { max-width:100%; max-height:85vh; border-radius:12px; object-fit:contain; }
+.ac-lightbox-x { position:absolute; top:16px; right:16px; border:0; border-radius:999px; background:#fff; color:var(--ink); padding:8px 14px; font-size:14px; }
 .ac-skel { height:56px; border-radius:16px; background:#ece6dd; margin-bottom:12px; }
 .ac-skel.short { width:55%; height:34px; }
 .ac-skel.tall { height:120px; }
