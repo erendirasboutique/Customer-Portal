@@ -73,26 +73,22 @@ export default function Page() {
         </section>
       </section>
 
-      <style jsx global>{`
-        @font-face { font-family:'La Luxes Serif'; src:url('/fonts/la_luxes_serif.otf') format('opentype'); font-weight:400; font-style:normal; font-display:swap; }
-        @font-face { font-family:'Recoleta'; src:url('/fonts/recoleta-regular.otf') format('opentype'); font-weight:400; font-style:normal; font-display:swap; }
-      `}</style>
       <style jsx>{`
-        .eblPage { min-height:100vh; margin:0; padding:24px 16px 48px; display:flex; justify-content:center; align-items:center; background:#f5f3ef; font-family:'Recoleta', Georgia, serif; color:#3d3428; }
+        .eblPage { min-height:100vh; margin:0; padding:24px 16px 48px; display:flex; justify-content:center; align-items:center; background:#f5f3ef; font-family:var(--font-body); color:#3d3428; }
         .eblShell { width:100%; max-width:480px; background:#f5f3ef; border-radius:28px; overflow:hidden; box-shadow:0 24px 60px -28px rgba(61,52,40,.35); }
         .eblVideoWrap { position:relative; width:100%; height:clamp(230px,44vh,360px); background:#bda891 url('/landing-gradient-poster.jpg') center / cover; overflow:hidden; }
         .eblVideo { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; }
         .eblScrimTop { position:absolute; top:0; left:0; right:0; height:96px; background:linear-gradient(to bottom, rgba(45,37,28,.34), rgba(45,37,28,0)); pointer-events:none; }
         .eblScrimBottom { position:absolute; bottom:0; left:0; right:0; height:120px; background:linear-gradient(to top,#f5f3ef 6%, rgba(245,243,239,0)); pointer-events:none; }
         .eblTop { position:absolute; top:0; left:0; right:0; z-index:2; display:flex; justify-content:space-between; align-items:center; padding:16px 22px; color:#fdfcfa; }
-        .eblTime { font-family:'La Luxes Serif', Georgia, serif; font-size:17px; letter-spacing:.5px; }
+        .eblTime { font-family:var(--font-heading); font-size:17px; letter-spacing:.5px; }
         .eblTopLabel { font-size:12.5px; letter-spacing:.4px; opacity:.92; }
         .eblCard { position:relative; z-index:3; margin-top:-34px; padding:0 26px 34px; }
         .eblLoad { padding:20px 0; color:#bda891; font-size:14px; }
         .eblOverline { margin:0 0 8px; font-size:11px; letter-spacing:2.4px; text-transform:uppercase; color:#bda891; }
         .eblOverline.tone-ok { color:#4C8C6B; }
         .eblOverline.tone-bad { color:#a03535; }
-        .eblTitle { margin:0 0 4px; font-family:'La Luxes Serif', Georgia, serif; font-weight:400; font-size:clamp(30px,8vw,44px); line-height:1.02; color:#806a52; }
+        .eblTitle { margin:0 0 4px; font-family:var(--font-heading); font-weight:400; font-size:clamp(30px,8vw,44px); line-height:1.02; color:#806a52; }
         .eblSub { margin:0 0 22px; font-size:14px; color:#8a7c6a; }
         .eblReceipt { border:1px solid #e2d9cc; border-radius:16px; overflow:hidden; background:rgba(255,255,255,.55); }
         .eblRow { display:flex; justify-content:space-between; align-items:baseline; gap:14px; padding:14px 20px; font-size:14px; }

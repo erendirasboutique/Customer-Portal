@@ -29,9 +29,10 @@ export const runtime = 'nodejs';
    ============================================================ */
 
 const FONT_FILES = {
-  display: ['LaLuxesSerif.otf', 'la-luxes-serif.otf', 'LaLuxes-Serif.otf', 'LaLuxesSerif.ttf', 'LaLuxesSerif-Regular.otf'],
-  body: ['recoleta-regular.otf', 'Recoleta-Regular.otf', 'Recoleta.otf', 'Recoleta-Regular.ttf', 'Recoleta.ttf'],
-  bodyItalic: ['Recoleta-RegularItalic.otf', 'Recoleta-Italic.otf', 'Recoleta-Italic.ttf'],
+  // Headings: TAN Nightingale. Everything else: Edinburgh (it has no italic, so italics use it too).
+  display: ['TAN-Nightingale-Regular.otf', 'LaLuxesSerif.otf', 'la-luxes-serif.otf', 'LaLuxes-Serif.otf', 'LaLuxesSerif.ttf', 'LaLuxesSerif-Regular.otf'],
+  body: ['Edinburgh-Regular.otf', 'recoleta-regular.otf', 'Recoleta-Regular.otf', 'Recoleta.otf', 'Recoleta-Regular.ttf', 'Recoleta.ttf'],
+  bodyItalic: ['Edinburgh-Regular.otf', 'Recoleta-RegularItalic.otf', 'Recoleta-Italic.otf', 'Recoleta-Italic.ttf'],
 };
 
 const HEX = {
@@ -270,8 +271,8 @@ async function renderGiftCard(giftCard, t) {
 
   const fbSerif = await pdfDoc.embedFont(StandardFonts.TimesRoman);
   const fbItalic = await pdfDoc.embedFont(StandardFonts.TimesRomanItalic);
-  const sans = await pdfDoc.embedFont(StandardFonts.Helvetica);
-  const sansBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+  let sans = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  let sansBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
   const customDisplay = fontkit ? await loadFont(pdfDoc, FONT_FILES.display) : null;
   const customBody = fontkit ? await loadFont(pdfDoc, FONT_FILES.body) : null;
@@ -280,6 +281,11 @@ async function renderGiftCard(giftCard, t) {
   const display = customDisplay || fbSerif;
   const body = customBody || fbSerif;
   const italic = customItalic || customBody || fbItalic;
+  // Small caps labels and the code chip use the body font too when it's available.
+  if (customBody) {
+    sans = customBody;
+    sansBold = customBody;
+  }
 
   const page = pdfDoc.addPage([PAGE_W, PAGE_H]);
 

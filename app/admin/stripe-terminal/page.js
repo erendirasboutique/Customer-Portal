@@ -216,7 +216,7 @@ export default function StripeTerminalPage(props) {
         const elements = stripe.elements();
         const style = {
           base: {
-            fontFamily: 'Georgia, serif',
+            fontFamily: 'var(--font-body)',
             fontSize: '15px',
             color: '#da5e16',
             '::placeholder': { color: '#eda033' },

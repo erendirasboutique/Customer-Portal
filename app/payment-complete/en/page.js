@@ -110,22 +110,6 @@ export default function Page() {
         </section>
       </section>
 
-      <style jsx global>{`
-        @font-face {
-          font-family: 'La Luxes Serif';
-          src: url('/fonts/la_luxes_serif.otf') format('opentype');
-          font-weight: 400;
-          font-style: normal;
-          font-display: swap;
-        }
-        @font-face {
-          font-family: 'Recoleta';
-          src: url('/fonts/recoleta-regular.otf') format('opentype');
-          font-weight: 400;
-          font-style: normal;
-          font-display: swap;
-        }
-      `}</style>
 
       <style jsx>{`
         .ebcPage {
@@ -136,7 +120,7 @@ export default function Page() {
           justify-content: center;
           align-items: flex-start;
           background: #f5f3ef;
-          font-family: 'Recoleta', Georgia, serif;
+          font-family: var(--font-body);
           color: #3d3428;
         }
         .ebcShell {
@@ -203,7 +187,7 @@ export default function Page() {
           color: #fdfcfa;
         }
         .ebcTime {
-          font-family: 'La Luxes Serif', Georgia, serif;
+          font-family: var(--font-heading);
           font-size: 17px;
           letter-spacing: 0.5px;
         }
@@ -238,7 +222,7 @@ export default function Page() {
           object-fit: contain;
         }
         .ebcCheckFallback {
-          font-family: 'La Luxes Serif', Georgia, serif;
+          font-family: var(--font-heading);
           font-size: 16px;
           color: #806a52;
         }
@@ -251,7 +235,7 @@ export default function Page() {
         }
         .ebcTitle {
           margin: 0 0 18px;
-          font-family: 'La Luxes Serif', Georgia, serif;
+          font-family: var(--font-heading);
           font-weight: 400;
           font-size: clamp(30px, 8.5vw, 40px);
           line-height: 1.02;
@@ -277,7 +261,7 @@ export default function Page() {
           text-align: left;
         }
         .ebcPayAmount {
-          font-family: 'La Luxes Serif', Georgia, serif;
+          font-family: var(--font-heading);
           font-size: 20px;
           color: #806a52;
           white-space: nowrap;

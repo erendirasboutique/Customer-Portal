@@ -123,7 +123,7 @@ const pageCss = '' +
 '.eai-what { margin:0; font-size:12.5px; line-height:1.5; color:var(--mute); }' +
 '.eai-vars { margin:0; padding:0; list-style:none; display:grid; gap:4px; }' +
 '.eai-vars li { font-size:11px; color:var(--mute); overflow-wrap:anywhere; }' +
-'.eai-vars code { font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:10.5px; }' +
+'.eai-vars code { font-family:var(--font-body); font-size:10.5px; }' +
 '.eai-dot { display:inline-block; width:7px; height:7px; border-radius:50%; margin-right:7px; vertical-align:1px; }' +
 '.eai-dot.y { background:var(--sand); }' +
 '.eai-dot.n { background:transparent; border:1px solid var(--sand); }' +

@@ -3,7 +3,7 @@
 const css = `
 .pay { --cream:#F2F0EB; --card:#FFFFFF; --sand:#bda891; --taupe:#806a52; --ink:#3d3428; --mute:#8b7a64; --line:#e8e2d8;
   min-height:100vh; margin:0; background:var(--cream); color:var(--ink);
-  font-family:"Recoleta", Georgia, serif; display:grid; place-items:center; padding:24px; }
+  font-family:var(--font-body); display:grid; place-items:center; padding:24px; }
 .pay * { box-sizing:border-box; }
 .pay-card { width:100%; max-width:420px; background:var(--card); border-radius:30px; padding:38px 30px; text-align:center;
   box-shadow:0 1px 2px rgba(61,52,40,.04), 0 18px 44px rgba(61,52,40,.10); }
@@ -11,7 +11,7 @@ const css = `
 .pay-ic { width:72px; height:72px; border-radius:50%; margin:0 auto 18px; display:grid; place-items:center; font-size:32px;
   background:rgba(189,168,145,.22); color:var(--taupe); }
 .pay h1 { margin:0; font-size:28px; color:var(--taupe); font-weight:400; }
-.pay p { margin:10px 0 0; font-size:14px; color:var(--mute); font-family:system-ui,-apple-system,sans-serif; }
+.pay p { margin:10px 0 0; font-size:14px; color:var(--mute); font-family:var(--font-body); }
 `;
 
 export default function PayCancelPage() {

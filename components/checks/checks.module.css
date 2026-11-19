@@ -1,6 +1,6 @@
 /* ============================================================
    Erendira's Boutique — checks
-   Fonts: La Luxes Serif (display) and Recoleta (body), pulled from
+   Fonts: TAN Nightingale (display) and Edinburgh (body), pulled from
    the global @font-face declarations. Nothing to re-declare here.
 
    MICR is the one exception and must stay MICR E-13B — a scanner
@@ -13,8 +13,8 @@
    ============================================================ */
 
 .shell {
-  --check-display: "La Luxes Serif", Georgia, "Times New Roman", serif;
-  --check-body: "Recoleta", Georgia, serif;
+  --check-display: var(--font-heading, "TAN Nightingale", Georgia, serif);
+  --check-body: var(--font-body, "Edinburgh", Georgia, serif);
 
   min-height: 100vh;
   background: #f6f4f1;
@@ -257,8 +257,8 @@
 /* ---------------- The printed sheet ---------------- */
 
 .printPage {
-  --check-display: "La Luxes Serif", Georgia, "Times New Roman", serif;
-  --check-body: "Recoleta", Georgia, serif;
+  --check-display: var(--font-heading, "TAN Nightingale", Georgia, serif);
+  --check-body: var(--font-body, "Edinburgh", Georgia, serif);
 
   background: #fff;
   color: #25211f;
@@ -567,7 +567,7 @@
 /* Stays a blunt sans on purpose — this is a stamp, not brand type. */
 .voidOverlay {
   color: rgba(145, 0, 0, 0.24);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body);
   font-size: 70px;
   font-weight: 900;
   left: 0;

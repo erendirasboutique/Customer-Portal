@@ -25,7 +25,7 @@ const pageCss = '' +
 '  background:none; cursor:pointer; flex-shrink:0; overflow:hidden; }' +
 '.eab-color input[type=color]::-webkit-color-swatch-wrapper { padding:0; }' +
 '.eab-color input[type=color]::-webkit-color-swatch { border:0; border-radius:50%; }' +
-'.eab-color .eba-in { font-family:ui-monospace, SFMono-Regular, Menlo, monospace; text-transform:lowercase; }' +
+'.eab-color .eba-in { font-family:var(--font-body); text-transform:lowercase; }' +
 '.eab-colors { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin-top:12px; }' +
 '.eab-preview { border:1px solid var(--line); border-radius:24px; overflow:hidden; background:#fff; }' +
 '.eab-pbar { height:8px; }' +
@@ -34,7 +34,7 @@ const pageCss = '' +
 '.eab-pname { margin:0 0 14px; font-size:11px; letter-spacing:.24em; text-transform:uppercase; }' +
 '.eab-pcheck { width:46px; height:46px; border-radius:50%; margin:0 auto 14px; display:flex; align-items:center;' +
 '  justify-content:center; font-size:22px; }' +
-'.eab-phead { margin:0; font-size:26px; line-height:1.1; font-family:"La Luxes Serif","Recoleta",Georgia,serif; font-weight:400; }' +
+'.eab-phead { margin:0; font-size:26px; line-height:1.1; font-family:var(--font-heading); font-weight:400; }' +
 '.eab-pmsg { margin:10px auto 0; max-width:300px; font-size:13px; line-height:1.5; color:#6b6b6b; white-space:pre-line; }' +
 '.eab-pbtn { display:inline-block; margin-top:18px; border-radius:999px; padding:11px 22px; font-size:12.5px; border:0; }' +
 '.eab-psupport { margin:16px 0 0; font-size:11.5px; color:#8a8a8a; }' +

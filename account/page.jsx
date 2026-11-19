@@ -872,7 +872,7 @@ function fmtDate(iso, locale) {
 
 const css = `
 .ac { --bg:#F5F3EF; --brand:#957f67; --brand-dark:#7f6b55; --line:#e6dccf; --line2:#efe8de; --ink:#5f4e3d; --muted:#7d6a56; --add:#b98a5c; --err:#a8452a;
-  min-height:100vh; background:var(--bg); color:var(--ink); font-family:"Recoleta", Georgia, serif; -webkit-font-smoothing:antialiased;
+  min-height:100vh; background:var(--bg); color:var(--ink); font-family:var(--font-body); -webkit-font-smoothing:antialiased;
   padding:20px 16px 40px; box-sizing:border-box; }
 .ac *, .ac *::before, .ac *::after { box-sizing:border-box; }
 .ac a { color:var(--brand-dark); }
@@ -881,7 +881,7 @@ const css = `
 .ac-top { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:28px; }
 .ac-logo { width:112px; height:auto; display:block; }
 .ac-lang { border:1px solid var(--line); background:#fff; color:var(--brand-dark); border-radius:999px; padding:7px 14px; font-size:13px; }
-.ac-display { font-family:"La Luxes Serif", "Recoleta", Georgia, serif; color:var(--brand); font-weight:400; }
+.ac-display { font-family:var(--font-heading); color:var(--brand); font-weight:400; }
 .ac-hi { margin:0 0 4px; font-size:15px; color:var(--muted); }
 .ac-ask { font-size:34px; line-height:1.1; margin:0 0 22px; }
 .ac-hello { font-size:30px; line-height:1.15; margin:0 0 16px; }
@@ -938,7 +938,7 @@ const css = `
 .ac-dl-row dt { color:var(--muted); flex-shrink:0; }
 .ac-dl-row dd { margin:0; text-align:right; min-width:0; overflow-wrap:anywhere; }
 .ac-trk { display:inline-flex; flex-wrap:wrap; justify-content:flex-end; align-items:center; gap:6px; }
-.ac-mono { font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:13px; letter-spacing:.02em; }
+.ac-mono { font-family:var(--font-body); font-size:13px; letter-spacing:.02em; }
 .ac-copy { border:1px solid var(--line); background:#FAF9F6; color:var(--brand-dark); border-radius:999px; padding:4px 10px; font-size:12.5px; }
 .ac-track { display:flex; align-items:center; justify-content:center; margin-top:12px; text-decoration:none; }
 .ac-lightbox { position:fixed; inset:0; z-index:50; background:rgba(30,24,18,.88); display:flex; align-items:center; justify-content:center; padding:16px; }

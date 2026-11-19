@@ -106,7 +106,7 @@ const css = '' +
 '.ebg-stage:fullscreen { border-radius:0; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#fdfcf7; }' +
 '.ebg-stage:fullscreen .ebg-wheelwrap { width:min(78vh, 90vw); }' +
 '.ebg-stage:fullscreen .ebg-prize { font-size:clamp(28px,4vw,48px); }' +
-'.ebg-prize { margin:0 0 4px; font-family:"La Luxes Serif","Recoleta",Georgia,serif; font-size:clamp(24px,3vw,34px); line-height:1.05; color:var(--taupe); }' +
+'.ebg-prize { margin:0 0 4px; font-family:var(--font-heading); font-size:clamp(24px,3vw,34px); line-height:1.05; color:var(--taupe); }' +
 '.ebg-count { margin:0 0 16px; font-size:12px; color:var(--mute); }' +
 '.ebg-wheelwrap { position:relative; width:min(100%, 520px); margin:0 auto; aspect-ratio:1; }' +
 '.ebg-wheel { width:100%; height:100%; border-radius:50%; overflow:hidden; pointer-events:none; box-shadow:0 18px 50px rgba(218,94,22,.22), 0 0 0 8px #fff, 0 0 0 10px #f6d3a8; }' +
@@ -115,7 +115,7 @@ const css = '' +
 '  border-left:18px solid transparent; border-right:18px solid transparent; border-top:34px solid #da5e16;' +
 '  filter:drop-shadow(0 4px 6px rgba(0,0,0,.18)); }' +
 '.ebg-hub { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); z-index:2; width:24%; aspect-ratio:1; border-radius:50%;' +
-'  border:0; background:#fff; color:#da5e16; font-family:"La Luxes Serif","Recoleta",Georgia,serif; font-size:clamp(16px,2.6vw,26px);' +
+'  border:0; background:#fff; color:#da5e16; font-family:var(--font-heading); font-size:clamp(16px,2.6vw,26px);' +
 '  box-shadow:0 6px 20px rgba(218,94,22,.28), inset 0 0 0 4px #f6d3a8; cursor:pointer; transition:transform .15s ease; }' +
 '.ebg-hub:hover:not(:disabled) { transform:translate(-50%,-50%) scale(1.05); }' +
 '.ebg-hub:disabled { cursor:default; color:#efc28c; }' +
@@ -127,7 +127,7 @@ const css = '' +
 '.ebg-wincard { position:relative; z-index:2; background:#fff; border-radius:28px; padding:28px 30px; max-width:420px; width:100%;' +
 '  box-shadow:0 24px 60px rgba(218,94,22,.25); animation:ebg-pop .45s cubic-bezier(.2,1.4,.4,1); }' +
 '.ebg-wincard .lb { font-size:10px; letter-spacing:.3em; color:var(--accent); }' +
-'.ebg-wincard .nm { margin:10px 0 6px; font-family:"La Luxes Serif","Recoleta",Georgia,serif; font-size:clamp(34px,6vw,54px); line-height:1.02; color:var(--taupe); overflow-wrap:anywhere; }' +
+'.ebg-wincard .nm { margin:10px 0 6px; font-family:var(--font-heading); font-size:clamp(34px,6vw,54px); line-height:1.02; color:var(--taupe); overflow-wrap:anywhere; }' +
 '.ebg-wincard .pz { font-size:14px; color:var(--mute); }' +
 '.ebg-wincard .warn { margin-top:12px; font-size:12.5px; color:#a8702f; background:#fff6ea; border-radius:12px; padding:8px 12px; }' +
 '.ebg-wincard .eba-actions { justify-content:center; }' +
@@ -455,7 +455,7 @@ export default function GiveawayWheel(props) {
                       const label = n.length > 18 ? n.slice(0, 17) + '…' : n;
                       return (
                         <text key={'t' + i} transform={'rotate(' + (mid - 90) + ')'} x="0.9" y="0" textAnchor="end" dominantBaseline="central"
-                          fontSize={fontSize} fill={c.text} fontFamily="Recoleta, Georgia, serif">
+                          fontSize={fontSize} fill={c.text} fontFamily="Edinburgh, Georgia, serif">
                           {label}
                         </text>
                       );

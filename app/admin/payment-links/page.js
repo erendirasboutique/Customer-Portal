@@ -183,7 +183,7 @@ const IconSearch = function () { return (<Icon><circle cx="11" cy="11" r="7" /><
 
 const pageCss = '' +
 '.ebp-amt { font-size:46px; line-height:1.05; color:#da5e16; margin:14px 0 0;' +
-'  font-family:"La Luxes Serif","Recoleta",Georgia,serif; font-weight:400; }' +
+'  font-family:var(--font-heading); font-weight:400; }' +
 '.ebp-name { font-size:14px; color:#da5e16; margin:6px 0 0; }' +
 '.ebp-linkbox { border:1px dashed #f6d3a8; border-radius:20px; padding:16px; margin-top:18px; font-size:12.5px;' +
 '  color:#eda033; text-align:center; }' +

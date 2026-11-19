@@ -12,7 +12,7 @@ const css = `
 .pay { --cream:#F2F0EB; --card:#FFFFFF; --wash:#FAF8F4; --sand:#bda891; --taupe:#806a52; --ink:#3d3428; --mute:#8b7a64; --line:#e8e2d8;
   --ok:#4C8C6B; --okw:#E7EFE6; --bad:#a03535; --badw:#f6e9e7;
   min-height:100vh; margin:0; background:var(--cream); color:var(--ink);
-  font-family:"Recoleta", Georgia, serif; display:grid; place-items:center; padding:24px; }
+  font-family:var(--font-body); display:grid; place-items:center; padding:24px; }
 .pay * { box-sizing:border-box; }
 .pay-card { width:100%; max-width:440px; background:var(--card); border-radius:30px; padding:38px 30px; text-align:center;
   box-shadow:0 1px 2px rgba(61,52,40,.04), 0 18px 44px rgba(61,52,40,.10); }
@@ -22,9 +22,9 @@ const css = `
 .pay-ic.bad { background:var(--badw); color:var(--bad); }
 .pay-ic.wait { background:rgba(189,168,145,.22); color:var(--taupe); }
 .pay h1 { margin:0; font-size:30px; line-height:1.05; color:var(--taupe); font-weight:400; }
-.pay .lead { margin:10px 0 0; font-size:14.5px; color:var(--mute); font-family:system-ui,-apple-system,"Segoe UI",sans-serif; }
+.pay .lead { margin:10px 0 0; font-size:14.5px; color:var(--mute); font-family:var(--font-body); }
 .pay-receipt { margin:24px 0 0; border:1px solid var(--line); border-radius:18px; overflow:hidden; text-align:left;
-  font-family:system-ui,-apple-system,"Segoe UI",sans-serif; }
+  font-family:var(--font-body); }
 .pay-row { display:flex; justify-content:space-between; align-items:baseline; padding:13px 18px; font-size:13.5px; }
 .pay-row + .pay-row { border-top:1px solid var(--line); }
 .pay-row .k { color:var(--mute); }
@@ -36,8 +36,8 @@ const css = `
 .pay-badge.wait { background:rgba(189,168,145,.28); color:var(--taupe); }
 .pay-btn { display:inline-block; margin-top:24px; text-decoration:none; color:var(--cream); background:var(--taupe);
   padding:13px 28px; border-radius:999px; font-size:15px; }
-.pay-foot { margin-top:18px; font-size:11.5px; color:var(--sand); font-family:system-ui,-apple-system,sans-serif; }
-.pay-load { padding:24px 0; color:var(--sand); font-size:14px; font-family:system-ui,sans-serif; }
+.pay-foot { margin-top:18px; font-size:11.5px; color:var(--sand); font-family:var(--font-body); }
+.pay-load { padding:24px 0; color:var(--sand); font-size:14px; font-family:var(--font-body); }
 `;
 
 export default function PayCompletePage() {

@@ -217,7 +217,7 @@ export default function CloverTerminalPage(props) {
         const clover = new window.Clover(config.publicKey, { merchantId: config.merchantId });
         const elements = clover.elements();
         const styles = {
-          body: { fontFamily: 'Georgia, serif' },
+          body: { fontFamily: 'var(--font-body)' },
           input: { fontSize: '15px', color: '#da5e16' },
         };
         elements.create('CARD_NUMBER', styles).mount('#ebt-card-number');
