@@ -1,7 +1,7 @@
 The receipt share picture already uses the brand fonts in /public/fonts/:
 
-  TAN-Nightingale-Regular.otf  (the big amount and "Tu recibo")
-  Edinburgh-Regular.otf        (all other text)
+  TheSilverEditorial-Regular.otf  (the big amount and "Tu recibo")
+  EvolveEarly-Medium.otf        (all other text)
 
 Only add files here if you want to override those, named exactly:
 

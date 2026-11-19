@@ -5,12 +5,12 @@
    automatically. Size: 1200 × 630.
 
    FONTS — uses your brand fonts from /public/fonts/:
-     TAN Nightingale → the amount and "Tu recibo"
-     Edinburgh       → everything else
+     The Silver Editorial → the amount and "Tu recibo"
+     Evolve Early       → everything else
    To override, put a copy of each font file in the "fonts" folder
    next to this file, named exactly:
-     app/receipt/[token]/fonts/display.otf   (TAN Nightingale)
-     app/receipt/[token]/fonts/body.otf      (Edinburgh)
+     app/receipt/[token]/fonts/display.otf   (The Silver Editorial)
+     app/receipt/[token]/fonts/body.otf      (Evolve Early)
    .otf, .ttf or .woff all work (rename the ending to match).
    .woff2 does NOT work for share pictures.
    If those aren't there, it also looks in /public/fonts/ for the
@@ -39,7 +39,7 @@ const DISPLAY_FONT_PATHS = [
   join(process.cwd(), "app/receipt/[token]/fonts/display.woff"),
   join(process.cwd(), "src/app/receipt/[token]/fonts/display.otf"),
   join(process.cwd(), "src/app/receipt/[token]/fonts/display.ttf"),
-  join(process.cwd(), "public/fonts/TAN-Nightingale-Regular.otf"),
+  join(process.cwd(), "public/fonts/TheSilverEditorial-Regular.otf"),
   join(process.cwd(), "public/fonts/LaLuxesSerif.otf"),
   join(process.cwd(), "public/fonts/LaLuxesSerif.ttf"),
   join(process.cwd(), "public/fonts/LaLuxesSerif.woff"),
@@ -56,7 +56,7 @@ const BODY_FONT_PATHS = [
   join(process.cwd(), "app/receipt/[token]/fonts/body.woff"),
   join(process.cwd(), "src/app/receipt/[token]/fonts/body.otf"),
   join(process.cwd(), "src/app/receipt/[token]/fonts/body.ttf"),
-  join(process.cwd(), "public/fonts/Edinburgh-Regular.otf"),
+  join(process.cwd(), "public/fonts/EvolveEarly-Medium.otf"),
   join(process.cwd(), "public/fonts/Recoleta-Regular.otf"),
   join(process.cwd(), "public/fonts/Recoleta-Regular.ttf"),
   join(process.cwd(), "public/fonts/Recoleta-Regular.woff"),
@@ -119,8 +119,8 @@ async function loadAssets() {
     } catch (e2) {}
   }
 
-  if (!display) console.warn("[receipt share image] TAN Nightingale font file not found — using a plain font.");
-  if (!body) console.warn("[receipt share image] Edinburgh font file not found — using a plain font.");
+  if (!display) console.warn("[receipt share image] The Silver Editorial font file not found — using a plain font.");
+  if (!body) console.warn("[receipt share image] Evolve Early font file not found — using a plain font.");
 
   cache = { display, body, logo };
   return cache;
@@ -137,11 +137,11 @@ export default async function Image({ params }) {
   const { display, body, logo } = await loadAssets();
 
   const fonts = [];
-  if (body) fonts.push({ name: "Edinburgh", data: body, weight: 400, style: "normal" });
-  if (display) fonts.push({ name: "TAN Nightingale", data: display, weight: 400, style: "normal" });
+  if (body) fonts.push({ name: "Evolve Early", data: body, weight: 400, style: "normal" });
+  if (display) fonts.push({ name: "The Silver Editorial", data: display, weight: 400, style: "normal" });
 
-  const bodyFont = body ? "Edinburgh" : undefined;
-  const displayFont = display ? "TAN Nightingale" : bodyFont;
+  const bodyFont = body ? "Evolve Early" : undefined;
+  const displayFont = display ? "The Silver Editorial" : bodyFont;
 
   const refunded = r && r.status === "refunded";
   const amountText = r ? money(r.amount, r.currency) : "";
