@@ -22,7 +22,7 @@ body{
   margin:0;
   min-height:100vh;
   color:var(--ink);
-  font-family:MDNichrome,Arial,sans-serif;
+  font-family:var(--font-body);
   background:
     radial-gradient(circle at 12% 8%,#ffe5f0 0 18%,transparent 37%),
     radial-gradient(circle at 92% 12%,#eaf4d5 0 16%,transparent 35%),
@@ -40,7 +40,7 @@ body:before{
   mask-image:linear-gradient(to bottom,black,transparent 85%);
 }
 
-h1,h2,h3,.brand-title{font-family:BringBoldNineties,Georgia,serif;color:var(--purple-dark);letter-spacing:.02em}
+h1,h2,h3,.brand-title{font-family:var(--font-heading);color:var(--purple-dark);letter-spacing:.02em}
 h1{font-size:clamp(42px,6vw,76px);line-height:.9;margin:0 0 8px}
 h2{font-size:34px;margin:0 0 8px}
 h3{font-size:28px;margin:0 0 6px}
@@ -55,7 +55,7 @@ a{color:var(--purple-dark);text-underline-offset:3px}
 .flower.one{top:90px;right:4%}.flower.two{bottom:30px;left:4%;color:var(--green-dark);transform:rotate(-18deg)}
 
 button,.button,.miniButton,input,select,textarea{
-  font-family:MDNichrome,Arial,sans-serif!important;
+  font-family:var(--font-body)!important;
   letter-spacing:.02em;
 }
 .button{
@@ -406,7 +406,7 @@ html,
 body {
   background: #f6f4f1 !important;
   color: #62513f !important;
-  font-family: 'Recoleta', Georgia, serif !important;
+  font-family: var(--font-body) !important;
 }
 
 body:before,
@@ -420,7 +420,7 @@ h1,
 h2,
 h3,
 .brand-title {
-  font-family: 'LaLuxesSerif', Georgia, serif !important;
+  font-family: var(--font-heading) !important;
   color: #957f67 !important;
   letter-spacing: .01em;
 }
@@ -437,7 +437,7 @@ div,
 small,
 td,
 th {
-  font-family: 'Recoleta', Georgia, serif;
+  font-family: var(--font-body);
 }
 
 .page {
@@ -511,7 +511,7 @@ a.button {
   border: 1px solid #957f67 !important;
   box-shadow: none !important;
   border-radius: 999px !important;
-  font-family: 'Recoleta', Georgia, serif !important;
+  font-family: var(--font-body) !important;
 }
 
 .button:hover,
@@ -554,7 +554,7 @@ textarea {
   border: 1px solid #cfbda9 !important;
   border-radius: 16px !important;
   box-shadow: none !important;
-  font-family: 'Recoleta', Georgia, serif !important;
+  font-family: var(--font-body) !important;
 }
 
 .input:focus,
@@ -705,7 +705,7 @@ td {
 
 .giftPreviewCard span {
   display: block;
-  font-family: 'LaLuxesSerif', Georgia, serif;
+  font-family: var(--font-heading);
   font-size: 3rem;
   color: #62513f;
   text-align: center;

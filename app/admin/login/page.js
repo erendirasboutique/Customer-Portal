@@ -8,7 +8,7 @@ import { getSupabaseBrowser } from '@/lib/supabaseBrowser';
 const APP_URL = 'https://my.erendirasboutique.com';
 
 var css = '' +
-'.eb-page { min-height: 100vh; background: #e9e3d9; color: #332b23; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 16px; font-family: Georgia, serif; }' +
+'.eb-page { min-height: 100vh; background: #e9e3d9; color: #332b23; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 16px; font-family: var(--font-body); }' +
 '.eb-toggle-row { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }' +
 '.eb-toggle { display: flex; background: #fff; border: 1px solid rgba(128,106,82,0.35); border-radius: 999px; padding: 4px; }' +
 '.eb-toggle button { border: 0; background: transparent; border-radius: 999px; padding: 8px 24px; font-size: 14px; color: rgba(51,43,35,0.7); cursor: pointer; font-family: inherit; }' +
@@ -80,8 +80,8 @@ function Storefront() {
       <rect x="202" y="350" width="30" height="26" fill="#b98a45" stroke="#5c4a38" strokeWidth="3" />
       <rect x="210" y="356" width="13" height="13" fill="#fdf9f1" stroke="#5c4a38" strokeWidth="2.5" />
       <rect x="194" y="380" width="46" height="40" fill="#b98a45" stroke="#5c4a38" strokeWidth="3" />
-      <text x="330" y="384" textAnchor="middle" fontFamily="Georgia, serif" fontStyle="italic" fontSize="30" fill="#4a3a2a">Erendira&#8217;s</text>
-      <text x="352" y="412" textAnchor="middle" fontFamily="Georgia, serif" fontStyle="italic" fontSize="17" fill="#5c4a38">boutique</text>
+      <text x="330" y="384" textAnchor="middle" fontFamily="Edinburgh, Georgia, serif" fontStyle="italic" fontSize="30" fill="#4a3a2a">Erendira&#8217;s</text>
+      <text x="352" y="412" textAnchor="middle" fontFamily="Edinburgh, Georgia, serif" fontStyle="italic" fontSize="17" fill="#5c4a38">boutique</text>
       <rect x="356" y="418" width="34" height="42" fill="#b98a45" stroke="#5c4a38" strokeWidth="3" />
       <rect x="364" y="428" width="14" height="12" fill="#fdf9f1" stroke="#5c4a38" strokeWidth="2.5" />
     </svg>

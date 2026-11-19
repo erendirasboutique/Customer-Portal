@@ -76,22 +76,6 @@ export default function Page() {
         </section>
       </section>
 
-      <style jsx global>{`
-        @font-face {
-          font-family: 'La Luxes Serif';
-          src: url('/fonts/la_luxes_serif.otf') format('opentype');
-          font-weight: 400;
-          font-style: normal;
-          font-display: swap;
-        }
-        @font-face {
-          font-family: 'Recoleta';
-          src: url('/fonts/recoleta-regular.otf') format('opentype');
-          font-weight: 400;
-          font-style: normal;
-          font-display: swap;
-        }
-      `}</style>
 
       <style jsx>{`
         .eblPage {
@@ -102,7 +86,7 @@ export default function Page() {
           justify-content: center;
           align-items: center;
           background: #f5f3ef;
-          font-family: 'Recoleta', Georgia, serif;
+          font-family: var(--font-body);
           color: #3d3428;
         }
         .eblShell {
@@ -165,7 +149,7 @@ export default function Page() {
           color: #fdfcfa;
         }
         .eblTime {
-          font-family: 'La Luxes Serif', Georgia, serif;
+          font-family: var(--font-heading);
           font-size: 17px;
           letter-spacing: 0.5px;
         }
@@ -191,7 +175,7 @@ export default function Page() {
         }
         .eblTitle {
           margin: 0 0 4px;
-          font-family: 'La Luxes Serif', Georgia, serif;
+          font-family: var(--font-heading);
           font-weight: 400;
           font-size: clamp(30px, 8vw, 44px);
           line-height: 1.02;
@@ -239,7 +223,7 @@ export default function Page() {
           gap: 2px;
         }
         .eblOptName {
-          font-family: 'La Luxes Serif', Georgia, serif;
+          font-family: var(--font-heading);
           font-size: 23px;
           color: #806a52;
           line-height: 1.1;

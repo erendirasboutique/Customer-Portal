@@ -24,7 +24,7 @@ var css = '' +
 '.eb-art svg.fl { position: absolute; width: 44px; height: 44px; color: rgba(233,227,217,0.35); }' +
 '.eb-art svg.tl { top: 18px; left: 18px; }' +
 '.eb-art svg.br { bottom: 18px; right: 18px; transform: rotate(20deg); }' +
-'.eb-code { display: inline-block; border: 0.5px solid rgba(128,106,82,0.45); border-radius: 999px; padding: 12px 30px; margin-top: 22px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 18px; letter-spacing: 0.15em; color: #332b23; }' +
+'.eb-code { display: inline-block; border: 0.5px solid rgba(128,106,82,0.45); border-radius: 999px; padding: 12px 30px; margin-top: 22px; font-family: var(--font-body); font-size: 18px; letter-spacing: 0.15em; color: #332b23; }' +
 '.eb-status { font-size: 13px; color: rgba(51,43,35,0.65); margin-top: 12px; }' +
 '.eb-pill { display: inline-block; border: 0.5px solid rgba(88,128,82,0.5); background: rgba(120,150,110,0.12); color: #4c6a44; border-radius: 999px; padding: 2px 12px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; margin-left: 4px; }' +
 '.eb-pill.off { border-color: rgba(128,106,82,0.4); background: #e9e3d9; color: #5c4d3b; }' +

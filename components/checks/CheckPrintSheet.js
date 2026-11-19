@@ -205,7 +205,7 @@ const css = `
 @page { size:8.5in 11in; margin:0 !important; }
 
 .ck-page { --ink:#1f1a15; --label:#5f4e3d; --brand:#7f6b55; --rule:#8c7a66; --soft:#cfbda9;
-  background:#ece8e1; min-height:100vh; padding:24px 0 60px; font-family:Georgia, "Times New Roman", serif; color:var(--ink); }
+  background:#ece8e1; min-height:100vh; padding:24px 0 60px; font-family:var(--font-body); color:var(--ink); }
 .ck-page * { box-sizing:border-box; }
 
 .ck-sheet { position:relative; width:8.5in; height:11in; margin:0 auto; background:#fff; overflow:hidden;
@@ -215,7 +215,7 @@ const css = `
 /* ---------------- check (top 3.5") ---------------- */
 .ck-check { position:absolute; left:0; top:0; width:8.5in; height:3.5in; }
 .ck-check > * { position:absolute; }
-.ck-lbl { font-family:Arial, Helvetica, sans-serif; font-size:6.5pt; letter-spacing:.08em; text-transform:uppercase; color:var(--label); }
+.ck-lbl { font-family:var(--font-body); font-size:6.5pt; letter-spacing:.08em; text-transform:uppercase; color:var(--label); }
 .ck-line { border-bottom:0.75pt solid var(--rule); display:block; white-space:nowrap; overflow:hidden; }
 
 .ck-payer { left:0.4in; top:0.32in; width:3in; font-size:8.5pt; line-height:1.3; }
@@ -225,7 +225,7 @@ const css = `
 .ck-bank-name { font-size:9pt; }
 .ck-fraction { font-size:7pt; color:var(--label); margin-top:2pt; }
 
-.ck-number { right:0.4in; top:0.3in; font-size:12pt; font-weight:bold; font-family:Arial, Helvetica, sans-serif; }
+.ck-number { right:0.4in; top:0.3in; font-size:12pt; font-weight:bold; font-family:var(--font-body); }
 
 .ck-date { right:0.4in; top:0.85in; display:flex; align-items:flex-end; gap:6pt; }
 .ck-date-val { width:1.45in; font-size:11pt; text-align:center; padding-bottom:1pt; }
@@ -237,7 +237,7 @@ const css = `
 .ck-amount { right:0.4in; top:1.2in; display:flex; align-items:center; gap:4pt; }
 .ck-dollar { font-size:13pt; }
 .ck-amount-box { display:block; width:1.5in; height:0.36in; line-height:0.34in; border:0.75pt solid var(--rule); text-align:right;
-  padding:0 7pt; font-size:12.5pt; font-family:Arial, Helvetica, sans-serif; font-weight:bold; letter-spacing:.02em; }
+  padding:0 7pt; font-size:12.5pt; font-family:var(--font-body); font-weight:bold; letter-spacing:.02em; }
 
 .ck-words { left:0.4in; right:0.4in; top:1.78in; display:flex; align-items:flex-end; gap:8pt; }
 .ck-words-val { flex:1; display:flex; font-size:11pt; padding:0 0 1pt 4pt; }
@@ -258,11 +258,11 @@ const css = `
 
 /* MICR clear band = bottom 5/8". Characters sit 3/16"–7/16" from the bottom edge. */
 .ck-micr { left:1.6in; bottom:0.19in; font-family:"EB MICR", monospace; font-size:12pt; line-height:0.25in; letter-spacing:0; color:#000; white-space:pre; }
-.ck-micr-test { left:0.4in; bottom:0.22in; font-family:Arial, Helvetica, sans-serif; font-size:7pt; letter-spacing:.06em; color:#9a4a2a; }
+.ck-micr-test { left:0.4in; bottom:0.22in; font-family:var(--font-body); font-size:7pt; letter-spacing:.06em; color:#9a4a2a; }
 
-.ck-void { left:0; right:0; top:1.05in; text-align:center; font:bold 72pt Arial, Helvetica, sans-serif; letter-spacing:.3em; color:rgba(160,60,40,.22);
+.ck-void { left:0; right:0; top:1.05in; text-align:center; font:bold 72pt var(--font-body); letter-spacing:.3em; color:rgba(160,60,40,.22);
   transform:rotate(-8deg); pointer-events:none; }
-.ck-sample { display:none; left:0; right:0; top:2.15in; text-align:center; font:bold 22pt Arial, Helvetica, sans-serif; letter-spacing:.2em; color:rgba(160,60,40,.18); }
+.ck-sample { display:none; left:0; right:0; top:2.15in; text-align:center; font:bold 22pt var(--font-body); letter-spacing:.2em; color:rgba(160,60,40,.18); }
 
 /* ---------------- stubs (2 × 3.75") ---------------- */
 .ck-stub { position:absolute; left:0; width:8.5in; height:3.5in; }
@@ -271,24 +271,24 @@ const css = `
 .ck-stub-in { position:absolute; inset:0.38in 0.45in 0.3in; font-size:9.5pt; }
 .ck-stub-head { display:flex; justify-content:space-between; align-items:flex-start; padding-bottom:6pt; border-bottom:0.75pt solid var(--soft); }
 .ck-stub-brand { font-size:11pt; color:var(--brand); }
-.ck-stub-title { font-family:Arial, Helvetica, sans-serif; font-size:7pt; letter-spacing:.14em; text-transform:uppercase; color:var(--label); margin-top:2pt; }
-.ck-stub-no { text-align:right; font-family:Arial, Helvetica, sans-serif; }
+.ck-stub-title { font-family:var(--font-body); font-size:7pt; letter-spacing:.14em; text-transform:uppercase; color:var(--label); margin-top:2pt; }
+.ck-stub-no { text-align:right; font-family:var(--font-body); }
 .ck-stub-no span { display:block; font-size:6.5pt; letter-spacing:.12em; text-transform:uppercase; color:var(--label); }
 .ck-stub-no b { font-size:12pt; }
 .ck-stub-table { width:100%; border-collapse:collapse; margin-top:4pt; }
-.ck-stub-table th { width:1.35in; text-align:left; vertical-align:top; font:normal 7pt Arial, Helvetica, sans-serif; letter-spacing:.1em; text-transform:uppercase;
+.ck-stub-table th { width:1.35in; text-align:left; vertical-align:top; font:normal 7pt var(--font-body); letter-spacing:.1em; text-transform:uppercase;
   color:var(--label); padding:5pt 0; }
 .ck-stub-table td { padding:4pt 0; vertical-align:top; white-space:pre-line; border-bottom:0.5pt solid #ece6dd; }
-.ck-stub-amt { font-family:Arial, Helvetica, sans-serif; font-weight:bold; }
+.ck-stub-amt { font-family:var(--font-body); font-weight:bold; }
 .ck-stub-notes { margin-top:8pt; }
-.ck-stub-notes span { font:normal 7pt Arial, Helvetica, sans-serif; letter-spacing:.1em; text-transform:uppercase; color:var(--label); }
+.ck-stub-notes span { font:normal 7pt var(--font-body); letter-spacing:.1em; text-transform:uppercase; color:var(--label); }
 .ck-stub-notes div { margin-top:3pt; min-height:0.4in; white-space:pre-line; }
 .ck-stub-foot { position:absolute; left:0; right:0; bottom:0; text-align:center; font-size:7.5pt; color:var(--label); }
 
 /* ---------------- screen preview ---------------- */
 @media screen {
   .ck-stub::before { content:""; position:absolute; left:0.2in; right:0.2in; top:0; border-top:1px dashed #d9cfc2; }
-  .ck-check::after { content:"Check"; position:absolute; right:0.08in; bottom:0.04in; font:7pt Arial, sans-serif; color:#c9bcab; }
+  .ck-check::after { content:"Check"; position:absolute; right:0.08in; bottom:0.04in; font:7pt var(--font-body); color:#c9bcab; }
 }
 @media screen and (max-width:900px) {
   .ck-page { overflow-x:auto; padding:12px; }

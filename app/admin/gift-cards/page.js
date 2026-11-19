@@ -151,8 +151,8 @@ const dateLocale = { en: 'en-US', es: 'es-MX' };
 
 const pageCss = '' +
 '.ebg-amt { font-size:46px; line-height:1.05; color:#806a52; margin:14px 0 10px;' +
-'  font-family:"La Luxes Serif","Recoleta",Georgia,serif; font-weight:400; }' +
-'.ebg-code { font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12.5px; letter-spacing:.08em;' +
+'  font-family:var(--font-heading); font-weight:400; }' +
+'.ebg-code { font-family:var(--font-body); font-size:12.5px; letter-spacing:.08em;' +
 '  display:inline-block; background:rgba(189,168,145,.22); color:#806a52; border-radius:10px; padding:5px 10px; margin-top:4px; }' +
 '.ebg-box { border:1px dashed #e8e2d8; border-radius:20px; padding:16px; margin-top:16px; font-size:12.5px;' +
 '  color:#bda891; text-align:center; }' +

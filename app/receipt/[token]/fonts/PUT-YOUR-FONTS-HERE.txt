@@ -1,12 +1,11 @@
-Put a copy of your two brand font files in this folder, named exactly:
+The receipt share picture already uses the brand fonts in /public/fonts/:
 
-  display.otf   ← La Luxes Serif   (used for the big amount)
-  body.otf      ← Recoleta         (used for all other text)
+  TAN-Nightingale-Regular.otf  (the big amount and "Tu recibo")
+  Edinburgh-Regular.otf        (all other text)
 
-If your files end in .ttf or .woff instead, keep that ending:
-  display.ttf / body.ttf   or   display.woff / body.woff
+Only add files here if you want to override those, named exactly:
 
-.woff2 files do NOT work for share pictures. If you only have .woff2,
-use the .otf or .ttf from where you bought/downloaded the font.
+  display.otf   <- heading font
+  body.otf      <- body font
 
-You can delete this text file after adding the fonts.
+.woff2 files do NOT work for share pictures.

@@ -17,9 +17,9 @@
   --alert: #8c3b2e;
   --good: #4f6b4a;
 
-  --serif: 'La Luxes Serif', Georgia, 'Times New Roman', serif;
-  --body: 'Recoleta', Georgia, serif;
-  --mono: ui-monospace, 'SF Mono', 'Roboto Mono', Menlo, monospace;
+  --serif: var(--font-heading, 'TAN Nightingale', Georgia, serif);
+  --body: var(--font-body, 'Edinburgh', Georgia, serif);
+  --mono: var(--font-body, 'Edinburgh', Georgia, serif);
 
   background: var(--cream);
   color: var(--ink);

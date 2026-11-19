@@ -80,7 +80,7 @@ function money(value, currency, lang) {
 const css = '' +
 '.gcb { --bg:#fdfcf7; --card:#ffffff; --wash:#fffdf8; --ink:#da5e16; --accent:#eda033; --accent-dark:#d98a1f; --line:#f6d3a8; --soft:#fcefdc;' +
 '  min-height:100vh; background:var(--bg); color:var(--ink); display:flex; align-items:flex-start; justify-content:center;' +
-'  padding:clamp(20px,6vh,72px) 16px 40px; font-family:"Recoleta", Georgia, serif; -webkit-font-smoothing:antialiased; }' +
+'  padding:clamp(20px,6vh,72px) 16px 40px; font-family:var(--font-body); -webkit-font-smoothing:antialiased; }' +
 '.gcb * { box-sizing:border-box; }' +
 '.gcb-wrap { width:100%; max-width:460px; }' +
 '.gcb-top { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px; }' +
@@ -94,11 +94,11 @@ const css = '' +
 '  background:radial-gradient(circle at 30% 30%, rgba(237,160,51,.26), rgba(237,160,51,0) 65%); pointer-events:none; }' +
 '.gcb-card > * { position:relative; z-index:1; }' +
 '.gcb-eyebrow { margin:0 0 6px; font-size:10px; letter-spacing:.28em; color:var(--accent); }' +
-'.gcb h1 { margin:0; font-family:"La Luxes Serif","Recoleta",Georgia,serif; font-weight:400; font-size:clamp(32px,8vw,42px); line-height:1.02; }' +
+'.gcb h1 { margin:0; font-family:var(--font-heading); font-weight:400; font-size:clamp(32px,8vw,42px); line-height:1.02; }' +
 '.gcb-sub { margin:10px 0 22px; font-size:14px; line-height:1.5; }' +
 '.gcb-lb { display:block; font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--accent); margin:0 0 7px; }' +
 '.gcb-in { width:100%; border:1px solid var(--line); border-radius:16px; background:var(--wash); padding:14px 16px;' +
-'  font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:16px; letter-spacing:.1em; color:var(--ink);' +
+'  font-family:var(--font-body); font-size:16px; letter-spacing:.1em; color:var(--ink);' +
 '  text-transform:uppercase; outline:0; }' +
 '.gcb-in:focus { border-color:var(--accent); background:var(--card); }' +
 '.gcb-in::placeholder { color:var(--line); }' +
@@ -111,10 +111,10 @@ const css = '' +
 '.gcb-msg { margin-top:14px; border-radius:16px; padding:12px 15px; font-size:13px; line-height:1.5; background:var(--wash); border:1px solid var(--line); }' +
 '.gcb-msg.err { background:rgba(160,53,53,.06); border-color:rgba(160,53,53,.2); color:#8f3a3a; }' +
 '.gcb-result { margin-top:6px; text-align:center; }' +
-'.gcb-code { display:inline-block; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12.5px; letter-spacing:.1em;' +
+'.gcb-code { display:inline-block; font-family:var(--font-body); font-size:12.5px; letter-spacing:.1em;' +
 '  background:var(--soft); border-radius:10px; padding:5px 11px; }' +
 '.gcb-rl { margin:18px 0 0; font-size:12px; letter-spacing:.06em; }' +
-'.gcb-amt { margin:4px 0 0; font-family:"La Luxes Serif","Recoleta",Georgia,serif; font-weight:400; font-size:clamp(52px,15vw,68px); line-height:1.05; }' +
+'.gcb-amt { margin:4px 0 0; font-family:var(--font-heading); font-weight:400; font-size:clamp(52px,15vw,68px); line-height:1.05; }' +
 '.gcb-orig { margin:4px 0 0; font-size:12.5px; opacity:.8; }' +
 '.gcb-bar { height:8px; border-radius:999px; background:var(--soft); overflow:hidden; margin:16px 0 0; }' +
 '.gcb-bar span { display:block; height:100%; border-radius:999px; background:var(--accent); transition:width .5s ease; }' +

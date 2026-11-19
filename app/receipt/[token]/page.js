@@ -353,10 +353,10 @@ const css = '' +
 '.rcpt { --bg:#F5F3EF; --card:#ffffff; --brand:#957f67; --brand-dark:#7f6b55; --soft:#cfbda9; --line:#e6dccf; --line2:#efe8de;' +
 '  --ink:#5f4e3d; --muted:#7d6a56;' +
 '  min-height:100vh; background:var(--bg); color:var(--ink); padding:0 0 calc(110px + env(safe-area-inset-bottom));' +
-'  font-family:"Recoleta", "Fraunces", Georgia, serif; -webkit-font-smoothing:antialiased; overflow-x:hidden; overflow-x:clip; }' +
+'  font-family:var(--font-body); -webkit-font-smoothing:antialiased; overflow-x:hidden; overflow-x:clip; }' +
 '.rcpt * { box-sizing:border-box; }' +
 '.rcpt a { color:var(--brand-dark); }' +
-'.rcpt-display { font-family:"La Luxes Serif", "Cormorant Garamond", "Recoleta", Georgia, serif; font-weight:400; letter-spacing:-0.01em; }' +
+'.rcpt-display { font-family:var(--font-heading); font-weight:400; letter-spacing:-0.01em; }' +
 '.rcpt-wrap { max-width:480px; margin:0 auto; }' +
 
 /* header */
@@ -389,7 +389,7 @@ const css = '' +
 '.rcpt-row dt { font-size:13px; color:var(--muted); flex-shrink:0; padding-top:1px; }' +
 '.rcpt-row dd { margin:0; text-align:right; font-size:14px; min-width:0; overflow-wrap:anywhere; color:var(--ink); }' +
 '.rcpt-row dd .sub { display:block; font-size:12px; color:var(--muted); margin-top:2px; }' +
-'.rcpt-row dd .mono { font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12px; letter-spacing:.02em; color:var(--muted); }' +
+'.rcpt-row dd .mono { font-family:var(--font-body); font-size:12px; letter-spacing:.02em; color:var(--muted); }' +
 '.rcpt-ref .rcpt-row { padding:9px 0; }' +
 '.rcpt-method { display:inline-flex; align-items:center; gap:8px; }' +
 '.rcpt-brand { height:22px; width:auto; display:block; border-radius:4px; }' +

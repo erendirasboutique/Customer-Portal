@@ -314,7 +314,7 @@
 }
 
 .giftCode {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: var(--font-body);
   font-size: 13px;
   background: #f1ece3;
   border-radius: 8px;

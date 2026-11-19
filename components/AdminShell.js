@@ -4,7 +4,7 @@
 // Erendira's Boutique — Admin Studio shell
 //
 // "Studio" design: floating cream canvas, white rounded cards, pill nav,
-// La Luxes display headings. Every admin page renders inside this.
+// TAN Nightingale display headings. Every admin page renders inside this.
 //
 // Props:
 //   admin      { name, email, avatar_url, role }  — used for the profile card
@@ -192,13 +192,13 @@ export const shellCss = '' +
 /* tokens */
 '.eba { --cream:#F5F3EF; --card:#FFFFFF; --wash:#FAF9F6; --sand:#cfbda9; --taupe:#957f67; --ink:#957f67; --mute:#957f67; --line:#e6dccf; --accent:#957f67; --accent-dark:#7f6b55;' +
 '  min-height:100vh; background:var(--cream); color:var(--ink); overflow-x:clip;' +
-'  font-family:"Recoleta", Georgia, serif; -webkit-font-smoothing:antialiased; }' +
+'  font-family:var(--font-body); -webkit-font-smoothing:antialiased; }' +
 '.eba * { box-sizing:border-box; }' +
 '.eba a { color:inherit; text-decoration:none; }' +
 '.eba button, .eba input, .eba select, .eba textarea { font-family:inherit; }' +
 '.eba button { cursor:pointer; }' +
 '.eba-display, .eba-hero h1, .eba-panel h2, .eba-stat b, .eba-herostat b, .eba-cta h3 {' +
-'  font-family:"La Luxes Serif", "Recoleta", Georgia, serif; font-weight:400; letter-spacing:-0.01em; }' +
+'  font-family:var(--font-heading); font-weight:400; letter-spacing:-0.01em; }' +
 '.eba :focus-visible { outline:2px solid var(--taupe); outline-offset:2px; border-radius:8px; }' +
 
 /* layout */
@@ -224,7 +224,7 @@ export const shellCss = '' +
 '.eba-pop-sep { border-top:1px solid var(--line); margin:6px 4px; }' +
 '.eba-avatar, .eba-avatar-fb { width:34px; height:34px; border-radius:50%; flex-shrink:0; display:block; object-fit:cover; }' +
 '.eba-avatar-fb { background:var(--accent); color:var(--cream); font-size:12px; display:flex; align-items:center; justify-content:center; }' +
-'.eba-brandmark { font-family:"La Luxes Serif","Recoleta",Georgia,serif; color:var(--taupe); line-height:1; }' +
+'.eba-brandmark { font-family:var(--font-heading); color:var(--taupe); line-height:1; }' +
 /* phone */
 '.eba-mhead { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:4px 4px 12px; }' +
 '.eba-mhead .eba-logo { width:110px; height:auto; display:block; }' +

@@ -46,12 +46,12 @@ const css = '' +
 '  border-radius:26px; padding:16px 22px; box-shadow:0 1px 2px rgba(218,94,22,.04), 0 14px 40px rgba(218,94,22,.06); }' +
 '.ebpw-brand { display:flex; align-items:center; gap:14px; min-width:0; }' +
 '.ebpw-brand img { width:110px; height:auto; display:block; }' +
-'.ebpw-brand h1 { margin:0; font-family:"La Luxes Serif","Recoleta",Georgia,serif; font-weight:400; font-size:clamp(24px,3vw,34px); color:var(--taupe); }' +
+'.ebpw-brand h1 { margin:0; font-family:var(--font-heading); font-weight:400; font-size:clamp(24px,3vw,34px); color:var(--taupe); }' +
 '.ebpw-lock { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }' +
 '.ebpw-card { width:100%; max-width:380px; background:var(--card); border-radius:30px; padding:30px 26px; text-align:center;' +
 '  box-shadow:0 1px 2px rgba(218,94,22,.04), 0 14px 40px rgba(218,94,22,.08); }' +
 '.ebpw-card img { width:120px; height:auto; display:block; margin:0 auto 14px; }' +
-'.ebpw-card h1 { margin:0; font-family:"La Luxes Serif","Recoleta",Georgia,serif; font-weight:400; font-size:34px; color:var(--taupe); }' +
+'.ebpw-card h1 { margin:0; font-family:var(--font-heading); font-weight:400; font-size:34px; color:var(--taupe); }' +
 '.ebpw-card p { margin:8px 0 20px; font-size:13.5px; color:var(--mute); }' +
 '.ebpw-pin { text-align:center; font-size:26px !important; letter-spacing:.4em; padding:14px !important; }' +
 '.ebpw-card .eba-btn { width:100%; margin-top:12px; padding:13px; font-size:14px; }' +

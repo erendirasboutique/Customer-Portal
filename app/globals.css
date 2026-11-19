@@ -4,60 +4,77 @@
    Background: #f6f4f1
    Primary buttons/text: #957f67
    Accent/borders: #cfbda9
-   Headings: The Silver Editorial
-   Body/UI: Cooper Lt BT
+   Headings: TAN Nightingale
+   Body/UI and everything else: Edinburgh
    ========================================================= */
 
+/* Heading font. Declared for every weight so browsers never fake a bold version of it. */
+@font-face {
+  font-family: 'TAN Nightingale';
+  src: url('/fonts/TAN-Nightingale-Regular.otf') format('opentype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+/* Body text and everything else */
+@font-face {
+  font-family: 'Edinburgh';
+  src: url('/fonts/Edinburgh-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Old font names that may still appear in saved content or older pages now load the new fonts */
 @font-face {
   font-family: 'Silver Editorial';
-  src: url('/fonts/sltfthesilvereditorial-regular.otf') format('opentype');
-  font-weight: 400;
-  font-style: normal;
+  src: url('/fonts/TAN-Nightingale-Regular.otf') format('opentype');
+  font-weight: 100 900;
   font-display: swap;
 }
-
-@font-face {
-  font-family: 'Cooper Lt BT';
-  src: url('/fonts/CooperLtBT-Regular.ttf') format('truetype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-/* Old font names still used by admin pages or inline styles now load the new fonts */
 @font-face {
   font-family: 'Beyna Elavani';
-  src: url('/fonts/sltfthesilvereditorial-regular.otf') format('opentype');
+  src: url('/fonts/TAN-Nightingale-Regular.otf') format('opentype');
+  font-weight: 100 900;
   font-display: swap;
 }
 @font-face {
   font-family: 'LaLuxesSerif';
-  src: url('/fonts/sltfthesilvereditorial-regular.otf') format('opentype');
+  src: url('/fonts/TAN-Nightingale-Regular.otf') format('opentype');
+  font-weight: 100 900;
   font-display: swap;
 }
 @font-face {
   font-family: 'La Luxes Serif';
-  src: url('/fonts/sltfthesilvereditorial-regular.otf') format('opentype');
+  src: url('/fonts/TAN-Nightingale-Regular.otf') format('opentype');
+  font-weight: 100 900;
   font-display: swap;
 }
 @font-face {
   font-family: 'LaLuxes';
-  src: url('/fonts/sltfthesilvereditorial-regular.otf') format('opentype');
+  src: url('/fonts/TAN-Nightingale-Regular.otf') format('opentype');
+  font-weight: 100 900;
   font-display: swap;
 }
 @font-face {
   font-family: 'BringBoldNineties';
-  src: url('/fonts/sltfthesilvereditorial-regular.otf') format('opentype');
+  src: url('/fonts/TAN-Nightingale-Regular.otf') format('opentype');
+  font-weight: 100 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Cooper Lt BT';
+  src: url('/fonts/Edinburgh-Regular.otf') format('opentype');
   font-display: swap;
 }
 @font-face {
   font-family: 'Recoleta';
-  src: url('/fonts/CooperLtBT-Regular.ttf') format('truetype');
+  src: url('/fonts/Edinburgh-Regular.otf') format('opentype');
   font-display: swap;
 }
 @font-face {
   font-family: 'MDNichrome';
-  src: url('/fonts/CooperLtBT-Regular.ttf') format('truetype');
+  src: url('/fonts/Edinburgh-Regular.otf') format('opentype');
   font-display: swap;
 }
 
@@ -82,8 +99,8 @@
   --radius-lg: 24px;
   --radius-md: 18px;
   --radius-sm: 12px;
-  --font-heading: 'Silver Editorial', Georgia, serif;
-  --font-body: 'Cooper Lt BT', Georgia, serif;
+  --font-heading: 'TAN Nightingale', Georgia, serif;
+  --font-body: 'Edinburgh', Georgia, serif;
 
   /* Compatibility variables from older versions */
   --purple: #957f67;
@@ -139,6 +156,8 @@ h1,
 h2,
 h3,
 h4,
+h5,
+h6,
 .h1,
 .h2,
 .h3,
@@ -192,6 +211,8 @@ h1 *,
 h2 *,
 h3 *,
 h4 *,
+h5 *,
+h6 *,
 .h1 *,
 .h2 *,
 .h3 *,
@@ -1243,7 +1264,7 @@ th {
   display: flex;
   align-items: center;
   padding-left: clamp(28px, 14vw, 120px);
-  font: 700 24px/1 Arial, sans-serif;
+  font: 700 24px/1 var(--font-body);
   color: #000;
   background: var(--confirm-bg);
 }
@@ -1278,7 +1299,7 @@ th {
 .headerIcon,.bagIcon {
   color: var(--confirm-accent);
   font-size: clamp(42px, 8vw, 72px);
-  font-family: Georgia, serif;
+  font-family: var(--font-body);
 }
 .bagIcon { text-align: right; font-size: clamp(34px, 6vw, 56px); }
 .languagePanel,.confirmationContent {
@@ -1331,7 +1352,7 @@ th {
   line-height: 1;
   transform: rotate(-6deg);
   -webkit-text-stroke: 3px #222;
-  font-family: Arial, sans-serif;
+  font-family: var(--font-body);
   font-weight: 700;
 }
 .paymentName {
@@ -1397,7 +1418,7 @@ th {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font: 700 28px/1 Arial, sans-serif;
+  font: 700 28px/1 var(--font-body);
 }
 .confirmationSocial a {
   color: #000;
@@ -1406,7 +1427,7 @@ th {
   border-radius: 999px;
   padding: 13px 34px;
   text-decoration: none;
-  font: 700 22px/1 Arial, sans-serif;
+  font: 700 22px/1 var(--font-body);
 }
 @media (max-width: 640px) {
   .confirmationHeader { grid-template-columns: 52px 1fr 52px; min-height: 170px; }
