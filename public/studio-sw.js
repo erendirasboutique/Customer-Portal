@@ -9,7 +9,7 @@ const OFFLINE_HTML = '<!doctype html><html lang="en"><head><meta charset="utf-8"
   '<meta name="viewport" content="width=device-width,initial-scale=1">' +
   '<meta name="theme-color" content="#fdfcf7"><title>Offline · EB Studio</title>' +
   '<style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#fdfcf7;' +
-  'color:#da5e16;font-family:Edinburgh, Georgia, serif;text-align:center;padding:24px}' +
+  'color:#da5e16;font-family:Evolve Early, Georgia, serif;text-align:center;padding:24px}' +
   '.c{max-width:340px;background:#fff;border-radius:28px;padding:32px 24px;box-shadow:0 14px 40px rgba(218,94,22,.08)}' +
   'h1{margin:0 0 10px;font-weight:400;font-size:30px}p{margin:0 0 20px;font-size:14px;line-height:1.5}' +
   'button{border:0;border-radius:999px;background:#eda033;color:#fff;padding:13px 22px;font:inherit;font-size:14px}</style></head>' +

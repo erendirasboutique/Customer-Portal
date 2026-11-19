@@ -29,10 +29,10 @@ export const runtime = 'nodejs';
    ============================================================ */
 
 const FONT_FILES = {
-  // Headings: TAN Nightingale. Everything else: Edinburgh (it has no italic, so italics use it too).
-  display: ['TAN-Nightingale-Regular.otf', 'LaLuxesSerif.otf', 'la-luxes-serif.otf', 'LaLuxes-Serif.otf', 'LaLuxesSerif.ttf', 'LaLuxesSerif-Regular.otf'],
-  body: ['Edinburgh-Regular.otf', 'recoleta-regular.otf', 'Recoleta-Regular.otf', 'Recoleta.otf', 'Recoleta-Regular.ttf', 'Recoleta.ttf'],
-  bodyItalic: ['Edinburgh-Regular.otf', 'Recoleta-RegularItalic.otf', 'Recoleta-Italic.otf', 'Recoleta-Italic.ttf'],
+  // Headings: The Silver Editorial. Everything else: Evolve Early (it has no italic, so italics use it too).
+  display: ['TheSilverEditorial-Regular.otf', 'LaLuxesSerif.otf', 'la-luxes-serif.otf', 'LaLuxes-Serif.otf', 'LaLuxesSerif.ttf', 'LaLuxesSerif-Regular.otf'],
+  body: ['EvolveEarly-Medium.otf', 'recoleta-regular.otf', 'Recoleta-Regular.otf', 'Recoleta.otf', 'Recoleta-Regular.ttf', 'Recoleta.ttf'],
+  bodyItalic: ['EvolveEarly-Medium.otf', 'Recoleta-RegularItalic.otf', 'Recoleta-Italic.otf', 'Recoleta-Italic.ttf'],
 };
 
 const HEX = {
