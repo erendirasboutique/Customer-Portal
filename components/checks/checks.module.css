@@ -1,6 +1,6 @@
 /* ============================================================
    Erendira's Boutique — checks
-   Fonts: The Silver Editorial (display) and Evolve Early (body), pulled from
+   Fonts: Charman Serif (display) and Ltt Recoleta (body), pulled from
    the global @font-face declarations. Nothing to re-declare here.
 
    MICR is the one exception and must stay MICR E-13B — a scanner
@@ -13,8 +13,8 @@
    ============================================================ */
 
 .shell {
-  --check-display: var(--font-heading, "The Silver Editorial", Georgia, serif);
-  --check-body: var(--font-body, "Evolve Early", Georgia, serif);
+  --check-display: var(--font-heading, "Charman Serif", Georgia, serif);
+  --check-body: var(--font-body, "Ltt Recoleta", Georgia, serif);
 
   min-height: 100vh;
   background: #f6f4f1;
@@ -257,8 +257,8 @@
 /* ---------------- The printed sheet ---------------- */
 
 .printPage {
-  --check-display: var(--font-heading, "The Silver Editorial", Georgia, serif);
-  --check-body: var(--font-body, "Evolve Early", Georgia, serif);
+  --check-display: var(--font-heading, "Charman Serif", Georgia, serif);
+  --check-body: var(--font-body, "Ltt Recoleta", Georgia, serif);
 
   background: #fff;
   color: #25211f;

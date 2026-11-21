@@ -4,7 +4,7 @@
 // Erendira's Boutique — Admin Studio shell
 //
 // "Studio" design: floating cream canvas, white rounded cards, pill nav,
-// The Silver Editorial display headings. Every admin page renders inside this.
+// Charman Serif display headings. Every admin page renders inside this.
 //
 // Props:
 //   admin      { name, email, avatar_url, role }  — used for the profile card
