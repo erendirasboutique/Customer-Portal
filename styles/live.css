@@ -17,9 +17,9 @@
   --alert: #8c3b2e;
   --good: #4f6b4a;
 
-  --serif: var(--font-heading, 'The Silver Editorial', Georgia, serif);
-  --body: var(--font-body, 'Evolve Early', Georgia, serif);
-  --mono: var(--font-body, 'Evolve Early', Georgia, serif);
+  --serif: var(--font-heading, 'Charman Serif', Georgia, serif);
+  --body: var(--font-body, 'Ltt Recoleta', Georgia, serif);
+  --mono: var(--font-body, 'Ltt Recoleta', Georgia, serif);
 
   background: var(--cream);
   color: var(--ink);

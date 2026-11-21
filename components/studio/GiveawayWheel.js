@@ -455,7 +455,7 @@ export default function GiveawayWheel(props) {
                       const label = n.length > 18 ? n.slice(0, 17) + '…' : n;
                       return (
                         <text key={'t' + i} transform={'rotate(' + (mid - 90) + ')'} x="0.9" y="0" textAnchor="end" dominantBaseline="central"
-                          fontSize={fontSize} fill={c.text} fontFamily="Evolve Early, Georgia, serif">
+                          fontSize={fontSize} fill={c.text} fontFamily="Ltt Recoleta, Georgia, serif">
                           {label}
                         </text>
                       );

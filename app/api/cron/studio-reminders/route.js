@@ -57,7 +57,7 @@ export async function GET(req) {
   }
 
   const site = (process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/$/, "");
-  const html = '<div style="background:#fdfcf7;padding:24px 12px;font-family:Evolve Early, Georgia, serif;color:#da5e16">' +
+  const html = '<div style="background:#fdfcf7;padding:24px 12px;font-family:Ltt Recoleta, Georgia, serif;color:#da5e16">' +
     '<div style="max-width:520px;margin:0 auto;background:#fff;border-radius:22px;padding:26px 24px">' +
     '<p style="margin:0;font-size:10px;letter-spacing:.28em;color:#eda033">ADMIN STUDIO</p>' +
     '<p style="margin:6px 0 0;font-size:26px">Today’s reminders</p>' +

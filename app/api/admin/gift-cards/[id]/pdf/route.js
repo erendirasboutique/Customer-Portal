@@ -29,10 +29,10 @@ export const runtime = 'nodejs';
    ============================================================ */
 
 const FONT_FILES = {
-  // Headings: The Silver Editorial. Everything else: Evolve Early (it has no italic, so italics use it too).
-  display: ['TheSilverEditorial-Regular.otf', 'LaLuxesSerif.otf', 'la-luxes-serif.otf', 'LaLuxes-Serif.otf', 'LaLuxesSerif.ttf', 'LaLuxesSerif-Regular.otf'],
-  body: ['EvolveEarly-Medium.otf', 'recoleta-regular.otf', 'Recoleta-Regular.otf', 'Recoleta.otf', 'Recoleta-Regular.ttf', 'Recoleta.ttf'],
-  bodyItalic: ['EvolveEarly-Medium.otf', 'Recoleta-RegularItalic.otf', 'Recoleta-Italic.otf', 'Recoleta-Italic.ttf'],
+  // Headings: Charman Serif. Everything else: Ltt Recoleta (it has no italic, so italics use it too).
+  display: ['CharmanSerif-Regular.otf', 'LaLuxesSerif.otf', 'la-luxes-serif.otf', 'LaLuxes-Serif.otf', 'LaLuxesSerif.ttf', 'LaLuxesSerif-Regular.otf'],
+  body: ['LttRecoleta-CondensedMedium.otf', 'recoleta-regular.otf', 'Recoleta-Regular.otf', 'Recoleta.otf', 'Recoleta-Regular.ttf', 'Recoleta.ttf'],
+  bodyItalic: ['LttRecoleta-CondensedMedium.otf', 'Recoleta-RegularItalic.otf', 'Recoleta-Italic.otf', 'Recoleta-Italic.ttf'],
 };
 
 const HEX = {
