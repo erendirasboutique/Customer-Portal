@@ -1,7 +1,7 @@
 'use client';
 
 const css = `
-.pay { --cream:#F2F0EB; --card:#FFFFFF; --sand:#bda891; --taupe:#806a52; --ink:#3d3428; --mute:#8b7a64; --line:#e8e2d8;
+.pay { --cream:#F2F0EB; --card:#FFFFFF; --sand:var(--brand-sand, #cfbda9); --taupe:var(--brand-taupe, #957f67); --ink:#3d3428; --mute:#8b7a64; --line:#e8e2d8;
   min-height:100vh; margin:0; background:var(--cream); color:var(--ink);
   font-family:var(--font-body); display:grid; place-items:center; padding:24px; }
 .pay * { box-sizing:border-box; }

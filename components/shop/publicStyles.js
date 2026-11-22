@@ -2,7 +2,7 @@
 // Shared look for the customer-facing pages (gift card shop, thank-you,
 // live schedule). Same palette as your customer portal.
 
-export const LOGO_SRC = '/EB_Logo_Fall BGBLANK.png';
+export const LOGO_SRC = '/brand/logo.png';
 
 export const publicCss = '' +
 '.ebp { --bg:#fdfcf7; --card:#ffffff; --wash:#fffdf8; --ink:#da5e16; --accent:#eda033; --accent-dark:#d98a1f; --line:#f6d3a8; --soft:#fcefdc;' +

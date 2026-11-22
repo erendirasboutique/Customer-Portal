@@ -137,7 +137,7 @@ export default function Page() {
           position: relative;
           width: 100%;
           height: clamp(240px, 46vh, 400px);
-          background: #bda891;
+          background: var(--brand-sand, #cfbda9);
           overflow: hidden;
         }
         .ebcVideo {
@@ -224,14 +224,14 @@ export default function Page() {
         .ebcCheckFallback {
           font-family: var(--font-heading);
           font-size: 16px;
-          color: #806a52;
+          color: var(--brand-taupe, #957f67);
         }
         .ebcOverline {
           margin: 0 0 8px;
           font-size: 11px;
           letter-spacing: 2.4px;
           text-transform: uppercase;
-          color: #bda891;
+          color: var(--brand-sand, #cfbda9);
         }
         .ebcTitle {
           margin: 0 0 18px;
@@ -239,7 +239,7 @@ export default function Page() {
           font-weight: 400;
           font-size: clamp(30px, 8.5vw, 40px);
           line-height: 1.02;
-          color: #806a52;
+          color: var(--brand-taupe, #957f67);
         }
 
         /* ---- Product name + amount line item ---- */
@@ -263,7 +263,7 @@ export default function Page() {
         .ebcPayAmount {
           font-family: var(--font-heading);
           font-size: 20px;
-          color: #806a52;
+          color: var(--brand-taupe, #957f67);
           white-space: nowrap;
         }
 
@@ -293,7 +293,7 @@ export default function Page() {
           padding: 8px 16px;
           border: 1px solid #d8ccbb;
           border-radius: 22px;
-          color: #806a52;
+          color: var(--brand-taupe, #957f67);
           text-decoration: none;
           transition: background 0.18s ease, color 0.18s ease;
         }
@@ -301,15 +301,15 @@ export default function Page() {
           background: #efe9e0;
         }
         .ebcLinkPrimary {
-          background: #806a52;
-          border-color: #806a52 !important;
+          background: var(--brand-taupe, #957f67);
+          border-color: var(--brand-taupe, #957f67) !important;
           color: #f5f3ef !important;
         }
         .ebcLinkPrimary:hover {
           background: #6d5943 !important;
         }
         .ebcLinks a:focus-visible {
-          outline: 2px solid #806a52;
+          outline: 2px solid var(--brand-taupe, #957f67);
           outline-offset: 2px;
         }
 

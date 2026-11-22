@@ -105,8 +105,8 @@ export default function BrandingForm(props) {
         <form className="eba-panel" onSubmit={save}>
           <div className="eba-panelhead">
             <div>
-              <p className="eba-eyebrow">START HERE</p>
-              <h2>Your Brand</h2>
+              <p className="eba-eyebrow">AFTER CHECKOUT</p>
+              <h2>Payment confirmation page</h2>
             </div>
             <button className="eba-btn mini" type="button" onClick={reset}>Reset</button>
           </div>

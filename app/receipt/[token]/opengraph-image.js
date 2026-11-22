@@ -29,7 +29,7 @@ export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 const SITE_URL = "https://receipts.erendirasboutique.com";
-const LOGO_FILE = "EB_Logo_Fall BGBLANK.png"; // in /public
+const LOGO_FILE = "brand/logo.png"; // in /public (the shared brand logo)
 const SHOW_AMOUNT = true; // false = same picture for every receipt, no amount
 
 // Places to look, in order. Written out in full so Vercel includes them.

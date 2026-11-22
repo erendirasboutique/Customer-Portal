@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 import { shellCss } from '@/components/AdminShell';
 import GiveawayWheel from '@/components/studio/GiveawayWheel';
 
-const LOGO_SRC = '/EB_Logo_Fall BGBLANK.png';
+const LOGO_SRC = '/brand/logo.png';
 
 const T = {
   en: {

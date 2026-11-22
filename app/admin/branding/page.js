@@ -1,14 +1,17 @@
 import { redirect } from "next/navigation";
 import AdminShell from "@/components/AdminShell";
 import BrandingForm from "@/components/account/BrandingForm";
+import SiteBrandForm from "@/components/account/SiteBrandForm";
 import { requireAdmin, getSettings, formatDate } from "@/lib/admin/account-settings";
 
 export const dynamic = "force-dynamic";
 
 /* ============================================================
    Erendira's Boutique — Admin Studio · Branding
-   Server component. Saved to admin_settings (key: "branding").
-   Read it anywhere on the server with getSettings(["branding"]).
+   Server component. Two sections:
+   - "Your brand on every site" → admin_settings key "site_brand",
+     served to every site from /brand/ (see lib/siteBrand.js).
+   - "After checkout" page → admin_settings key "branding".
    ============================================================ */
 
 export default async function BrandingPage() {
@@ -18,14 +21,16 @@ export default async function BrandingPage() {
   let settings;
   let loadError = null;
   try {
-    settings = await getSettings(["branding"]);
+    settings = await getSettings(["site_brand", "branding"]);
     loadError = settings._error || null;
   } catch (e) {
     loadError = e.message;
   }
 
   const branding = settings?.branding || null;
-  const updated = settings?._updated?.branding || null;
+  const siteBrand = settings?.site_brand || null;
+  const updatedList = [settings?._updated?.branding, settings?._updated?.site_brand].filter(Boolean);
+  const updated = updatedList.sort(function (a, b) { return String(b.at).localeCompare(String(a.at)); })[0] || null;
 
   return (
     <AdminShell
@@ -33,7 +38,7 @@ export default async function BrandingPage() {
       active="branding"
       eyebrow="ADMIN STUDIO"
       title="Branding"
-      subtitle="Your logo, colors, and the words customers see after they pay."
+      subtitle="Your logo and colors on every site, plus the page customers see after they pay."
       heroStat={{
         label: "Last saved",
         value: updated ? formatDate(updated.at) : "—",
@@ -41,7 +46,7 @@ export default async function BrandingPage() {
       }}
       tip={{
         label: "Quick tip",
-        body: "Use a logo with a transparent background (PNG or SVG) so it sits cleanly on any color.",
+        body: "Use a PNG logo with a see-through background so it sits cleanly on any color.",
       }}
     >
       {loadError ? (
@@ -51,7 +56,11 @@ export default async function BrandingPage() {
           </div>
         </div>
       ) : (
-        <BrandingForm initial={branding} />
+        <>
+          <SiteBrandForm initial={siteBrand} />
+          <div style={{ height: 28 }} />
+          <BrandingForm initial={branding} />
+        </>
       )}
     </AdminShell>
   );

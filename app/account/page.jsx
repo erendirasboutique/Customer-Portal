@@ -16,7 +16,7 @@ import AddressAutocomplete from "@/components/AddressAutocomplete";
    #5F4E3D for body text so it stays readable).
    ============================================================ */
 
-const LOGO_SRC = "/EB_Logo_Fall BGBLANK.png";
+const LOGO_SRC = "/brand/logo.png";
 const SHOP_EMAIL = "info@erendirasboutique.com";
 const SHOP_URL = "https://facebook.erendirasboutique.com";
 const CONTACT_URL = "https://help.erendirasboutique.com";
@@ -1252,7 +1252,7 @@ function fmtDate(iso, locale) {
 
 const css = `
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap");
-.ac { --bg:#F5F3EF; --brand:#957f67; --sand:#cfbda9; --line:rgba(207,189,169,.55); --ink:#5F4E3D; --err:#a8452a;
+.ac { --bg:var(--brand-cream, #F5F3EF); --brand:var(--brand-taupe, #957f67); --sand:var(--brand-sand, #cfbda9); --line:rgba(var(--brand-sand-rgb, 207 189 169) / .55); --ink:var(--brand-ink, #5F4E3D); --err:#a8452a;
   min-height:100vh; background:var(--bg); color:var(--ink); font-family:Inter, system-ui, sans-serif; -webkit-font-smoothing:antialiased;
   padding:16px 16px 40px; box-sizing:border-box; }
 .ac *, .ac *::before, .ac *::after { box-sizing:border-box; }
