@@ -1,20 +1,19 @@
 # Shared brand
 
-All of Erendira's Boutique's sites load their logo, colors and fonts from one place:
+Every Erendira's Boutique site gets its logo, colors and fonts from this one place.
 
-| File | Live address |
-|---|---|
-| `public/brand/brand.css` | https://my.erendirasboutique.com/brand/brand.css |
-| `public/brand/logo.png` | https://my.erendirasboutique.com/brand/logo.png |
-| `public/brand/brand.json` | https://my.erendirasboutique.com/brand/brand.json |
-| `public/brand/fonts/` | Charman Serif (headings), Ltt Recoleta (body) |
+**To change them, go to [my.erendirasboutique.com/admin/branding](https://my.erendirasboutique.com/admin/branding)** → "Your brand on every site": upload a logo, pick the colors, choose the season, press **Save for every site**. All sites update within a few minutes.
 
-Used by: this Customer Portal, the Shipping Portal, and the tracker.
+| Address | What it is | Built by |
+|---|---|---|
+| `/brand/brand.css` | Colors and fonts as CSS variables | `app/brand/brand.css/route.js` |
+| `/brand/logo.png` | The current logo | `app/brand/logo.png/route.js` |
+| `/brand/brand.json` | Everything above, plus the season | `app/brand/brand.json/route.js` |
+| `/brand/fonts/` | Charman Serif, Ltt Recoleta | static files |
 
-## Change the logo
-Replace `public/brand/logo.png` with the new file (same name, PNG with a transparent background, about 900px wide). Update `"season"` in `brand.json` if it's a seasonal logo. Merge, and every site shows it within about 5 minutes.
+Used by this Customer Portal, the Shipping Portal and the tracker.
 
-## Change a color
-Edit the values in `public/brand/brand.css`. If you change one of the four colors, also update its `-rgb` line (the same color as three numbers) and `brand.json`.
-
-The other sites keep a copy of each color as a fallback, so if this site is ever down they still look right (minus the logo).
+- Settings are saved in `admin_settings` under the key `site_brand` (see `lib/admin/account-settings.js`).
+- Uploaded logos go to the private `studio-documents` storage bucket under `site-brand/`.
+- If the database can't be read, the original logo (`public/brand/default-logo.png`) and colors are served, so the sites never lose their look.
+- The other sites also keep a copy of each color as a fallback in case this site is down.
