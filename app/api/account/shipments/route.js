@@ -114,6 +114,22 @@ function safeUrl(u) {
   return typeof u === "string" && /^https:\/\//i.test(u) ? u : null;
 }
 
+// Newest first, at most 30, only the four fields the page shows.
+function scanEvents(list) {
+  if (!Array.isArray(list)) return [];
+  return list
+    .filter(function (e) { return e && (e.message || e.status); })
+    .slice(0, 30)
+    .map(function (e) {
+      return {
+        at: typeof e.at === "string" ? e.at : null,
+        status: typeof e.status === "string" ? e.status : null,
+        message: String(e.message || e.status || "").slice(0, 140),
+        location: typeof e.location === "string" ? e.location.slice(0, 80) : null,
+      };
+    });
+}
+
 function toShipment(row) {
   return {
     id: String(pick(row, ["id", "tracking_number"]) || ""),
@@ -128,8 +144,14 @@ function toShipment(row) {
     // in the shipping portal.
     package_photo_url: safeUrl(row.package_photo_url),
     packed_at: pick(row, ["packed_at"]),
-    eta: pick(row, ["eta", "estimated_delivery", "estimated_delivery_date", "delivery_eta"]),
+    eta: pick(row, ["tracking_eta", "eta", "estimated_delivery", "estimated_delivery_date", "delivery_eta"]),
     delivered_at: pick(row, ["delivered_at"]),
+    // Carrier scans, saved by the shipping portal's Shippo/EasyPost tracking
+    // webhooks. Scan locations are carrier facilities and cities, not addresses.
+    last_event: pick(row, ["tracking_last_event"]),
+    last_location: pick(row, ["tracking_last_location"]),
+    last_event_at: pick(row, ["tracking_last_event_at"]),
+    events: scanEvents(row.tracking_events),
     // City and state only — never the street.
     ship_to: [row.to_city, row.to_state].filter(Boolean).join(", ") || null,
     items_count: itemCount(row),
