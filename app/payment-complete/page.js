@@ -103,7 +103,7 @@ export default function Page() {
           position: relative;
           width: 100%;
           height: clamp(230px, 44vh, 360px);
-          background: #bda891 url('/landing-gradient-poster.jpg') center / cover;
+          background: var(--brand-sand, #cfbda9) url('/landing-gradient-poster.jpg') center / cover;
           overflow: hidden;
         }
         .eblVideo {
@@ -171,7 +171,7 @@ export default function Page() {
           font-size: 11px;
           letter-spacing: 2.4px;
           text-transform: uppercase;
-          color: #bda891;
+          color: var(--brand-sand, #cfbda9);
         }
         .eblTitle {
           margin: 0 0 4px;
@@ -179,12 +179,12 @@ export default function Page() {
           font-weight: 400;
           font-size: clamp(30px, 8vw, 44px);
           line-height: 1.02;
-          color: #806a52;
+          color: var(--brand-taupe, #957f67);
         }
         .eblSub {
           margin: 0 0 22px;
           font-size: 14px;
-          color: #bda891;
+          color: var(--brand-sand, #cfbda9);
         }
 
         .eblOptions {
@@ -214,7 +214,7 @@ export default function Page() {
           transform: scale(0.99);
         }
         .eblOption:focus-visible {
-          outline: 2px solid #806a52;
+          outline: 2px solid var(--brand-taupe, #957f67);
           outline-offset: 2px;
         }
         .eblOptText {
@@ -225,7 +225,7 @@ export default function Page() {
         .eblOptName {
           font-family: var(--font-heading);
           font-size: 23px;
-          color: #806a52;
+          color: var(--brand-taupe, #957f67);
           line-height: 1.1;
         }
         .eblOptHint {
@@ -234,7 +234,7 @@ export default function Page() {
         }
         .eblChev {
           font-size: 22px;
-          color: #bda891;
+          color: var(--brand-sand, #cfbda9);
           flex-shrink: 0;
         }
 

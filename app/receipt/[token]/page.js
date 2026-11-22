@@ -13,7 +13,7 @@ import ReceiptStage, { HeaderVideo, CountUp } from './ReceiptMotion';
 
 export const dynamic = 'force-dynamic';
 
-const LOGO_SRC = '/EB_Logo_Fall BGBLANK.png'; // same dark logo as the admin sidebar
+const LOGO_SRC = '/brand/logo.png'; // same dark logo as the admin sidebar
 const SHOP_EMAIL = 'info@erendirasboutique.com';
 const SHOP_SITE = 'erendirasboutique.com';
 

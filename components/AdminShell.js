@@ -30,7 +30,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-const LOGO_SRC = '/EB_Logo_Fall BGBLANK.png';
+const LOGO_SRC = '/brand/logo.png';
 const SHIP = 'https://ship.erendirasboutique.com';
 
 const T = {

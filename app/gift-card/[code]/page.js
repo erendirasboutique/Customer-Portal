@@ -11,11 +11,11 @@ var css = '' +
 '.eb-gift-page { min-height: 100vh; background: #e9e3d9; color: #332b23; font-family: inherit; display: flex; align-items: center; justify-content: center; padding: 40px 16px; }' +
 '.eb-gift-card { background: #fff; border: 0.5px solid rgba(128,106,82,0.3); border-radius: 28px; padding: 44px 32px; max-width: 640px; width: 100%; text-align: center; }' +
 '.eb-gift-card img.eb-logo { width: 170px; height: auto; margin: 0 auto; display: block; }' +
-'.eb-eyebrow { font-size: 10px; text-transform: uppercase; letter-spacing: 0.3em; color: #806a52; margin: 24px 0 0; }' +
-'.eb-gift-card h1 { font-size: 38px; color: #806a52; font-weight: 400; margin: 6px 0 0; line-height: 1.15; }' +
+'.eb-eyebrow { font-size: 10px; text-transform: uppercase; letter-spacing: 0.3em; color: var(--brand-taupe, #957f67); margin: 24px 0 0; }' +
+'.eb-gift-card h1 { font-size: 38px; color: var(--brand-taupe, #957f67); font-weight: 400; margin: 6px 0 0; line-height: 1.15; }' +
 '.eb-for { font-size: 14px; color: rgba(51,43,35,0.65); margin: 10px 0 0; }' +
 '.eb-msg { font-size: 14px; font-style: italic; color: #5c4d3b; background: #e9e3d9; border-radius: 16px; padding: 12px 18px; margin: 14px auto 0; max-width: 420px; }' +
-'.eb-art { position: relative; width: 100%; max-width: 420px; margin: 26px auto 0; aspect-ratio: 8 / 5; background: #806a52; border-radius: 20px; box-shadow: 0 10px 30px rgba(90,74,58,0.35); overflow: hidden; }' +
+'.eb-art { position: relative; width: 100%; max-width: 420px; margin: 26px auto 0; aspect-ratio: 8 / 5; background: var(--brand-taupe, #957f67); border-radius: 20px; box-shadow: 0 10px 30px rgba(90,74,58,0.35); overflow: hidden; }' +
 '.eb-art .inner { position: absolute; inset: 12px; border: 1px dashed rgba(233,227,217,0.55); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px; }' +
 '.eb-art .brand { font-size: 15px; letter-spacing: 0.08em; color: #f2ede4; }' +
 '.eb-art .sub { font-size: 11px; font-style: italic; letter-spacing: 0.25em; text-transform: uppercase; color: rgba(242,237,228,0.75); margin-top: 3px; }' +
@@ -28,12 +28,12 @@ var css = '' +
 '.eb-status { font-size: 13px; color: rgba(51,43,35,0.65); margin-top: 12px; }' +
 '.eb-pill { display: inline-block; border: 0.5px solid rgba(88,128,82,0.5); background: rgba(120,150,110,0.12); color: #4c6a44; border-radius: 999px; padding: 2px 12px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; margin-left: 4px; }' +
 '.eb-pill.off { border-color: rgba(128,106,82,0.4); background: #e9e3d9; color: #5c4d3b; }' +
-'.eb-how { font-size: 24px; color: #806a52; font-weight: 400; margin: 30px 0 0; }' +
+'.eb-how { font-size: 24px; color: var(--brand-taupe, #957f67); font-weight: 400; margin: 30px 0 0; }' +
 '.eb-gift-card p.body { font-size: 14px; line-height: 1.7; color: rgba(51,43,35,0.8); max-width: 480px; margin: 10px auto 0; }' +
 '.eb-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 24px; }' +
 '.eb-btn { border-radius: 999px; padding: 12px 26px; font-size: 13px; text-decoration: none; display: inline-block; font-family: inherit; }' +
-'.eb-btn.solid { background: #806a52; color: #e9e3d9; }' +
-'.eb-btn.line { background: #fff; color: #806a52; border: 0.5px solid rgba(128,106,82,0.4); }';
+'.eb-btn.solid { background: var(--brand-taupe, #957f67); color: #e9e3d9; }' +
+'.eb-btn.line { background: #fff; color: var(--brand-taupe, #957f67); border: 0.5px solid rgba(128,106,82,0.4); }';
 
 function Flower({ className }) {
   return (

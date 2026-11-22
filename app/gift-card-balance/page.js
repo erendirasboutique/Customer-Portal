@@ -10,7 +10,7 @@
 
 import { useEffect, useState } from 'react';
 
-const LOGO_SRC = '/EB_Logo_Fall BGBLANK.png';
+const LOGO_SRC = '/brand/logo.png';
 
 const T = {
   en: {

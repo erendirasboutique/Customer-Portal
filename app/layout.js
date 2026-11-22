@@ -34,6 +34,10 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
+      <head>
+        {/* Shared brand colors and fonts (also used by the shipping portal and tracker) */}
+        <link rel="stylesheet" href="/brand/brand.css" />
+      </head>
       <body>{children}</body>
     </html>
   );
