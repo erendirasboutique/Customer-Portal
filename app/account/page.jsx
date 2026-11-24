@@ -107,6 +107,7 @@ const T = {
     cancel: "Cancel",
     saving: "Saving...",
     loadError: "This link isn’t valid anymore. Reply to us and we’ll send you a new one.",
+    findAccount: "Find my account",
     saveError: "Your changes couldn’t be saved. Please try again.",
     missing: "Street address, city, state and ZIP are required.",
     invalidEmail: "Please enter a valid email address.",
@@ -198,6 +199,7 @@ const T = {
     cancel: "Cancelar",
     saving: "Guardando...",
     loadError: "Este enlace ya no es válido. Escríbenos y te enviaremos uno nuevo.",
+    findAccount: "Buscar mi cuenta",
     saveError: "No se pudieron guardar los cambios. Inténtalo de nuevo.",
     missing: "Dirección, ciudad, estado y código postal son obligatorios.",
     invalidEmail: "Ingresa un correo electrónico válido.",
@@ -544,6 +546,7 @@ export default function AccountPage() {
               <br />
               <a href={"mailto:" + SHOP_EMAIL}>{SHOP_EMAIL}</a>
             </p>
+            <a className="ac-btn" style={{ marginTop: 14 }} href={"/find-account?lang=" + lang}>{t.findAccount}</a>
           </div>
         )}
 

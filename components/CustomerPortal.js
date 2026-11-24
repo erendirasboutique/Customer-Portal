@@ -25,6 +25,8 @@ const T = {
     chipGift: 'Gift cards',
     emailLabel: 'Email',
     sendLink: 'Send secure link',
+    noEmail: 'No email on file?',
+    findAccount: 'Find your account',
     sending: 'Sending secure login link...',
     sentTitle: 'Check your email for your login link',
     sentBodyA: 'If ',
@@ -89,6 +91,8 @@ const T = {
     chipGift: 'Tarjetas de regalo',
     emailLabel: 'Correo electrónico',
     sendLink: 'Enviar enlace seguro',
+    noEmail: '¿No tienes correo registrado?',
+    findAccount: 'Busca tu cuenta',
     sending: 'Enviando enlace de acceso seguro...',
     sentTitle: 'Revisa tu correo para encontrar tu enlace de acceso',
     sentBodyA: 'Si ',
@@ -348,6 +352,9 @@ export default function CustomerPortal({ initialUser, initialPayments }) {
                   </form>
                   {message && <div className={styles.loginNotice}>{message}</div>}
                   <p className={styles.lockNote}>{t.lockNote}</p>
+                  <p className={styles.lockNote}>
+                    {t.noEmail} <a href={'/find-account?lang=' + lang} style={{ color: 'inherit', fontWeight: 600, textDecoration: 'underline', textUnderlineOffset: 3 }}>{t.findAccount}</a>
+                  </p>
                 </>
               )}
             </div>
