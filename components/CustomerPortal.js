@@ -13,10 +13,24 @@ const CONTACT_PHONE_TEL = 'tel:+19094017221';
 const CONTACT_WHATSAPP = 'https://wa.me/19094017221';
 const CONTACT_EMAIL = 'hello@erendirasboutique.com';
 const SUPPORT_EMAIL = 'info@erendirasboutique.com';
+const SHOP_URL = 'https://facebook.erendirasboutique.com';
+const HELP_URL = 'https://help.erendirasboutique.com';
 
 const T = {
   en: {
     loginEyebrow: 'Customer portal',
+    loginTitle: 'Welcome back',
+    tabEmail: 'With my email',
+    tabNoEmail: 'No email',
+    noEmailBody: 'Find your account with one of your packages or your order number, plus your last name and ZIP code.',
+    noEmailTip: 'The last 4 digits of the tracking number are on your package label.',
+    findButton: 'Find my account',
+    limitNote: 'We limit tries to protect your account',
+    langSwitch: 'ES',
+    langSwitchLabel: 'Ver en español',
+    footShop: 'Shop',
+    footContact: 'Contact',
+    footReturns: 'Returns',
     loginHeadline: "Welcome back to Erendira's Boutique",
     loginNote: "Enter the email you used at checkout and we'll send you a secure sign-in link. No password needed.",
     lockNote: 'One-tap sign in · link expires after use',
@@ -83,6 +97,18 @@ const T = {
   },
   es: {
     loginEyebrow: 'Portal de clientes',
+    loginTitle: 'Bienvenida de nuevo',
+    tabEmail: 'Con mi correo',
+    tabNoEmail: 'Sin correo',
+    noEmailBody: 'Encuentra tu cuenta con uno de tus paquetes o tu número de pedido, más tu apellido y código postal.',
+    noEmailTip: 'Los últimos 4 dígitos del rastreo están en la etiqueta de tu paquete.',
+    findButton: 'Buscar mi cuenta',
+    limitNote: 'Limitamos los intentos para proteger tu cuenta',
+    langSwitch: 'EN',
+    langSwitchLabel: 'View in English',
+    footShop: 'Tienda',
+    footContact: 'Contacto',
+    footReturns: 'Devoluciones',
     loginHeadline: "Bienvenida de nuevo a Erendira's Boutique",
     loginNote: 'Escribe el correo que usaste al pagar y te enviaremos un enlace seguro para ingresar. Sin contraseña.',
     lockNote: 'Ingreso con un toque · el enlace expira después de usarse',
@@ -186,6 +212,7 @@ export default function CustomerPortal({ initialUser, initialPayments }) {
   const [addressOnFile, setAddressOnFile] = useState(null);
   const [shipmentsLoading, setShipmentsLoading] = useState(true);
   const [copiedTn, setCopiedTn] = useState(null);
+  const [signTab, setSignTab] = useState('email'); // sign-in tabs: email | noemail
   const supabase = getSupabaseBrowser();
   const payments = initialPayments || [];
   const name = payments.find(p => p.customer_name)?.customer_name || initialUser?.email || 'Customer';
@@ -295,78 +322,131 @@ export default function CustomerPortal({ initialUser, initialPayments }) {
   }, 0);
 
   if (!initialUser) {
+    const onEmail = signTab === 'email';
     return (
-      <main className="page">
-        <span className="flower one">✿</span><span className="flower two">❀</span>
-        <div className={styles.wrap}>
-          <header className={styles.header}>
-            <div className={styles.brand}>
-              <img src="/brand/logo.png" className={styles.brandLogoBig} alt="Erendira's Boutique" />
-            </div>
-            <div className={styles.headerRight}>
-              <LanguageToggle lang={lang} setLang={setLang} />
-            </div>
+      <main className="si">
+        <style>{signInCss}</style>
+        <div className="si-wrap">
+          <header className="si-top">
+            <img src="/brand/logo.png" className="si-logo" alt="Erendira's Boutique" />
+            <button type="button" className="si-lang" aria-label={t.langSwitchLabel} onClick={() => setLang(lang === 'es' ? 'en' : 'es')}>
+              {t.langSwitch}
+            </button>
           </header>
 
-          <div className={styles.loginArea}>
-            <div className={styles.loginCard}>
-              <div className={styles.loginIcon}>✿</div>
-              <p className={styles.eyebrow}>{t.loginEyebrow}</p>
+          <div className="si-head">
+            <p className="si-eyebrow">{t.loginEyebrow}</p>
+            <h1 className="si-h1">{linkSent ? t.sentTitle : t.loginTitle}</h1>
+          </div>
 
-              {linkSent ? (
-                <>
-                  <h1 className={styles.loginHeadline}>{t.sentTitle}</h1>
-                  <p className={styles.loginNote}>
-                    {t.sentBodyA}<strong>{sentTo}</strong>{t.sentBodyB}
-                  </p>
-                  <button
-                    type="button"
-                    className={styles.btnSolid + ' ' + styles.btnWide}
-                    onClick={useDifferentEmail}
-                  >
-                    {t.differentEmail}
+          <section className="si-card" aria-label={t.loginEyebrow}>
+            {linkSent ? (
+              <>
+                <p className="si-p">
+                  {t.sentBodyA}<strong>{sentTo}</strong>{t.sentBodyB}
+                </p>
+                <button type="button" className="si-btn" onClick={useDifferentEmail}>
+                  {t.differentEmail}
+                </button>
+                <p className="si-note">
+                  {t.supportNoteA}
+                  <a href={'mailto:' + SUPPORT_EMAIL}>{SUPPORT_EMAIL}</a>
+                  {t.supportNoteB}
+                </p>
+              </>
+            ) : (
+              <>
+                <div role="tablist" aria-label={t.loginEyebrow} className="si-tabs">
+                  <button type="button" role="tab" id="si-tab-email" aria-controls="si-panel" aria-selected={onEmail} className={'si-tab' + (onEmail ? ' on' : '')} onClick={() => setSignTab('email')}>
+                    {t.tabEmail}
                   </button>
-                  <p className={styles.lockNote}>
-                    {t.supportNoteA}
-                    <a href={'mailto:' + SUPPORT_EMAIL}>{SUPPORT_EMAIL}</a>
-                    {t.supportNoteB}
-                  </p>
-                </>
-              ) : (
-                <>
-                  <h1 className={styles.loginHeadline}>{t.loginHeadline}</h1>
-                  <p className={styles.loginNote}>{t.loginNote}</p>
-                  <form onSubmit={sendMagicLink} className={styles.loginForm}>
-                    <label className={styles.loginLabel}>
-                      {t.emailLabel}
-                      <input
-                        className={styles.loginInput}
-                        type="email"
-                        value={email}
-                        onChange={e => setEmail(e.target.value)}
-                        required
-                        placeholder="you@email.com"
-                      />
-                    </label>
-                    <button className={styles.btnSolid + ' ' + styles.btnWide} type="submit">{t.sendLink}</button>
-                  </form>
-                  {message && <div className={styles.loginNotice}>{message}</div>}
-                  <p className={styles.lockNote}>{t.lockNote}</p>
-                  <p className={styles.lockNote}>
-                    {t.noEmail} <a href={'/find-account?lang=' + lang} style={{ color: 'inherit', fontWeight: 600, textDecoration: 'underline', textUnderlineOffset: 3 }}>{t.findAccount}</a>
-                  </p>
-                </>
-              )}
-            </div>
+                  <button type="button" role="tab" id="si-tab-noemail" aria-controls="si-panel" aria-selected={!onEmail} className={'si-tab' + (!onEmail ? ' on' : '')} onClick={() => setSignTab('noemail')}>
+                    {t.tabNoEmail}
+                  </button>
+                </div>
 
-            <div className={styles.chips}>
-              <span className={styles.chip}>{t.chipReceipts}</span>
-              <span className={styles.chip}>{t.chipShipments}</span>
-              <span className={styles.chip}>{t.chipGift}</span>
+                <div id="si-panel" role="tabpanel" aria-labelledby={onEmail ? 'si-tab-email' : 'si-tab-noemail'} className="si-panel">
+                  {onEmail ? (
+                    <>
+                      <p className="si-p">{t.loginNote}</p>
+                      <form onSubmit={sendMagicLink} className="si-panel">
+                        <label htmlFor="si-email" className="si-label">{t.emailLabel}</label>
+                        <div className="si-box">
+                          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 7l9 6 9-6" /></svg>
+                          <input
+                            id="si-email"
+                            type="email"
+                            value={email}
+                            onChange={e => setEmail(e.target.value)}
+                            required
+                            autoComplete="email"
+                            placeholder="you@email.com"
+                          />
+                        </div>
+                        <button className="si-btn" type="submit">{t.sendLink}</button>
+                      </form>
+                      {message && <div role="status" className="si-notice">{message}</div>}
+                      <p className="si-note">
+                        <svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V7a4 4 0 018 0v4" /></svg>
+                        {t.lockNote}
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="si-p">{t.noEmailBody}</p>
+                      <div className="si-tip">
+                        <span className="si-tip-ico" aria-hidden="true">
+                          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.7" strokeLinejoin="round"><path d="M3 7.5L12 3l9 4.5v9L12 21l-9-4.5z" /><path d="M3 7.5L12 12l9-4.5M12 12v9" /></svg>
+                        </span>
+                        <span>{t.noEmailTip}</span>
+                      </div>
+                      <a className="si-btn" href={'/find-account?lang=' + lang}>{t.findButton}</a>
+                      <p className="si-note">
+                        <svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V7a4 4 0 018 0v4" /></svg>
+                        {t.limitNote}
+                      </p>
+                    </>
+                  )}
+                </div>
+              </>
+            )}
+          </section>
+
+          <div className="si-tiles">
+            <div className="si-tile">
+              <span aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6" /></svg></span>
+              {t.chipReceipts}
+            </div>
+            <div className="si-tile">
+              <span aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"><path d="M3 7.5L12 3l9 4.5v9L12 21l-9-4.5z" /><path d="M3 7.5L12 12l9-4.5M12 12v9" /></svg></span>
+              {t.chipShipments}
+            </div>
+            <div className="si-tile">
+              <span aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3.5" y="9" width="17" height="11.5" rx="1.5" /><path d="M2.5 9h19M12 9v11.5M12 9c-1.5-3.5-6-4-6-1.5S9 9 12 9zm0 0c1.5-3.5 6-4 6-1.5S15 9 12 9z" /></svg></span>
+              {t.chipGift}
             </div>
           </div>
 
-          <p className={styles.footer}>{t.footer}</p>
+          <footer className="si-foot">
+            <nav aria-label="Erendira's Boutique" className="si-foot-nav">
+              <a href={SHOP_URL} target="_blank" rel="noopener noreferrer" className="si-foot-btn main">
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M5 8h14l-1 12H6z" /><path d="M9 8V6a3 3 0 016 0v2" /></svg>
+                {t.footShop}
+              </a>
+              <a href={HELP_URL} target="_blank" rel="noopener noreferrer" className="si-foot-btn">
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 5h16v11H9l-5 4z" /></svg>
+                {t.footContact}
+              </a>
+              <a href={RETURNS_URL} target="_blank" rel="noopener noreferrer" className="si-foot-btn">
+                <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 14L4 9l5-5" /><path d="M4 9h10a6 6 0 010 12h-3" /></svg>
+                {t.footReturns}
+              </a>
+            </nav>
+            <div className="si-foot-small">
+              <a href={'mailto:' + SUPPORT_EMAIL}>{SUPPORT_EMAIL}</a>
+              <span>© {new Date().getFullYear()} {t.footer}</span>
+            </div>
+          </footer>
         </div>
       </main>
     );
@@ -560,3 +640,51 @@ export default function CustomerPortal({ initialUser, initialPayments }) {
     </main>
   );
 }
+
+/* Sign-in screen (version C: "With my email" / "No email" tabs).
+   Shared brand colors from /brand/brand.css, with fallbacks. */
+const signInCss = `
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap");
+.si { --bg:var(--brand-cream, #F5F3EF); --brand:var(--brand-taupe, #957f67); --sand:var(--brand-sand, #cfbda9); --ink:var(--brand-ink, #5F4E3D);
+  min-height:100vh; background:var(--bg); color:var(--ink); font-family:Inter, system-ui, sans-serif; -webkit-font-smoothing:antialiased; padding:16px 16px 36px; box-sizing:border-box; }
+.si *, .si *::before, .si *::after { box-sizing:border-box; }
+.si a { color:var(--ink); }
+.si-wrap { max-width:440px; margin:0 auto; display:flex; flex-direction:column; gap:22px; }
+.si-top { display:flex; align-items:center; justify-content:space-between; }
+.si-logo { width:118px; height:auto; display:block; }
+.si-lang { min-width:44px; min-height:44px; padding:0 14px; border:0; border-radius:999px; background:#fff; color:var(--ink); font:600 13px Inter, sans-serif; cursor:pointer; }
+.si-head { padding:8px 4px 0; display:flex; flex-direction:column; gap:8px; }
+.si-eyebrow { margin:0; font-size:14px; color:var(--brand); }
+.si-h1 { margin:0; font-family:var(--font-heading, Georgia, serif); font-weight:400; font-size:36px; line-height:1.05; letter-spacing:-.01em; }
+.si-card { border-radius:26px; background:#fff; padding:20px 16px 16px; display:flex; flex-direction:column; gap:14px; }
+.si-panel { display:flex; flex-direction:column; gap:14px; }
+.si-panel form.si-panel { gap:6px; }
+.si-panel form .si-btn { margin-top:8px; }
+.si-tabs { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:4px; padding:4px; border-radius:16px; background:var(--bg); }
+.si-tab { min-height:46px; border:0; border-radius:12px; background:transparent; color:var(--brand); font:500 14.5px Inter, sans-serif; cursor:pointer; }
+.si-tab.on { background:#fff; color:var(--ink); font-weight:600; box-shadow:0 1px 6px rgba(149,127,103,.18); }
+.si-p { margin:0; padding:0 4px; font-size:14.5px; line-height:1.5; }
+.si-label { padding:0 4px; font-size:13px; font-weight:600; }
+.si-box { display:flex; align-items:center; gap:12px; min-height:56px; padding:0 16px; border-radius:16px; background:var(--bg); color:var(--brand); }
+.si-box:focus-within { box-shadow:0 0 0 2px var(--brand); background:#fff; }
+.si-box input { flex:1; min-width:0; border:0; background:transparent; outline:none; font:16px Inter, sans-serif; color:var(--ink); }
+.si-box input::placeholder { color:var(--brand); opacity:.7; }
+.si-btn { min-height:56px; border:0; border-radius:16px; background:var(--brand); color:#fff !important; font:600 16px Inter, sans-serif; display:flex; align-items:center; justify-content:center; text-decoration:none; cursor:pointer; width:100%; }
+.si-note { margin:0; text-align:center; font-size:12.5px; line-height:1.45; color:var(--brand); }
+.si-note svg { vertical-align:-2px; margin-right:4px; }
+.si-note a { font-weight:500; }
+.si-notice { padding:10px 14px; border-radius:12px; background:var(--bg); font-size:14px; }
+.si-tip { display:flex; gap:12px; align-items:center; padding:14px; border-radius:18px; background:var(--bg); font-size:14px; line-height:1.45; }
+.si-tip-ico { flex:none; width:44px; height:44px; border-radius:14px; background:var(--brand); display:grid; place-items:center; }
+.si-tiles { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:8px; }
+.si-tile { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; min-height:84px; border-radius:18px; background:#fff; font-size:12.5px; font-weight:500; text-align:center; padding:8px; }
+.si-tile span { width:34px; height:34px; border-radius:12px; background:var(--bg); color:var(--brand); display:grid; place-items:center; }
+.si-foot { margin-top:6px; padding-top:22px; border-top:1px solid var(--sand); display:flex; flex-direction:column; gap:16px; }
+.si-foot-nav { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:8px; }
+.si-foot-btn { min-height:76px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; border-radius:18px; background:#fff; text-decoration:none; font-size:14px; font-weight:600; }
+.si-foot-btn svg { color:var(--brand); }
+.si-foot-btn.main { background:var(--brand); color:#fff !important; }
+.si-foot-btn.main svg { color:#fff; }
+.si-foot-small { display:flex; flex-direction:column; align-items:center; gap:6px; font-size:13px; color:var(--brand); }
+.si-foot-small a { font-weight:500; }
+`;
