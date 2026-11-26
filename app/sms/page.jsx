@@ -1,40 +1,13 @@
 // app/sms/page.jsx
 // my.erendirasboutique.com/sms — customers sign up for texts here.
-// Banner + benefits + a preview of the texts, then the form. The consent box
-// starts unchecked (carriers require it). Sign-ups go to sms_subscribers,
+// Design D: big headline, the form right away, four small tags. The consent
+// box starts unchecked (carriers require it). Sign-ups go to sms_subscribers,
 // which the shipping portal checks before sending any text.
 
 "use client";
 
 import { useState } from "react";
 import { SMS_CONSENT_ES, SMS_PRIVACY_URL, SMS_TERMS_URL } from "@/lib/smsConsent";
-
-const ICONS = {
-  box: <><path d="M21 8l-9-5-9 5 9 5 9-5z" /><path d="M3 8v8l9 5 9-5V8" /><path d="M12 13v8" /></>,
-  truck: <><path d="M1 4h14v11H1z" /><path d="M15 8h4l3 3v4h-7" /><circle cx="5.5" cy="17.5" r="2" /><circle cx="18" cy="17.5" r="2" /></>,
-  live: <><circle cx="12" cy="12" r="3" /><path d="M5.6 5.6a9 9 0 0 0 0 12.8M18.4 5.6a9 9 0 0 1 0 12.8M8.5 8.5a5 5 0 0 0 0 7M15.5 8.5a5 5 0 0 1 0 7" /></>,
-  tag: <><path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z" /><circle cx="7.5" cy="7.5" r="1.5" /></>,
-};
-
-function Icon({ name }) {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      {ICONS[name]}
-    </svg>
-  );
-}
-
-const BENEFITS = [
-  ["box", "Tu pedido, empacado", "Te avisamos en cuanto lo empacamos."],
-  ["truck", "En camino y entregado", "Con tu número de rastreo, sin buscar nada."],
-  ["live", "Cuando estemos en vivo", "Un aviso antes de cada live."],
-  ["tag", "Ofertas y piezas nuevas", "Entérate antes que nadie."],
-];
-
-const PREVIEW = [
-  ["Sáb 2:14 PM", "Erendira's Boutique: ¡Hola Chula! Tu pedido va en camino 🚚 Rastréalo aquí: track.erendirasboutique.com/…"],
-  ["Mar 4:30 PM", "Erendira's Boutique: ¡Hola Chula! Estamos EN VIVO ahora con piezas nuevas 🛍️ ¡Te esperamos!"],
-];
 
 export default function SmsSignupPage() {
   const [name, setName] = useState("");
@@ -71,63 +44,41 @@ export default function SmsSignupPage() {
     <div className="sms">
       <style>{css}</style>
 
+      <header className="sms-top">
+        <a href="https://erendirasboutique.com" aria-label="Erendira's Boutique">
+          <img className="sms-logo" src="/brand/logo.png" alt="Erendira's Boutique" />
+        </a>
+        <span className="sms-kicker">Mensajes de texto</span>
+      </header>
+
       {done ? (
-        <main className="sms-done">
-          <img className="sms-logo-plain" src="/brand/logo.png" alt="Erendira's Boutique" />
-          <div className="sms-card sms-card--center">
-            <div className="sms-check" aria-hidden="true">
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5L20 7" /></svg>
-            </div>
-            <h1 className="sms-h1">¡Listo, te suscribiste!</h1>
-            <p className="sms-p">Te acabamos de mandar un mensaje de bienvenida. Para dejar de recibir mensajes, responde STOP en cualquier momento.</p>
-            <a className="sms-link" href="https://erendirasboutique.com">Volver a la tienda</a>
+        <main className="sms-main">
+          <div className="sms-check" aria-hidden="true">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5L20 7" /></svg>
           </div>
+          <h1 className="sms-h1">
+            ¡Listo,<br />
+            <span className="sms-h1-accent">te suscribiste!</span>
+          </h1>
+          <p className="sms-lead">Te acabamos de mandar un mensaje de bienvenida. Para dejar de recibir mensajes, responde STOP en cualquier momento.</p>
+          <a className="sms-btn sms-btn--link" href="https://erendirasboutique.com">Volver a la tienda</a>
         </main>
       ) : (
-        <main>
-          <header className="sms-band">
-            <div className="sms-logo-chip">
-              <img src="/brand/logo.png" alt="Erendira's Boutique" />
-            </div>
-            <h1 className="sms-band-h1">Nunca te pierdas un live</h1>
-            <p className="sms-band-p">Tus pedidos y lives, directo a tu celular</p>
-          </header>
+        <main className="sms-main">
+          <h1 className="sms-h1">
+            Tus pedidos y lives,
+            <br />
+            <span className="sms-h1-accent">por texto.</span>
+          </h1>
+          <p className="sms-lead">Empacado, en camino, entregado, y un aviso cuando estemos en vivo.</p>
 
-          <section className="sms-benefits" aria-label="Qué vas a recibir">
-            {BENEFITS.map(([icon, title, sub]) => (
-              <div key={title} className="sms-benefit">
-                <span className="sms-benefit-icon"><Icon name={icon} /></span>
-                <span className="sms-benefit-text">
-                  <span className="sms-benefit-title">{title}</span>
-                  <span className="sms-benefit-sub">{sub}</span>
-                </span>
-              </div>
-            ))}
-          </section>
-
-          <section className="sms-preview-wrap" aria-label="Ejemplo de mensajes">
-            <p className="sms-eyebrow">Así se ven tus mensajes</p>
-            <div className="sms-preview">
-              <div className="sms-preview-head">
-                <span className="sms-avatar" aria-hidden="true">EB</span>
-                <span>Erendira&rsquo;s Boutique</span>
-              </div>
-              {PREVIEW.map(([when, text]) => (
-                <div key={when} className="sms-msg">
-                  <span className="sms-when">{when}</span>
-                  <p className="sms-bubble">{text}</p>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <form className="sms-card sms-form" onSubmit={submit} noValidate>
+          <form className="sms-form" onSubmit={submit} noValidate>
             <label className="sms-field">
               <span className="sms-label">Nombre</span>
               <input className="sms-in" autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Tu nombre" />
             </label>
             <label className="sms-field">
-              <span className="sms-label">Número de celular</span>
+              <span className="sms-label">Celular</span>
               <input
                 className="sms-in"
                 type="tel"
@@ -155,6 +106,13 @@ export default function SmsSignupPage() {
               <a href={SMS_PRIVACY_URL}>Política de privacidad de SMS</a>.
             </p>
           </form>
+
+          <ul className="sms-tags" aria-label="Qué vas a recibir">
+            <li>📦 Pedidos</li>
+            <li>🚚 Envíos</li>
+            <li>🔴 Lives</li>
+            <li>🏷️ Ofertas</li>
+          </ul>
         </main>
       )}
 
@@ -170,50 +128,40 @@ export default function SmsSignupPage() {
   );
 }
 
+// Every heading and text color is set here on purpose: the portal's global
+// h1/h2 rules are taupe, which is what hid the old banner's heading.
 const css = `
 .sms { --t: var(--brand-taupe, #957f67); --c: var(--brand-cream, #F5F3EF); --s: var(--brand-sand, #cfbda9); --ink: var(--brand-ink, #332b23);
-  --muted: #6b5f53; --line: #EAE4DC; --head: var(--brand-font-heading, "Charman Serif", Georgia, serif); --body: var(--brand-font-body, "Ltt Recoleta", Georgia, serif);
-  min-height: 100vh; background: var(--c); color: var(--ink); font-family: var(--body); max-width: 520px; margin: 0 auto; }
+  --muted: #6b5f53; --head: var(--brand-font-heading, "Charman Serif", Georgia, serif); --body: var(--brand-font-body, "Ltt Recoleta", Georgia, serif);
+  min-height: 100vh; background: var(--c); color: var(--ink); font-family: var(--body); max-width: 520px; margin: 0 auto; box-sizing: border-box; }
 .sms a { color: var(--t); }
-.sms-band { background: var(--t); color: #fff; padding: 32px 24px 40px; display: flex; flex-direction: column; align-items: center; gap: 18px; text-align: center; border-radius: 0 0 32px 32px; }
-.sms-logo-chip { background: #fff; border-radius: 16px; padding: 10px 16px; }
-.sms-logo-chip img { display: block; width: 140px; height: auto; }
-.sms-band-h1 { margin: 0; font-family: var(--head); font-weight: 400; font-size: 34px; line-height: 1.1; }
-.sms-band-p { margin: 0; font-size: 16px; line-height: 1.5; }
-.sms-benefits { padding: 28px 24px 8px; display: flex; flex-direction: column; gap: 16px; }
-.sms-benefit { display: flex; gap: 14px; align-items: flex-start; }
-.sms-benefit-icon { width: 40px; height: 40px; border-radius: 12px; background: #fff; color: var(--t); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.sms-benefit-text { display: flex; flex-direction: column; gap: 2px; }
-.sms-benefit-title { font-size: 16px; }
-.sms-benefit-sub { font-size: 13px; line-height: 1.4; color: var(--muted); }
-.sms-preview-wrap { padding: 24px 24px 0; display: flex; flex-direction: column; gap: 10px; }
-.sms-eyebrow { margin: 0; font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--t); text-align: center; }
-.sms-preview { background: #fff; border: 1px solid var(--line); border-radius: 28px; padding: 18px 16px; display: flex; flex-direction: column; gap: 12px; }
-.sms-preview-head { display: flex; align-items: center; gap: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--line); font-size: 14px; }
-.sms-avatar { width: 34px; height: 34px; border-radius: 99px; background: var(--t); color: #fff; display: flex; align-items: center; justify-content: center; font-family: var(--head); font-size: 14px; }
-.sms-msg { display: flex; flex-direction: column; gap: 4px; }
-.sms-when { font: 11px -apple-system, system-ui, sans-serif; color: var(--muted); align-self: center; }
-.sms-bubble { margin: 0; align-self: flex-start; max-width: 85%; background: var(--line); border-radius: 18px 18px 18px 4px; padding: 10px 14px; font: 14px/1.4 -apple-system, system-ui, sans-serif; color: var(--ink); }
-.sms-card { background: #fff; border: 1px solid var(--line); border-radius: 24px; padding: 24px; }
-.sms-form { margin: 24px; display: flex; flex-direction: column; gap: 18px; }
-.sms-field { display: flex; flex-direction: column; gap: 6px; }
-.sms-label { font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--t); }
-.sms-in { min-height: 48px; padding: 0 16px; border: 1px solid var(--s); border-radius: 14px; font: 16px var(--body); color: var(--ink); background: #fff; outline: none; }
-.sms-in:focus { border-color: var(--t); }
+.sms-top { padding: 28px 28px 0; display: flex; justify-content: space-between; align-items: center; }
+.sms-logo { display: block; width: 120px; height: auto; }
+.sms .sms-kicker { font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: var(--t); }
+.sms-main { padding: 44px 28px 0; display: flex; flex-direction: column; gap: 14px; }
+.sms .sms-h1 { margin: 0; font-family: var(--head); font-weight: 400; font-size: 44px; line-height: 1.02; letter-spacing: 0; color: var(--ink); }
+.sms .sms-h1-accent { color: var(--t); font-family: var(--head); }
+.sms .sms-lead { margin: 0; font-size: 16px; line-height: 1.5; color: var(--muted); }
+.sms-form { padding-top: 18px; display: flex; flex-direction: column; gap: 22px; }
+.sms-field { display: flex; flex-direction: column; gap: 4px; }
+.sms .sms-label { font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--t); }
+.sms-in { min-height: 46px; padding: 0; border: 0; border-bottom: 1.5px solid var(--s); border-radius: 0; background: transparent; font: 19px var(--body); color: var(--ink); outline: none; }
+.sms-in:focus { border-bottom-color: var(--t); }
+.sms-in::placeholder { color: #a99a89; }
 .sms-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
-.sms-consent { display: flex; gap: 12px; align-items: flex-start; font-size: 13px; line-height: 1.5; cursor: pointer; }
+.sms-consent { display: flex; gap: 12px; align-items: flex-start; font-size: 13px; line-height: 1.5; color: var(--ink); cursor: pointer; }
+.sms-consent span { color: var(--ink); }
 .sms-consent input { width: 22px; height: 22px; margin: 1px 0 0; flex-shrink: 0; accent-color: var(--t); }
-.sms-err { margin: 0; font-size: 14px; color: #8a2b1f; }
-.sms-btn { min-height: 52px; border: 0; border-radius: 99px; background: var(--t); color: #fff; font: 17px var(--body); letter-spacing: .5px; cursor: pointer; }
+.sms .sms-err { margin: 0; font-size: 14px; color: #8a2b1f; }
+.sms-btn { min-height: 52px; border: 0; border-radius: 99px; background: var(--t); color: #fff; font: 17px var(--body); letter-spacing: .5px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-decoration: none; }
+.sms a.sms-btn { color: #fff; }
 .sms-btn:disabled { opacity: .6; cursor: wait; }
-.sms-fine { margin: 0; font-size: 12px; line-height: 1.6; color: var(--muted); text-align: center; }
-.sms-done { padding: 40px 24px; display: flex; flex-direction: column; align-items: center; gap: 24px; text-align: center; }
-.sms-logo-plain { width: 160px; height: auto; }
-.sms-card--center { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 32px 24px; width: 100%; box-sizing: border-box; }
+.sms-btn--link { margin-top: 10px; }
+.sms .sms-fine { margin: 0; font-size: 12px; line-height: 1.6; color: var(--muted); text-align: center; }
+.sms-tags { list-style: none; margin: 0; padding: 14px 0 8px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.sms-tags li { font-size: 13px; border: 1px solid var(--s); border-radius: 99px; padding: 6px 12px; color: var(--ink); }
 .sms-check { width: 56px; height: 56px; border-radius: 99px; background: var(--t); display: flex; align-items: center; justify-content: center; }
-.sms-h1 { margin: 0; font-family: var(--head); font-weight: 400; font-size: 30px; color: var(--t); }
-.sms-p { margin: 0; font-size: 16px; line-height: 1.5; color: var(--muted); }
-.sms-link { margin-top: 6px; font-size: 15px; }
-.sms-foot { padding: 8px 24px 32px; display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); text-align: center; }
+.sms-foot { padding: 28px 24px 32px; display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); text-align: center; }
+.sms-foot span { color: var(--muted); }
 .sms-foot-links { display: flex; gap: 14px; }
 `;
