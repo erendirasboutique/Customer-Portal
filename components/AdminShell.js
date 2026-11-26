@@ -1,13 +1,13 @@
 'use client';
 
 // components/AdminShell.js
-// Erendira's Boutique — Admin Studio shell
+// Erendira's Boutique — Admin Studio shell ("Direction A: calm top bar")
 //
-// "Studio" design: floating cream canvas, white rounded cards, pill nav,
-// Charman Serif display headings. Every admin page renders inside this.
+// Cream canvas, white cards with hairline borders, one quiet top bar,
+// a compact page header and a footer. Every admin page renders inside this.
 //
 // Props:
-//   admin      { name, email, avatar_url, role }  — used for the profile card
+//   admin      { name, email, avatar_url, role }  — used for the profile menu
 //   active     'overview' | 'payment-links' | 'sezzle' | 'card-terminal' | 'stripe-terminal' | 'receipts'
 //              | 'gift-cards' | 'gift-card-sales'
 //              | 'live-link' | 'live-schedule' | 'checks'
@@ -15,18 +15,19 @@
 //              | 'team' | 'branding' | 'integrations' | 'settings' | 'help'  (profile menu pages)
 //   lang       'en' | 'es'   (optional — omit and the shell manages it itself)
 //   onLang     (l) => void   (optional — pass when the page owns lang state)
-//   eyebrow    small caps line above the hero title
-//   title      hero title
-//   subtitle   hero sub-line
-//   heroStat   { label, value, caption }  — the boxed number at the hero's right
-//   tip        { label, body }            — sidebar quick tip (optional)
+//   eyebrow    small line above the title ('ADMIN STUDIO' is no longer shown)
+//   title      page title
+//   subtitle   line under the title
+//   heroStat   { label, value, caption }  — small number box at the header's right
+//   tip        { label, body }            — one-line tip under the subtitle (optional)
+//   actions    buttons for the header's right side (optional)
 //   children   page content
 //
 // NAVIGATION (changes with screen size, nothing to set):
-//   computer (1180px+)  top bar with dropdown menus
-//   iPad (700-1179px)   slim icon rail on the left; tap a section for its pages
-//   phone (under 700px) bottom tabs; tap a section for a sheet of its pages
+//   computer (1024px+)  top bar: menus, Search (Ctrl/⌘ K), + New, profile
+//   phone/iPad (<1024)  small header + bottom tabs: Home, Sell, +, Gifts, More
 // Pages are grouped in SECTIONS below. Add a page there and every layout gets it.
+// Language (EN/ES) lives in the profile menu and the footer.
 
 import { useEffect, useRef, useState } from 'react';
 
@@ -35,9 +36,6 @@ const SHIP = 'https://ship.erendirasboutique.com';
 
 const T = {
   en: {
-    brand: "ERENDIRA'S BOUTIQUE",
-    studio: 'Admin Studio',
-    welcome: 'Welcome',
     overview: 'Dashboard',
     paymentLinks: 'Payment links',
     sezzle: 'Sezzle',
@@ -54,25 +52,36 @@ const T = {
     giveaway: 'Giveaway wheel',
     orders: 'Orders',
     shipping: 'Shipping',
+    shippingPortal: 'Shipping portal',
     logOut: 'Log out',
     account: 'Account',
     home: 'Home',
-    secPayments: 'Payments',
+    secSell: 'Sell',
     secGifts: 'Gift cards',
+    giftsShort: 'Gifts',
     secLives: 'Lives',
     secBusiness: 'Business',
     more: 'More',
-    menu: 'Menu',
     team: 'Team & permissions',
     branding: 'Branding',
     integrations: 'Integrations',
     settings: 'Settings',
     help: 'Help',
+    search: 'Search or jump to…',
+    searchShort: 'Search',
+    searchPlaceholder: 'Type a page name…',
+    noResults: 'No page matches that.',
+    create: 'New',
+    createWhat: 'Create',
+    newLink: 'Payment link',
+    newSezzle: 'Sezzle link',
+    newGift: 'Gift card',
+    newCheck: 'Check',
+    language: 'Language',
+    close: 'Close',
+    studio: "Erendira's Admin Studio",
   },
   es: {
-    brand: "ERENDIRA'S BOUTIQUE",
-    studio: 'Admin Studio',
-    welcome: 'Bienvenida',
     overview: 'Panel',
     paymentLinks: 'Enlaces de pago',
     sezzle: 'Sezzle',
@@ -89,20 +98,34 @@ const T = {
     giveaway: 'Ruleta de regalos',
     orders: 'Pedidos',
     shipping: 'Envíos',
+    shippingPortal: 'Portal de envíos',
     logOut: 'Cerrar sesión',
     account: 'Cuenta',
     home: 'Inicio',
-    secPayments: 'Pagos',
+    secSell: 'Vender',
     secGifts: 'Tarjetas',
+    giftsShort: 'Tarjetas',
     secLives: 'Lives',
     secBusiness: 'Negocio',
     more: 'Más',
-    menu: 'Menú',
     team: 'Equipo y permisos',
     branding: 'Marca',
     integrations: 'Integraciones',
     settings: 'Configuración',
     help: 'Ayuda',
+    search: 'Buscar o ir a…',
+    searchShort: 'Buscar',
+    searchPlaceholder: 'Escribe el nombre de una página…',
+    noResults: 'Ninguna página coincide.',
+    create: 'Nuevo',
+    createWhat: 'Crear',
+    newLink: 'Enlace de pago',
+    newSezzle: 'Enlace Sezzle',
+    newGift: 'Tarjeta de regalo',
+    newCheck: 'Cheque',
+    language: 'Idioma',
+    close: 'Cerrar',
+    studio: 'Admin Studio de Erendira',
   },
 };
 
@@ -186,296 +209,279 @@ function installAppTags() {
     navigator.serviceWorker.register('/studio-sw.js', { scope: '/admin' }).catch(function () {});
   }
 }
+const IconSearch = function () { return (<Icon size={16}><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.35-4.35" /></Icon>); };
+const IconPlus = function () { return (<Icon size={16}><path d="M12 5v14M5 12h14" /></Icon>); };
+const IconSell = function () { return (<Icon><rect x="3" y="6" width="18" height="13" rx="2" /><path d="M3 10h18" /></Icon>); };
 
 /* ---------------- Design system ---------------- */
 export const shellCss = '' +
 /* tokens */
-'.eba { --cream:#F5F3EF; --card:#FFFFFF; --wash:#FAF9F6; --sand:#cfbda9; --taupe:#957f67; --ink:#957f67; --mute:#957f67; --line:#e6dccf; --accent:#957f67; --accent-dark:#7f6b55;' +
-'  min-height:100vh; background:var(--cream); color:var(--ink); overflow-x:clip;' +
+'.eba { --cream:#F5F3EF; --card:#FFFFFF; --wash:#FAF9F6; --sand:#8c775f; --soft:#efe8de; --taupe:#5f4e3d; --ink:#4a3d30; --mute:#7f6b55;' +
+'  --line:#e6dccf; --hair:#efe8de; --accent:#5f4e3d; --accent-dark:#4a3d30; --warm:#8c775f; --ok:#4f6b45; --okbg:#eef1e6; --wait:#7f5a2a; --waitbg:#f6ecdc;' +
+'  min-height:100vh; display:flex; flex-direction:column; background:var(--cream); color:var(--ink); overflow-x:clip;' +
 '  font-family:var(--font-body); -webkit-font-smoothing:antialiased; }' +
 '.eba * { box-sizing:border-box; }' +
 '.eba a { color:inherit; text-decoration:none; }' +
 '.eba button, .eba input, .eba select, .eba textarea { font-family:inherit; }' +
 '.eba button { cursor:pointer; }' +
-'.eba-display, .eba-hero h1, .eba-panel h2, .eba-stat b, .eba-herostat b, .eba-cta h3 {' +
+'.eba-display, .eba-head h1, .eba-panel h2, .eba-stat b, .eba-herostat b, .eba-cta h3 {' +
 '  font-family:var(--font-heading); font-weight:400; letter-spacing:-0.01em; }' +
-'.eba :focus-visible { outline:2px solid var(--taupe); outline-offset:2px; border-radius:8px; }' +
+'.eba :focus-visible { outline:2px solid var(--warm); outline-offset:2px; border-radius:8px; }' +
 
-/* layout */
-'.eba-shell { max-width:1640px; margin:0 auto; padding:10px 10px 104px; }' +
-'@media (min-width:700px) { .eba-shell { display:grid; grid-template-columns:86px minmax(0,1fr); gap:16px; align-items:start; padding:14px; } }' +
-'@media (min-width:1180px) { .eba-shell { display:block; padding:12px 18px 24px; } }' +
-
-/* ---------- navigation (phone first) ---------- */
-'.eba-top, .eba-rail { display:none; }' +
+/* ---------- top bar (computer) ---------- */
+'.eba-top { display:none; }' +
 '.eba-wrap { position:relative; }' +
-'.eba-chip { width:28px; height:28px; border-radius:50%; background:#efe8de; color:var(--taupe); display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; }' +
-'.eba-pop { background:var(--card); border:1px solid var(--line); border-radius:20px; padding:8px; box-shadow:0 18px 40px rgba(149,127,103,.18); }' +
-'.eba-pop a, .eba-pop button { display:flex; align-items:center; gap:10px; width:100%; padding:10px 12px; border:0; border-radius:14px; background:transparent;' +
-'  text-align:left; font-size:13.5px; color:var(--ink); }' +
+'.eba-chip { width:28px; height:28px; border-radius:50%; background:var(--soft); color:var(--taupe); display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; }' +
+'.eba-pop { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:6px; box-shadow:0 18px 40px rgba(95,78,61,.14); }' +
+'.eba-pop a, .eba-pop button { display:flex; align-items:center; gap:10px; width:100%; min-height:42px; padding:8px 10px; border:0; border-radius:12px; background:transparent;' +
+'  text-align:left; font-size:14px; color:var(--ink); }' +
 '.eba-pop a:hover, .eba-pop button:hover, .eba-pop a.on { background:var(--wash); }' +
 '.eba-pop a.on .eba-chip { background:var(--accent); color:var(--cream); }' +
 '.eba-pop .ext { margin-left:auto; opacity:.6; display:inline-flex; }' +
-'.eba-pop-label { margin:6px 12px 6px; font-size:9.5px; letter-spacing:.22em; color:#8c775f; text-transform:uppercase; }' +
-'.eba-pop-head { padding:8px 12px 10px; margin-bottom:4px; border-bottom:1px solid var(--line); }' +
+'.eba-pop-label { margin:10px 10px 4px; font-size:11px; letter-spacing:.14em; color:var(--mute); text-transform:uppercase; }' +
+'.eba-pop-head { padding:8px 10px 10px; margin-bottom:4px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:10px; }' +
+'.eba-pop-head .who { min-width:0; flex:1; }' +
 '.eba-pop-head p { margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }' +
-'.eba-pop-head .n { font-size:13.5px; color:var(--ink); }' +
-'.eba-pop-head .e { font-size:11px; color:#8c775f; margin-top:2px; }' +
+'.eba-pop-head .n { font-size:14px; color:var(--ink); }' +
+'.eba-pop-head .e { font-size:12px; color:var(--mute); margin-top:2px; }' +
 '.eba-pop-sep { border-top:1px solid var(--line); margin:6px 4px; }' +
-'.eba-avatar, .eba-avatar-fb { width:34px; height:34px; border-radius:50%; flex-shrink:0; display:block; object-fit:cover; }' +
-'.eba-avatar-fb { background:var(--accent); color:var(--cream); font-size:12px; display:flex; align-items:center; justify-content:center; }' +
-'.eba-brandmark { font-family:var(--font-heading); color:var(--taupe); line-height:1; }' +
-/* phone */
-'.eba-mhead { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:4px 4px 12px; }' +
-'.eba-mhead .eba-logo { width:110px; height:auto; display:block; }' +
+'.eba-pop .eba-langrow { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:6px 10px; font-size:13px; color:var(--mute); }' +
+'.eba-avatar, .eba-avatar-fb { width:36px; height:36px; border-radius:50%; flex-shrink:0; display:block; object-fit:cover; }' +
+'.eba-avatar-fb { background:var(--accent); color:var(--cream); font-size:13px; display:flex; align-items:center; justify-content:center; }' +
 '.eba-iconbtn { border:0; background:transparent; padding:0; border-radius:50%; }' +
-'.eba-tabs { position:fixed; left:10px; right:10px; bottom:max(12px, env(safe-area-inset-bottom)); z-index:72; display:flex; gap:2px;' +
-'  background:var(--card); border-radius:26px; padding:6px; box-shadow:0 10px 30px rgba(149,127,103,.22); }' +
-'.eba-tab { flex:1; min-width:0; min-height:50px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;' +
-'  border:0; background:transparent; border-radius:20px; font-size:10.5px; color:var(--mute); }' +
-'.eba-tab svg { width:20px; height:20px; }' +
-'.eba-tab.on { background:#efe8de; color:var(--ink); }' +
-'.eba-tab.open { background:var(--accent); color:var(--cream); }' +
-'.eba-sheet-bg { position:fixed; inset:0; z-index:70; background:rgba(60,48,36,.22); border:0; }' +
-'.eba-sheet { position:fixed; left:0; right:0; bottom:0; z-index:71; max-height:78vh; overflow:auto; border-radius:26px 26px 0 0 !important;' +
-'  padding:10px 14px calc(92px + env(safe-area-inset-bottom)) !important; }' +
-'.eba-grab { display:block; width:40px; height:4px; border-radius:4px; background:var(--line); margin:2px auto 10px; }' +
-'.eba-sheet-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; }' +
-'.eba-sheet-grid a, .eba-sheet-grid button { background:var(--wash); }' +
-/* iPad: icon rail */
-'@media (min-width:700px) {' +
-' .eba-mhead, .eba-tabs, .eba-sheet, .eba-sheet-bg { display:none !important; }' +
-' .eba-rail { display:flex; flex-direction:column; align-items:center; gap:6px; position:sticky; top:14px; z-index:50;' +
-'   min-height:calc(100vh - 28px); background:var(--card); border-radius:28px; padding:16px 8px 14px;' +
-'   box-shadow:0 1px 2px rgba(149,127,103,.04), 0 14px 40px rgba(149,127,103,.06); }' +
-' .eba-rail .eba-brandmark { font-size:28px; margin:2px 0 12px; }' +
-' .eba-rb { display:flex; flex-direction:column; align-items:center; gap:4px; width:70px; padding:8px 2px; border:0; border-radius:16px;' +
-'   background:transparent; font-size:10.5px; line-height:1.15; color:var(--mute); text-align:center; }' +
-' .eba-rb .ic { width:40px; height:40px; border-radius:14px; background:#efe8de; color:var(--taupe); display:inline-flex; align-items:center; justify-content:center; }' +
-' .eba-rb:hover, .eba-rb.open { background:var(--wash); color:var(--ink); }' +
-' .eba-rb.on .ic { background:var(--accent); color:var(--cream); }' +
-' .eba-rb.on { color:var(--ink); }' +
-' .eba-rail-fill { flex:1; min-height:12px; }' +
-' .eba-fly { position:absolute; left:calc(100% + 12px); top:0; width:250px; z-index:60; }' +
-' .eba-fly.up { top:auto; bottom:0; }' +
-'}' +
-/* computer: top bar */
-'@media (min-width:1180px) {' +
-' .eba-rail { display:none; }' +
-' .eba-top { display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px; position:sticky; top:12px; z-index:50;' +
-'   background:var(--card); border-radius:999px; padding:8px 10px 8px 22px; margin-bottom:16px;' +
-'   box-shadow:0 1px 2px rgba(149,127,103,.04), 0 14px 40px rgba(149,127,103,.08); }' +
-' .eba-top .eba-logo { width:118px; height:auto; display:block; }' +
-' .eba-top nav { display:flex; flex-wrap:wrap; gap:2px; flex:1; min-width:0; }' +
-' .eba-tn { display:inline-flex; align-items:center; gap:7px; padding:10px 14px; border:0; border-radius:999px; background:transparent;' +
-'   font-size:14px; color:var(--mute); white-space:nowrap; }' +
-' .eba-tn:hover, .eba-tn.open { background:#efe8de; color:var(--ink); }' +
+'.eba-roundbtn { width:44px; height:44px; border-radius:50%; border:1px solid var(--line); background:var(--card); color:var(--taupe);' +
+'  display:inline-flex; align-items:center; justify-content:center; }' +
+'@media (min-width:1024px) {' +
+' .eba-top { display:block; position:sticky; top:0; z-index:50; background:rgba(245,243,239,.92); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); border-bottom:1px solid var(--line); }' +
+' .eba-topin { max-width:1240px; margin:0 auto; padding:10px 24px; display:flex; align-items:center; gap:18px; }' +
+' .eba-top .eba-logo { width:104px; height:auto; display:block; }' +
+' .eba-top nav { display:flex; gap:2px; flex:1; min-width:0; }' +
+' .eba-tn { display:inline-flex; align-items:center; gap:6px; padding:9px 14px; border:0; border-radius:999px; background:transparent;' +
+'   font-size:15px; color:var(--ink); white-space:nowrap; }' +
+' .eba-tn:hover, .eba-tn.open { background:var(--soft); }' +
 ' .eba-tn.on { background:var(--accent); color:var(--cream); }' +
-' .eba-tn .car { font-size:9px; opacity:.8; }' +
-' .eba-drop { position:absolute; top:calc(100% + 10px); left:0; min-width:270px; z-index:60; }' +
+' .eba-tn svg { opacity:.7; }' +
+' .eba-drop { position:absolute; top:calc(100% + 8px); left:0; min-width:250px; z-index:60; }' +
 ' .eba-drop.right { left:auto; right:0; }' +
-' .eba-userpill { display:flex; align-items:center; gap:9px; padding:4px 12px 4px 4px; border:1px solid var(--line); border-radius:999px; background:var(--wash); }' +
-' .eba-userpill .nm { font-size:13px; color:var(--ink); max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }' +
+' .eba-searchbtn { display:flex; align-items:center; gap:10px; height:40px; padding:0 12px 0 14px; min-width:210px; border:1px solid var(--line);' +
+'   border-radius:999px; background:var(--card); color:var(--mute); font-size:14px; }' +
+' .eba-searchbtn kbd { margin-left:auto; font-family:inherit; font-size:11px; border:1px solid var(--line); border-radius:6px; padding:1px 6px; }' +
+' .eba-newbtn { display:inline-flex; align-items:center; gap:6px; height:40px; padding:0 16px; border:0; border-radius:999px; background:var(--warm); color:#fff; font-size:14px; }' +
+' .eba-newbtn:hover { background:var(--accent); }' +
 '}' +
+'@media (min-width:1024px) and (max-width:1199px) { .eba-searchbtn { min-width:0; width:40px; padding:0; justify-content:center; } .eba-searchbtn .lbl, .eba-searchbtn kbd { display:none; } .eba-tn { padding:9px 10px; } .eba-topin { gap:12px; } }' +
 
-/* main */
-'.eba-main { min-width:0; display:grid; gap:16px; }' +
-'.eba-hero { position:relative; overflow:hidden; background:var(--card); border-radius:30px; padding:30px 34px;' +
-'  display:flex; align-items:center; justify-content:space-between; gap:24px;' +
-'  box-shadow:0 1px 2px rgba(149,127,103,.04), 0 14px 40px rgba(149,127,103,.06); }' +
-'.eba-hero::after { content:""; position:absolute; right:-70px; top:-90px; width:280px; height:280px; border-radius:50%;' +
-'  background:radial-gradient(circle at 30% 30%, rgba(207,189,169,.28), rgba(207,189,169,0) 65%); pointer-events:none; }' +
-'.eba-hero-copy { position:relative; z-index:1; min-width:0; }' +
-'.eba-hero .eyebrow { margin:0 0 6px; font-size:10px; letter-spacing:.28em; color:var(--sand); }' +
-'.eba-hero h1 { margin:0; font-size:clamp(32px,4.2vw,58px); line-height:1; color:var(--taupe); }' +
-'.eba-hero .sub { margin:12px 0 0; font-size:14.5px; color:var(--mute); }' +
-'.eba-hero .tip { margin:10px 0 0; font-size:12.5px; line-height:1.5; color:#8c775f; max-width:640px; }' +
-'.eba-hero .tip b { font-weight:400; color:var(--taupe); }' +
-'.eba-hero-right { position:relative; z-index:1; display:flex; align-items:center; gap:12px; flex-shrink:0; }' +
-'.eba-herostat { background:var(--wash); border:1px solid var(--line); border-radius:24px; padding:16px 30px;' +
-'  text-align:center; min-width:170px; }' +
-'.eba-herostat .lb { display:block; font-size:12px; color:var(--mute); }' +
-'.eba-herostat b { display:block; font-size:44px; line-height:1.1; color:var(--taupe); }' +
-'.eba-herostat .cap { display:block; font-size:11.5px; color:var(--sand); }' +
-'.eba-langs { display:flex; border:1px solid var(--line); border-radius:999px; overflow:hidden; }' +
-'.eba-langs button { border:0; background:transparent; padding:8px 13px; font-size:10px; letter-spacing:.14em; color:var(--taupe); }' +
+/* ---------- phone + iPad ---------- */
+'.eba-mhead { display:flex; align-items:center; gap:10px; padding:10px 16px; border-bottom:1px solid var(--line); background:var(--cream); }' +
+'.eba-mhead .eba-logo { width:92px; height:auto; display:block; }' +
+'.eba-mhead .sp { flex:1; }' +
+'.eba-tabs { position:fixed; left:0; right:0; bottom:0; z-index:72; display:flex; align-items:flex-start; justify-content:space-around;' +
+'  background:var(--card); border-top:1px solid var(--line); padding:8px 6px max(10px, env(safe-area-inset-bottom)); }' +
+'.eba-tab { flex:1; min-width:0; max-width:90px; min-height:48px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;' +
+'  border:0; background:transparent; border-radius:14px; font-size:11px; color:var(--mute); }' +
+'.eba-tab svg { width:22px; height:22px; }' +
+'.eba-tab.on { color:var(--taupe); }' +
+'.eba-tab.on svg { color:var(--taupe); }' +
+'.eba-tab.open { background:var(--soft); color:var(--taupe); }' +
+'.eba-tabnew { width:54px; height:54px; margin-top:-20px; border:0; border-radius:50%; background:var(--warm); color:#fff; display:flex; align-items:center; justify-content:center;' +
+'  box-shadow:0 8px 20px rgba(95,78,61,.3); flex-shrink:0; }' +
+'.eba-tabnew svg { width:22px; height:22px; }' +
+'.eba-sheet-bg { position:fixed; inset:0; z-index:70; background:rgba(60,48,36,.28); border:0; }' +
+'.eba-sheet { position:fixed; left:0; right:0; bottom:0; z-index:71; max-height:84vh; overflow:auto; border-radius:26px 26px 0 0 !important;' +
+'  padding:10px 14px calc(96px + env(safe-area-inset-bottom)) !important; background:var(--cream) !important; }' +
+'.eba-grab { display:block; width:40px; height:5px; border-radius:5px; background:#cfbda9; margin:2px auto 10px; }' +
+'.eba-sheet-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }' +
+'.eba-sheet-grid a, .eba-sheet-grid button { background:var(--card); border:1px solid var(--hair) !important; min-height:52px; }' +
+'.eba-sheet .eba-pop-head { background:var(--card); border:1px solid var(--hair); border-radius:16px; margin-bottom:8px; }' +
+'@media (min-width:1024px) { .eba-mhead, .eba-tabs, .eba-sheet, .eba-sheet-bg { display:none !important; } }' +
+
+/* ---------- search / jump ---------- */
+'.eba-cmd-bg { position:fixed; inset:0; z-index:90; background:rgba(60,48,36,.3); border:0; }' +
+'.eba-cmd { position:fixed; z-index:91; left:50%; top:12vh; transform:translateX(-50%); width:min(560px, calc(100vw - 24px)); max-height:70vh;' +
+'  display:flex; flex-direction:column; background:var(--card); border:1px solid var(--line); border-radius:20px; box-shadow:0 24px 60px rgba(60,48,36,.25); overflow:hidden; }' +
+'.eba-cmd label { display:flex; align-items:center; gap:10px; padding:14px 16px; border-bottom:1px solid var(--line); color:var(--mute); }' +
+'.eba-cmd input { flex:1; border:0; outline:0; font-size:16px; color:var(--ink); background:transparent; }' +
+'.eba-cmd ul { list-style:none; margin:0; padding:6px; overflow:auto; }' +
+'.eba-cmd li a { display:flex; align-items:center; gap:10px; padding:10px; border-radius:12px; font-size:15px; }' +
+'.eba-cmd li a.hi, .eba-cmd li a:hover { background:var(--wash); }' +
+'.eba-cmd li .sec { margin-left:auto; font-size:12px; color:var(--mute); }' +
+'.eba-cmd .none { padding:18px; text-align:center; color:var(--mute); font-size:14px; }' +
+
+/* ---------- page ---------- */
+'.eba-main { width:100%; max-width:1240px; margin:0 auto; padding:28px 24px 56px; min-width:0; display:grid; gap:20px; flex:1; align-content:start; }' +
+'.eba-head { display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:14px 20px; }' +
+'.eba-head-copy { min-width:0; flex:1 1 380px; }' +
+'.eba-head .eyebrow { margin:0 0 6px; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--mute); }' +
+'.eba-head h1 { margin:0; font-size:clamp(30px,3.6vw,46px); line-height:1.05; color:var(--taupe); }' +
+'.eba-head .sub { margin:8px 0 0; font-size:15px; color:var(--mute); }' +
+'.eba-head .tip { margin:6px 0 0; font-size:13px; line-height:1.5; color:var(--mute); max-width:640px; }' +
+'.eba-head .tip b { font-weight:400; color:var(--taupe); }' +
+'.eba-head-right { display:flex; flex-wrap:wrap; align-items:center; gap:10px; }' +
+'.eba-herostat { display:flex; align-items:baseline; gap:8px; background:var(--card); border:1px solid var(--hair); border-radius:999px; padding:7px 16px; }' +
+'.eba-herostat b { font-size:22px; line-height:1; color:var(--taupe); }' +
+'.eba-herostat .lb { font-size:13px; color:var(--mute); }' +
+'.eba-langs { display:inline-flex; border:1px solid var(--line); border-radius:999px; overflow:hidden; background:var(--card); }' +
+'.eba-langs button { border:0; background:transparent; padding:6px 12px; font-size:12px; letter-spacing:.08em; color:var(--taupe); min-height:32px; }' +
 '.eba-langs button.on { background:var(--accent); color:var(--cream); }' +
 
+/* footer */
+'.eba-foot { border-top:1px solid var(--line); }' +
+'.eba-footin { max-width:1240px; margin:0 auto; padding:18px 24px; display:flex; flex-wrap:wrap; align-items:center; gap:10px 18px; font-size:13px; color:var(--mute); }' +
+'.eba-foot .brand { font-family:var(--font-heading); font-size:16px; color:var(--taupe); }' +
+'.eba-foot a:hover { color:var(--taupe); text-decoration:underline; }' +
+'.eba-foot .sp { flex:1; }' +
+
 /* stat cards */
-'.eba-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(168px,1fr)); gap:14px; }' +
-'.eba-stat { background:var(--card); border:0; border-radius:24px; padding:18px 20px; text-align:left; display:block;' +
-'  box-shadow:0 1px 2px rgba(149,127,103,.04), 0 10px 30px rgba(149,127,103,.05); transition:transform .16s ease; }' +
-'button.eba-stat:hover { transform:translateY(-2px); }' +
-'.eba-stat .lb { display:block; font-size:12.5px; color:var(--mute); }' +
-'.eba-stat b { display:block; font-size:38px; line-height:1.1; color:var(--taupe); margin:8px 0 4px; overflow-wrap:anywhere; }' +
-'.eba-stat .cap { display:block; font-size:11.5px; color:var(--sand); }' +
+'.eba-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; }' +
+'.eba-stat { background:var(--card); border:1px solid var(--hair); border-radius:20px; padding:16px 18px; text-align:left; display:block; transition:border-color .16s ease; }' +
+'button.eba-stat:hover { border-color:var(--line); }' +
+'.eba-stat .lb { display:block; font-size:13px; color:var(--mute); }' +
+'.eba-stat b { display:block; font-size:30px; line-height:1.1; color:var(--taupe); margin:6px 0 2px; overflow-wrap:anywhere; }' +
+'.eba-stat .cap { display:block; font-size:12px; color:var(--mute); }' +
 
 /* panels */
-'.eba-cols { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:16px; align-items:start; }' +
-'.eba-cols.wide-left { grid-template-columns:minmax(0,1.35fr) minmax(0,1fr); }' +
-'.eba-panel { background:var(--card); border-radius:30px; padding:26px 28px;' +
-'  box-shadow:0 1px 2px rgba(149,127,103,.04), 0 14px 40px rgba(149,127,103,.06); }' +
-'.eba-eyebrow { margin:0 0 4px; font-size:10px; letter-spacing:.28em; color:var(--sand); text-transform:uppercase; }' +
-'.eba-panel h2 { margin:0 0 18px; font-size:clamp(26px,2.6vw,40px); line-height:1.02; color:var(--taupe); }' +
-'.eba-panelhead { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; }' +
+'.eba-cols { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:20px; align-items:start; }' +
+'.eba-cols.wide-left { grid-template-columns:minmax(0,1.6fr) minmax(0,1fr); }' +
+'.eba-panel { background:var(--card); border:1px solid var(--hair); border-radius:24px; padding:22px 24px; min-width:0; }' +
+'.eba-eyebrow { display:none; }' +
+'.eba-panel h2 { margin:0 0 14px; font-size:clamp(22px,2vw,26px); line-height:1.15; color:var(--taupe); }' +
+'.eba-panelhead { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }' +
 
 /* buttons */
-'.eba-btn { display:inline-flex; align-items:center; justify-content:center; gap:7px; border:1px solid var(--line);' +
-'  border-radius:999px; padding:10px 18px; font-size:12.5px; background:var(--card); color:var(--taupe); }' +
+'.eba-btn { display:inline-flex; align-items:center; justify-content:center; gap:7px; border:1px solid var(--line); min-height:40px;' +
+'  border-radius:999px; padding:9px 16px; font-size:14px; background:var(--card); color:var(--taupe); }' +
 '.eba-btn:hover { background:var(--wash); }' +
 '.eba-btn-dark { background:var(--accent); border-color:var(--accent); color:var(--cream); }' +
 '.eba-btn-dark:hover { background:var(--accent-dark); color:var(--cream); }' +
-'.eba-btn.mini { padding:6px 13px; font-size:11px; }' +
+'.eba-btn.mini { min-height:34px; padding:6px 12px; font-size:13px; }' +
 '.eba-btn:disabled { opacity:.5; cursor:not-allowed; }' +
 
 /* cta */
 '.eba-cta { display:flex; align-items:center; justify-content:space-between; gap:16px; width:100%; text-align:left;' +
-'  background:var(--accent); color:var(--cream); border:0; border-radius:24px; padding:24px 26px;' +
-'  transition:background .16s ease; }' +
+'  background:var(--accent); color:var(--cream); border:0; border-radius:20px; padding:20px 22px; transition:background .16s ease; }' +
 '.eba-cta:hover { background:var(--accent-dark); }' +
 '.eba-cta > span { min-width:0; }' +
-'.eba-cta h3 { margin:0; font-size:clamp(24px,2.4vw,36px); line-height:1; overflow-wrap:anywhere; }' +
+'.eba-cta h3 { margin:0; font-size:clamp(22px,2vw,28px); line-height:1.1; overflow-wrap:anywhere; }' +
 '.eba-cta h3, .eba-cta p, .eba-cta .go { color:inherit; }' +
 '.eba a.eba-btn-dark, .eba a.eba-cta:not(.eba-cta-quiet) { color:var(--cream); }' +
-'.eba-cta p { margin:8px 0 0; font-size:13px; opacity:.82; }' +
+'.eba-cta p { margin:6px 0 0; font-size:13px; opacity:.85; }' +
 '.eba-cta .go { font-size:13px; white-space:nowrap; opacity:.9; }' +
 '.eba-cta-quiet { background:var(--wash); color:var(--ink); border:1px solid var(--line); margin-top:14px; }' +
-'.eba-cta-quiet:hover { background:#efe8de; }' +
+'.eba-cta-quiet:hover { background:var(--soft); }' +
 '.eba-cta-quiet h3 { color:var(--taupe); }' +
 '.eba-cta-quiet p { color:var(--mute); opacity:1; }' +
 '.eba-cta-quiet .go { color:var(--taupe); }' +
 
 /* form fields */
-'.eba-lb { display:block; font-size:10px; text-transform:uppercase; letter-spacing:.18em; color:var(--sand); margin:0 0 6px; }' +
-'.eba-in { width:100%; border:1px solid var(--line); border-radius:14px; background:var(--wash); padding:11px 15px;' +
-'  font-size:13.5px; color:var(--ink); outline:0; }' +
-'.eba-in:focus { border-color:var(--taupe); background:var(--card); }' +
-'.eba-in:disabled { color:var(--sand); }' +
-'.eba-in::placeholder { color:var(--sand); }' +
+'.eba-lb { display:block; font-size:13px; color:var(--mute); margin:0 0 6px; }' +
+'.eba-in { width:100%; border:1px solid var(--line); border-radius:12px; background:var(--wash); padding:11px 14px; min-height:44px;' +
+'  font-size:15px; color:var(--ink); outline:0; }' +
+'.eba-in:focus { border-color:var(--warm); background:var(--card); }' +
+'.eba-in:disabled { color:var(--mute); opacity:.7; }' +
+'.eba-in::placeholder { color:#a8947c; }' +
 'textarea.eba-in { resize:vertical; }' +
 '.eba-formrow { display:grid; grid-template-columns:minmax(0,1.6fr) minmax(0,1fr); gap:12px; }' +
 '.eba-formrow.even { grid-template-columns:minmax(0,1fr) minmax(0,1fr); }' +
 '.eba-field + .eba-field, .eba-formrow + .eba-field, .eba-field + .eba-formrow, .eba-formrow + .eba-formrow { margin-top:12px; }' +
-'.eba-checks { display:flex; flex-wrap:wrap; gap:10px 18px; margin-top:16px; padding-top:16px; border-top:1px solid var(--line); }' +
-'.eba-check { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--mute); cursor:pointer; }' +
-'.eba-check input { accent-color:var(--accent); width:16px; height:16px; }' +
+'.eba-checks { display:flex; flex-wrap:wrap; gap:10px 18px; margin-top:16px; padding-top:16px; border-top:1px solid var(--hair); }' +
+'.eba-check { display:flex; align-items:center; gap:8px; font-size:14px; color:var(--ink); cursor:pointer; min-height:32px; }' +
+'.eba-check input { accent-color:var(--accent); width:17px; height:17px; }' +
 '.eba-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:18px; }' +
-'.eba-select { appearance:none; border:1px solid var(--line); border-radius:999px; padding:10px 32px 10px 15px;' +
-'  background:var(--card) url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'11\' height=\'11\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23957f67\' stroke-width=\'2\'%3E%3Cpath d=\'M6 9l6 6 6-6\'/%3E%3C/svg%3E") no-repeat right 13px center;' +
-'  color:var(--taupe); font-size:12.5px; outline:0; }' +
+'.eba-select { appearance:none; border:1px solid var(--line); border-radius:999px; padding:9px 32px 9px 15px; min-height:40px;' +
+'  background:var(--card) url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'11\' height=\'11\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%235f4e3d\' stroke-width=\'2\'%3E%3Cpath d=\'M6 9l6 6 6-6\'/%3E%3C/svg%3E") no-repeat right 13px center;' +
+'  color:var(--taupe); font-size:14px; outline:0; }' +
 '.eba-search { display:flex; align-items:center; gap:9px; border:1px solid var(--line); border-radius:999px;' +
-'  padding:10px 16px; background:var(--card); flex:1; min-width:200px; }' +
-'.eba-search svg { color:var(--sand); flex-shrink:0; }' +
-'.eba-search input { width:100%; border:0; outline:0; background:transparent; color:var(--ink); font-size:13px; }' +
-'.eba-search input::placeholder { color:var(--sand); }' +
-'.eba-toolbar { display:flex; flex-wrap:wrap; align-items:center; gap:9px; }' +
-'.eba-notice { margin-top:14px; background:var(--wash); border:1px solid var(--line); border-radius:16px;' +
-'  padding:11px 16px; font-size:12.5px; color:var(--taupe); }' +
-'.eba-err { margin-top:14px; background:rgba(160,53,53,.07); border:1px solid rgba(160,53,53,.2); border-radius:16px;' +
-'  padding:11px 16px; font-size:12.5px; color:#8f3a3a; }' +
-'.eba-muted { font-size:12.5px; color:var(--mute); }' +
+'  padding:0 16px; min-height:42px; background:var(--card); flex:1; min-width:200px; }' +
+'.eba-search svg { color:var(--mute); flex-shrink:0; }' +
+'.eba-search input { width:100%; border:0; outline:0; background:transparent; color:var(--ink); font-size:15px; }' +
+'.eba-search input::placeholder { color:#a8947c; }' +
+'.eba-toolbar { display:flex; flex-wrap:wrap; align-items:center; gap:8px; }' +
+'.eba-notice { margin-top:14px; background:var(--wash); border:1px solid var(--line); border-radius:14px; padding:11px 14px; font-size:14px; color:var(--taupe); }' +
+'.eba-err { margin-top:14px; background:rgba(160,53,53,.07); border:1px solid rgba(160,53,53,.2); border-radius:14px; padding:11px 14px; font-size:14px; color:#8f3a3a; }' +
+'.eba-muted { font-size:13px; color:var(--mute); }' +
 
 /* rows */
-'.eba-rows { display:grid; grid-template-columns:minmax(0,1fr); gap:10px; }' +
-'.eba-row { display:flex; flex-wrap:wrap; align-items:center; gap:10px 14px; width:100%; text-align:left;' +
-'  background:var(--wash); border:1px solid transparent; border-radius:20px; padding:14px 18px; color:inherit; }' +
-'button.eba-row:hover, .eba-row.click:hover { border-color:var(--line); background:var(--card); }' +
+'.eba-rows { display:grid; grid-template-columns:minmax(0,1fr); gap:0; }' +
+'.eba-row { display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px; width:100%; text-align:left;' +
+'  background:transparent; border:0; border-top:1px solid var(--hair); border-radius:0; padding:13px 4px; color:inherit; font-size:inherit; }' +
+'.eba-rows > :first-child.eba-row, .eba-rows > :first-child > .eba-row:first-child { border-top:0; }' +
+'button.eba-row:hover, .eba-row.click:hover { background:var(--wash); }' +
 '.eba-row.off { opacity:.55; }' +
-'.eba-who { min-width:180px; flex:1; }' +
+'.eba-who { min-width:160px; flex:1; }' +
 '.eba-who .n { display:block; font-size:15px; color:var(--ink); overflow:hidden; text-overflow:ellipsis; overflow-wrap:anywhere; }' +
-'.eba-who .s { display:block; margin-top:3px; font-size:11.5px; color:var(--mute); overflow-wrap:anywhere; }' +
-'.eba-amt { font-size:17px; color:var(--taupe); white-space:nowrap; }' +
+'.eba-who .s { display:block; margin-top:2px; font-size:12.5px; color:var(--mute); overflow-wrap:anywhere; }' +
+'.eba-amt { font-size:16px; color:var(--ink); white-space:nowrap; }' +
 '.eba-rowbtns { display:flex; flex-wrap:wrap; gap:6px; }' +
-'.eba-pill { border-radius:999px; padding:4px 11px; font-size:9px; letter-spacing:.12em; text-transform:uppercase;' +
+'.eba-pill { border-radius:999px; padding:4px 10px; font-size:11px; letter-spacing:.06em; text-transform:uppercase;' +
 '  white-space:nowrap; border:1px solid transparent; }' +
-'.eba-pill.ok { background:var(--accent); color:var(--cream); }' +
-'.eba-pill.mid { background:rgba(207,189,169,.32); color:var(--taupe); }' +
+'.eba-pill.ok { background:var(--okbg); color:var(--ok); }' +
+'.eba-pill.mid { background:var(--waitbg); color:var(--wait); }' +
 '.eba-pill.off { background:var(--card); border-color:var(--line); color:var(--mute); }' +
-'.eba-empty { padding:44px 18px; text-align:center; font-size:13.5px; color:var(--sand); background:var(--wash); border-radius:20px; }' +
+'.eba-empty { padding:40px 18px; text-align:center; font-size:14px; color:var(--mute); background:var(--wash); border-radius:16px; }' +
 
 /* detail cells */
-'.eba-cells { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:12px; }' +
-'.eba-cell { background:var(--wash); border:1px solid var(--line); border-radius:20px; padding:14px 16px;' +
-'  font-size:12.5px; line-height:1.6; color:var(--mute); }' +
-'.eba-cell .lb { display:block; font-size:9px; text-transform:uppercase; letter-spacing:.18em; color:var(--sand); margin-bottom:6px; }' +
+'.eba-cells { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:10px; }' +
+'.eba-cell { background:var(--wash); border:1px solid var(--hair); border-radius:16px; padding:12px 14px; font-size:13px; line-height:1.6; color:var(--mute); }' +
+'.eba-cell .lb { display:block; font-size:12px; color:var(--mute); margin-bottom:4px; }' +
 '.eba-cell b { color:var(--ink); font-weight:400; }' +
 
 /* table */
 '.eba-tablewrap { overflow-x:auto; }' +
-'.eba-table { width:100%; border-collapse:collapse; font-size:13px; }' +
-'.eba-table th { text-align:left; font-weight:400; font-size:9.5px; letter-spacing:.18em; text-transform:uppercase;' +
-'  color:var(--sand); padding:0 14px 10px; }' +
-'.eba-table td { padding:14px; color:var(--mute); border-top:1px solid var(--line); }' +
+'.eba-table { width:100%; border-collapse:collapse; font-size:14px; }' +
+'.eba-table th { text-align:left; font-weight:400; font-size:12px; color:var(--mute); padding:0 12px 10px; }' +
+'.eba-table td { padding:12px; color:var(--mute); border-top:1px solid var(--hair); }' +
 '.eba-table tbody tr:hover td { background:var(--wash); }' +
-'.eba-table td:first-child { color:var(--ink); border-radius:14px 0 0 14px; }' +
-'.eba-table td:last-child { border-radius:0 14px 14px 0; text-align:right; }' +
+'.eba-table td:first-child { color:var(--ink); }' +
+'.eba-table td:last-child { text-align:right; }' +
 '.eba-clip { max-width:230px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }' +
 
 /* responsive */
-'@media (max-width:1180px) { .eba-cols, .eba-cols.wide-left { grid-template-columns:minmax(0,1fr); } }' +
-
-/* tablet + phone: sidebar becomes a compact header bar */
-'@media (max-width:980px) {' +
-' .eba-hero { flex-direction:column; align-items:stretch; gap:18px; padding:22px 20px; border-radius:22px; }' +
-' .eba-hero::after { width:200px; height:200px; right:-60px; top:-70px; }' +
-' .eba-hero h1 { font-size:clamp(30px,8vw,42px); }' +
-' .eba-hero .sub { margin-top:10px; font-size:13.5px; }' +
-' .eba-hero-right { width:100%; align-items:stretch; justify-content:space-between; }' +
-' .eba-herostat { flex:1; min-width:0; padding:12px 16px; border-radius:18px; text-align:left; }' +
-' .eba-herostat b { font-size:32px; }' +
-' .eba-langs { align-self:flex-start; }' +
+'@media (max-width:1100px) { .eba-cols, .eba-cols.wide-left { grid-template-columns:minmax(0,1fr); } }' +
+'@media (max-width:1023px) {' +
+' .eba-main { padding:18px 16px calc(110px + env(safe-area-inset-bottom)); gap:16px; }' +
+' .eba-foot { display:none; }' +
+' .eba-head { align-items:flex-start; }' +
+' .eba-head-copy { flex-basis:100%; }' +
+' .eba-head h1 { font-size:clamp(28px,7.4vw,36px); }' +
+' .eba-head .sub { font-size:14px; }' +
+' .eba-head .tip { display:none; }' +
+' .eba-head-right { width:100%; }' +
 ' .eba-stats { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }' +
-' .eba-stat { padding:14px 16px; border-radius:18px; }' +
-' .eba-stat .lb { font-size:11.5px; }' +
-' .eba-stat b { font-size:28px; margin:6px 0 3px; }' +
-' .eba-stat .cap { font-size:10.5px; }' +
-' .eba-panel { padding:18px 16px; border-radius:22px; }' +
-' .eba-panel h2 { margin-bottom:14px; font-size:clamp(24px,6.4vw,30px); }' +
+' .eba-stat { padding:12px 14px; border-radius:16px; }' +
+' .eba-stat b { font-size:24px; }' +
+' .eba-stat .cap { display:none; }' +
+' .eba-panel { padding:16px; border-radius:20px; }' +
 ' .eba-panelhead { flex-wrap:wrap; }' +
-' .eba-cta { flex-wrap:wrap; padding:18px; border-radius:18px; }' +
-' .eba-cta h3 { font-size:26px; }' +
-' .eba-row { padding:13px 14px; border-radius:16px; }' +
-' .eba-cell { border-radius:16px; }' +
+' .eba-cta { flex-wrap:wrap; padding:16px; border-radius:16px; }' +
 '}' +
-
-/* phone: the checks table stops being a table */
 '@media (max-width:720px) {' +
 ' .eba-tablewrap { overflow-x:visible; }' +
 ' .eba-table, .eba-table tbody, .eba-table tr, .eba-table td { display:block; width:100%; }' +
 ' .eba-table thead { display:none; }' +
-' .eba-table tr { background:var(--wash); border-radius:18px; padding:12px 14px; margin-bottom:10px; }' +
+' .eba-table tr { background:var(--wash); border-radius:16px; padding:10px 14px; margin-bottom:8px; }' +
 ' .eba-table tbody tr:hover td { background:transparent; }' +
 ' .eba-table td { display:flex; align-items:center; justify-content:space-between; gap:14px;' +
-'   border-top:0; padding:5px 0; color:var(--ink); text-align:right !important; border-radius:0 !important; }' +
-' .eba-table td::before { content:attr(data-label); flex-shrink:0; font-size:9.5px; letter-spacing:.16em;' +
-'   text-transform:uppercase; color:var(--sand); }' +
+'   border-top:0; padding:5px 0; color:var(--ink); text-align:right !important; }' +
+' .eba-table td::before { content:attr(data-label); flex-shrink:0; font-size:12px; color:var(--mute); }' +
 ' .eba-table td:not([data-label]) { justify-content:flex-end; padding-top:10px; }' +
 ' .eba-table td:not([data-label])::before { content:none; }' +
 ' .eba-clip { max-width:none; }' +
 '}' +
-
-/* small phone */
 '@media (max-width:560px) {' +
 ' .eba-formrow, .eba-formrow.even { grid-template-columns:minmax(0,1fr); }' +
 ' .eba-cells { grid-template-columns:minmax(0,1fr); }' +
-' .eba-who { flex:1 1 100%; min-width:0; }' +
-' .eba-amt { margin-left:auto; font-size:16px; }' +
+' .eba-who { flex:1 1 60%; min-width:0; }' +
+' .eba-amt { margin-left:auto; }' +
 ' .eba-rowbtns { flex:1 1 100%; }' +
-' .eba-rowbtns .eba-btn { flex:1; min-height:36px; }' +
+' .eba-rowbtns .eba-btn { flex:1; }' +
 ' .eba-search { flex:1 1 100%; }' +
 ' .eba-select { flex:1; }' +
-' .eba-btn { padding:10px 16px; }' +
 ' .eba-actions .eba-btn { flex:1; }' +
 '}' +
-'@media (max-width:380px) {' +
-' .eba-hero-right { flex-direction:column; gap:12px; }' +
-' .eba-langs { align-self:stretch; }' +
-' .eba-langs button { flex:1; }' +
-'}' +
-'@media (display-mode:standalone) { .eba-shell { padding-top:max(12px, env(safe-area-inset-top)); } }' +
+'@media (display-mode:standalone) { .eba-mhead { padding-top:max(10px, env(safe-area-inset-top)); } }' +
 '@media (prefers-reduced-motion:reduce) { .eba * { transition:none !important; } }' +
-'@media print { .no-print, .eba-top, .eba-rail, .eba-mhead, .eba-tabs, .eba-sheet { display:none !important; } .eba { background:#fff; } .eba-shell { display:block; padding:0; }' +
-' .eba-panel, .eba-hero { box-shadow:none; padding:0; } }';
+'@media print { .no-print, .eba-top, .eba-mhead, .eba-tabs, .eba-sheet, .eba-foot { display:none !important; } .eba { background:#fff; }' +
+' .eba-main { padding:0; } .eba-panel { border:0; padding:0; } }';
 
 /* ============================================================ */
 export default function AdminShell(props) {
@@ -484,9 +490,15 @@ export default function AdminShell(props) {
   const lang = props.lang || ownLang;
   const t = T[lang] || T.en;
 
-  // Which menu is open: 'top:payments', 'rail:lives', 'sheet:more', 'top:account'... or null.
+  // Which menu is open: 'top:sell', 'top:new', 'top:account', 'sheet:more'... or null.
   const [open, setOpen] = useState(null);
   function toggle(id) { setOpen(function (cur) { return cur === id ? null : id; }); }
+
+  // Search / jump to a page.
+  const [cmdOpen, setCmdOpen] = useState(false);
+  const [cmdQ, setCmdQ] = useState('');
+  const [cmdHi, setCmdHi] = useState(0);
+  const cmdInput = useRef(null);
 
   useEffect(function () {
     if (props.lang) return;
@@ -505,14 +517,29 @@ export default function AdminShell(props) {
     function close(e) {
       if (!e.target.closest || !e.target.closest('[data-eba-pop]')) setOpen(null);
     }
-    function esc(e) { if (e.key === 'Escape') setOpen(null); }
+    function keys(e) {
+      if (e.key === 'Escape') { setOpen(null); setCmdOpen(false); }
+      if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
+        e.preventDefault();
+        setOpen(null);
+        setCmdOpen(function (v) { return !v; });
+      }
+    }
     document.addEventListener('mousedown', close);
-    document.addEventListener('keydown', esc);
+    document.addEventListener('keydown', keys);
     return function () {
       document.removeEventListener('mousedown', close);
-      document.removeEventListener('keydown', esc);
+      document.removeEventListener('keydown', keys);
     };
   }, []);
+
+  useEffect(function () {
+    if (cmdOpen) {
+      setCmdQ('');
+      setCmdHi(0);
+      setTimeout(function () { if (cmdInput.current) cmdInput.current.focus(); }, 0);
+    }
+  }, [cmdOpen]);
 
   // Home screen app: manifest + iPhone tags + offline screen.
   useEffect(function () {
@@ -527,7 +554,7 @@ export default function AdminShell(props) {
   const avatarUrl = admin?.avatar_url || admin?.picture || admin?.avatar || null;
   // ---- the menu, grouped. Add a page to a section and every layout shows it. ----
   const SECTIONS = [
-    { key: 'payments', label: t.secPayments, icon: <IconWallet />, items: [
+    { key: 'payments', label: t.secSell, icon: <IconSell />, items: [
       { key: 'payment-links', href: '/admin/payment-links', label: t.paymentLinks, icon: <IconLink /> },
       { key: 'sezzle', href: '/admin/sezzle', label: t.sezzle, icon: <IconSezzle /> },
       { key: 'card-terminal', href: '/admin/clover-terminal', label: t.cardTerminal, icon: <IconTerminal /> },
@@ -547,10 +574,8 @@ export default function AdminShell(props) {
       { key: 'checks', href: '/admin/checks', label: t.checks, icon: <IconCheck /> },
       { key: 'reminders', href: '/admin/reminders', label: t.reminders, icon: <IconBell /> },
       { key: 'documents', href: '/admin/documents', label: t.documents, icon: <IconFolder /> },
-    ] },
-    { key: 'shipping', label: t.shipping, icon: <IconTruck />, external: true, items: [
       { key: 'ship-orders', href: SHIP + '/orders', label: t.orders, icon: <IconBox />, external: true },
-      { key: 'ship-home', href: SHIP, label: t.shipping, icon: <IconTruck />, external: true },
+      { key: 'ship-home', href: SHIP, label: t.shippingPortal, icon: <IconTruck />, external: true },
     ] },
   ];
   const accountNav = [
@@ -560,12 +585,38 @@ export default function AdminShell(props) {
     { key: 'settings', href: '/admin/settings', label: t.settings, icon: <IconGear /> },
     { key: 'help', href: '/admin/help', label: t.help, icon: <IconHelp /> },
   ];
+  const createNav = [
+    { key: 'new-link', href: '/admin/payment-links?new=1', label: t.newLink, icon: <IconLink /> },
+    { key: 'new-sezzle', href: '/admin/sezzle', label: t.newSezzle, icon: <IconSezzle /> },
+    { key: 'new-gift', href: '/admin/gift-cards', label: t.newGift, icon: <IconGift /> },
+    { key: 'new-check', href: '/admin/checks/new', label: t.newCheck, icon: <IconCheck /> },
+  ];
   const isHome = props.active === 'overview';
   function sectionActive(sec) {
     return sec.items.some(function (it) { return it.key === props.active; });
   }
   const accountActive = accountNav.some(function (it) { return it.key === props.active; });
-  const firstName = admin?.name?.split(' ')[0] || (admin?.email ? admin.email.split('@')[0] : '');
+
+  // Every page, for Search / jump to.
+  const allPages = [{ key: 'overview', href: '/admin', label: t.overview, icon: <IconHome />, sec: '' }]
+    .concat(SECTIONS.reduce(function (list, sec) {
+      return list.concat(sec.items.map(function (it) { return { ...it, sec: sec.label }; }));
+    }, []))
+    .concat(accountNav.map(function (it) { return { ...it, sec: t.account }; }))
+    .concat(createNav.map(function (it) { return { ...it, sec: t.createWhat }; }));
+  const cmdList = allPages.filter(function (p) {
+    const q = cmdQ.trim().toLowerCase();
+    return !q || (p.label + ' ' + p.sec).toLowerCase().includes(q);
+  });
+  function cmdKey(e) {
+    if (e.key === 'ArrowDown') { e.preventDefault(); setCmdHi(function (i) { return Math.min(i + 1, cmdList.length - 1); }); }
+    if (e.key === 'ArrowUp') { e.preventDefault(); setCmdHi(function (i) { return Math.max(i - 1, 0); }); }
+    if (e.key === 'Enter' && cmdList[cmdHi]) {
+      const p = cmdList[cmdHi];
+      if (p.external) window.open(p.href, '_blank', 'noopener');
+      else window.location.href = p.href;
+    }
+  }
 
   function avatar() {
     return avatarUrl ? (
@@ -590,36 +641,64 @@ export default function AdminShell(props) {
     });
   }
 
+  function langSwitch() {
+    return (
+      <div className="eba-langs" role="group" aria-label={t.language}>
+        {['en', 'es'].map(function (l) {
+          return (
+            <button key={l} type="button" className={lang === l ? 'on' : ''} aria-pressed={lang === l} onClick={function () { setLang(l); }}>
+              {l.toUpperCase()}
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
+
+  function profileHead() {
+    return (
+      <div className="eba-pop-head">
+        {avatar()}
+        <div className="who">
+          <p className="n">{admin?.name || t.account}</p>
+          <p className="e">{admin?.email}{admin?.role ? ' · ' + admin.role : ''}</p>
+        </div>
+      </div>
+    );
+  }
+
   function accountMenu() {
     return (
       <>
-        <div className="eba-pop-head">
-          <p className="n">{admin?.name || t.account}</p>
-          <p className="e">{admin?.email}{admin?.role ? ' \u00b7 ' + admin.role : ''}</p>
-        </div>
+        {profileHead()}
         {pageLinks(accountNav)}
+        <div className="eba-langrow"><span>{t.language}</span>{langSwitch()}</div>
         <div className="eba-pop-sep" />
-        <button role="menuitem" onClick={logout}><span className="eba-chip"><IconLogout /></span>{t.logOut}</button>
+        <button type="button" role="menuitem" onClick={logout}><span className="eba-chip"><IconLogout /></span>{t.logOut}</button>
       </>
     );
   }
 
   const sheetSection = open && open.indexOf('sheet:') === 0 ? open.slice(6) : null;
   const sheetSec = SECTIONS.find(function (s) { return s.key === sheetSection; });
+  const moreOn = SECTIONS.some(function (s) { return (s.key === 'lives' || s.key === 'business') && sectionActive(s); }) || accountActive;
+  const sellSec = SECTIONS[0];
+  const giftSec = SECTIONS[1];
+  const eyebrow = props.eyebrow && String(props.eyebrow).toUpperCase() !== 'ADMIN STUDIO' ? props.eyebrow : null;
 
   return (
     <main className="eba">
       <style>{shellCss}</style>
 
-      <div className="eba-shell">
-        {/* ===== computer: top bar ===== */}
-        <header className="eba-top no-print" data-eba-pop>
+      {/* ===== computer: top bar ===== */}
+      <header className="eba-top no-print" data-eba-pop>
+        <div className="eba-topin">
           <a href="/admin" aria-label="Erendira&#8217;s Boutique admin home">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={LOGO_SRC} alt="Erendira&#8217;s Boutique" className="eba-logo" />
           </a>
           <nav aria-label="Admin">
-            <a href="/admin" className={'eba-tn' + (isHome ? ' on' : '')} aria-current={isHome ? 'page' : undefined}>{t.overview}</a>
+            <a href="/admin" className={'eba-tn' + (isHome ? ' on' : '')} aria-current={isHome ? 'page' : undefined}>{t.home}</a>
             {SECTIONS.map(function (sec) {
               const id = 'top:' + sec.key;
               const isOpen = open === id;
@@ -627,148 +706,162 @@ export default function AdminShell(props) {
                 <div key={sec.key} className="eba-wrap">
                   <button type="button" className={'eba-tn' + (sectionActive(sec) ? ' on' : '') + (isOpen ? ' open' : '')}
                     aria-haspopup="menu" aria-expanded={isOpen} onClick={function () { toggle(id); }}>
-                    {sec.label}<span className="car">{sec.external ? '\u2197' : '\u25BE'}</span>
+                    {sec.label}<IconChevron />
                   </button>
                   {isOpen && <div className="eba-pop eba-drop" role="menu">{pageLinks(sec.items)}</div>}
                 </div>
               );
             })}
           </nav>
+          <button type="button" className="eba-searchbtn" aria-label={t.search} onClick={function () { setOpen(null); setCmdOpen(true); }}>
+            <IconSearch /><span className="lbl">{t.search}</span><kbd>{'⌘'}K</kbd>
+          </button>
           <div className="eba-wrap">
-            <button type="button" className="eba-userpill" aria-haspopup="menu" aria-expanded={open === 'top:account'}
-              onClick={function () { toggle('top:account'); }}>
-              {avatar()}<span className="nm">{admin?.name || t.account}</span><IconChevron />
+            <button type="button" className="eba-newbtn" aria-haspopup="menu" aria-expanded={open === 'top:new'} onClick={function () { toggle('top:new'); }}>
+              <IconPlus />{t.create}
             </button>
-            {open === 'top:account' && <div className="eba-pop eba-drop right" role="menu">{accountMenu()}</div>}
+            {open === 'top:new' && <div className="eba-pop eba-drop right" role="menu">{pageLinks(createNav)}</div>}
           </div>
-        </header>
-
-        {/* ===== iPad: slim icon rail ===== */}
-        <aside className="eba-rail no-print" data-eba-pop aria-label="Admin">
-          <a href="/admin" className="eba-brandmark" aria-label="Erendira&#8217;s Boutique admin home">EB</a>
-          <a href="/admin" className={'eba-rb' + (isHome ? ' on' : '')} aria-current={isHome ? 'page' : undefined}>
-            <span className="ic"><IconHome /></span>{t.home}
-          </a>
-          {SECTIONS.map(function (sec) {
-            const id = 'rail:' + sec.key;
-            const isOpen = open === id;
-            return (
-              <div key={sec.key} className="eba-wrap">
-                <button type="button" className={'eba-rb' + (sectionActive(sec) ? ' on' : '') + (isOpen ? ' open' : '')}
-                  aria-haspopup="menu" aria-expanded={isOpen} onClick={function () { toggle(id); }}>
-                  <span className="ic">{sec.icon}</span>{sec.label}
-                </button>
-                {isOpen && (
-                  <div className="eba-pop eba-fly" role="menu">
-                    <p className="eba-pop-label">{sec.label}</p>
-                    {pageLinks(sec.items)}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-          <div className="eba-rail-fill" />
           <div className="eba-wrap">
-            <button type="button" className={'eba-iconbtn' + (accountActive ? ' on' : '')} aria-label={t.account}
-              aria-haspopup="menu" aria-expanded={open === 'rail:account'} onClick={function () { toggle('rail:account'); }}>
+            <button type="button" className="eba-iconbtn" aria-label={t.account + (admin?.name ? ': ' + admin.name : '')} aria-haspopup="menu"
+              aria-expanded={open === 'top:account'} onClick={function () { toggle('top:account'); }}>
               {avatar()}
             </button>
-            {open === 'rail:account' && <div className="eba-pop eba-fly up" role="menu">{accountMenu()}</div>}
+            {open === 'top:account' && <div className="eba-pop eba-drop right" role="menu" style={{ minWidth: 280 }}>{accountMenu()}</div>}
           </div>
-        </aside>
-
-        {/* ===== phone: small header + bottom tabs ===== */}
-        <div className="eba-mhead no-print" data-eba-pop>
-          <a href="/admin" aria-label="Erendira&#8217;s Boutique admin home">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={LOGO_SRC} alt="Erendira&#8217;s Boutique" className="eba-logo" />
-          </a>
-          <button type="button" className="eba-iconbtn" aria-label={t.account} onClick={function () { toggle('sheet:account'); }}>{avatar()}</button>
         </div>
+      </header>
 
-        {open && open.indexOf('sheet:') === 0 && (
-          <button type="button" className="eba-sheet-bg no-print" aria-label="Close" onClick={function () { setOpen(null); }} />
-        )}
-        {open && open.indexOf('sheet:') === 0 && (
-          <div className="eba-pop eba-sheet no-print" data-eba-pop role="menu">
-            <span className="eba-grab" />
-            {sheetSection === 'account' ? (
-              accountMenu()
-            ) : sheetSection === 'more' ? (
-              <>
-                {SECTIONS.filter(function (s) { return s.key === 'business' || s.key === 'shipping'; }).map(function (sec) {
-                  return (
-                    <div key={sec.key}>
-                      <p className="eba-pop-label">{sec.label}</p>
-                      <div className="eba-sheet-grid">{pageLinks(sec.items)}</div>
-                    </div>
-                  );
-                })}
-                <p className="eba-pop-label">{t.account}</p>
-                <div className="eba-sheet-grid">{pageLinks(accountNav)}</div>
-              </>
-            ) : sheetSec ? (
-              <>
-                <p className="eba-pop-label">{sheetSec.label}</p>
-                <div className="eba-sheet-grid">{pageLinks(sheetSec.items)}</div>
-              </>
-            ) : null}
+      {/* ===== phone + iPad: small header ===== */}
+      <div className="eba-mhead no-print">
+        <a href="/admin" aria-label="Erendira&#8217;s Boutique admin home">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={LOGO_SRC} alt="Erendira&#8217;s Boutique" className="eba-logo" />
+        </a>
+        <span className="sp" />
+        <button type="button" className="eba-roundbtn" aria-label={t.searchShort} onClick={function () { setOpen(null); setCmdOpen(true); }}><IconSearch /></button>
+        <button type="button" className="eba-iconbtn" aria-label={t.account} data-eba-pop onClick={function () { toggle('sheet:more'); }}>{avatar()}</button>
+      </div>
+
+      {sheetSection && (
+        <button type="button" className="eba-sheet-bg no-print" aria-label={t.close} onClick={function () { setOpen(null); }} />
+      )}
+      {sheetSection && (
+        <div className="eba-pop eba-sheet no-print" data-eba-pop role="menu">
+          <span className="eba-grab" />
+          {sheetSection === 'more' ? (
+            <>
+              {profileHead()}
+              <div className="eba-langrow"><span>{t.language}</span>{langSwitch()}</div>
+              {SECTIONS.filter(function (s) { return s.key === 'lives' || s.key === 'business'; }).map(function (sec) {
+                return (
+                  <div key={sec.key}>
+                    <p className="eba-pop-label">{sec.label}</p>
+                    <div className="eba-sheet-grid">{pageLinks(sec.items)}</div>
+                  </div>
+                );
+              })}
+              <p className="eba-pop-label">{t.account}</p>
+              <div className="eba-sheet-grid">{pageLinks(accountNav)}</div>
+              <div className="eba-pop-sep" />
+              <button type="button" role="menuitem" onClick={logout}><span className="eba-chip"><IconLogout /></span>{t.logOut}</button>
+            </>
+          ) : sheetSection === 'new' ? (
+            <>
+              <p className="eba-pop-label">{t.createWhat}</p>
+              <div className="eba-sheet-grid">{pageLinks(createNav)}</div>
+            </>
+          ) : sheetSec ? (
+            <>
+              <p className="eba-pop-label">{sheetSec.label}</p>
+              <div className="eba-sheet-grid">{pageLinks(sheetSec.items)}</div>
+            </>
+          ) : null}
+        </div>
+      )}
+
+      <nav className="eba-tabs no-print" data-eba-pop aria-label="Admin">
+        <a href="/admin" className={'eba-tab' + (isHome ? ' on' : '')} aria-current={isHome ? 'page' : undefined}><IconHome />{t.home}</a>
+        <button type="button" className={'eba-tab' + (sectionActive(sellSec) ? ' on' : '') + (open === 'sheet:payments' ? ' open' : '')}
+          aria-haspopup="menu" aria-expanded={open === 'sheet:payments'} onClick={function () { toggle('sheet:payments'); }}>
+          <IconSell />{t.secSell}
+        </button>
+        <button type="button" className="eba-tabnew" aria-label={t.createWhat} aria-haspopup="menu" aria-expanded={open === 'sheet:new'}
+          onClick={function () { toggle('sheet:new'); }}>
+          <IconPlus />
+        </button>
+        <button type="button" className={'eba-tab' + (sectionActive(giftSec) ? ' on' : '') + (open === 'sheet:gifts' ? ' open' : '')}
+          aria-haspopup="menu" aria-expanded={open === 'sheet:gifts'} onClick={function () { toggle('sheet:gifts'); }}>
+          <IconGift />{t.giftsShort}
+        </button>
+        <button type="button" className={'eba-tab' + (moreOn ? ' on' : '') + (open === 'sheet:more' ? ' open' : '')}
+          aria-haspopup="menu" aria-expanded={open === 'sheet:more'} onClick={function () { toggle('sheet:more'); }}>
+          <IconDots />{t.more}
+        </button>
+      </nav>
+
+      {/* ===== Search / jump to ===== */}
+      {cmdOpen && <button type="button" className="eba-cmd-bg no-print" aria-label={t.close} onClick={function () { setCmdOpen(false); }} />}
+      {cmdOpen && (
+        <div className="eba-cmd no-print" role="dialog" aria-label={t.searchShort}>
+          <label>
+            <IconSearch />
+            <input ref={cmdInput} value={cmdQ} placeholder={t.searchPlaceholder} aria-label={t.searchShort}
+              onChange={function (e) { setCmdQ(e.target.value); setCmdHi(0); }} onKeyDown={cmdKey} />
+          </label>
+          {cmdList.length ? (
+            <ul>
+              {cmdList.map(function (p, i) {
+                return (
+                  <li key={p.key}>
+                    <a href={p.href} className={i === cmdHi ? 'hi' : ''} onMouseEnter={function () { setCmdHi(i); }}
+                      target={p.external ? '_blank' : undefined} rel={p.external ? 'noopener noreferrer' : undefined}>
+                      <span className="eba-chip">{p.icon}</span>{p.label}<span className="sec">{p.sec}</span>
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <p className="none">{t.noResults}</p>
+          )}
+        </div>
+      )}
+
+      <section className="eba-main">
+        <header className="eba-head">
+          <div className="eba-head-copy">
+            {eyebrow && <p className="eyebrow">{eyebrow}</p>}
+            <h1>{props.title}</h1>
+            {props.subtitle && <p className="sub">{props.subtitle}</p>}
+            {props.tip && <p className="tip no-print"><b>{props.tip.label}:</b> {props.tip.body}</p>}
           </div>
-        )}
-
-        <nav className="eba-tabs no-print" data-eba-pop aria-label="Admin">
-          <a href="/admin" className={'eba-tab' + (isHome ? ' on' : '')} aria-current={isHome ? 'page' : undefined}><IconHome />{t.home}</a>
-          {SECTIONS.filter(function (s) { return s.key === 'payments' || s.key === 'gifts' || s.key === 'lives'; }).map(function (sec) {
-            const id = 'sheet:' + sec.key;
-            return (
-              <button key={sec.key} type="button" className={'eba-tab' + (sectionActive(sec) ? ' on' : '') + (open === id ? ' open' : '')}
-                aria-haspopup="menu" aria-expanded={open === id} onClick={function () { toggle(id); }}>
-                {sec.icon}{sec.label}
-              </button>
-            );
-          })}
-          {(function () {
-            const moreOn = SECTIONS.some(function (s) { return (s.key === 'business' || s.key === 'shipping') && sectionActive(s); }) || accountActive;
-            return (
-              <button type="button" className={'eba-tab' + (moreOn ? ' on' : '') + (open === 'sheet:more' ? ' open' : '')}
-                aria-haspopup="menu" aria-expanded={open === 'sheet:more'} onClick={function () { toggle('sheet:more'); }}>
-                <IconDots />{t.more}
-              </button>
-            );
-          })()}
-        </nav>
-
-        <section className="eba-main">
-          <div className="eba-hero">
-            <div className="eba-hero-copy">
-              {props.eyebrow && <p className="eyebrow">{props.eyebrow}</p>}
-              <h1>{props.title}</h1>
-              {props.subtitle && <p className="sub">{props.subtitle}</p>}
-              {props.tip && <p className="tip no-print"><b>{props.tip.label}:</b> {props.tip.body}</p>}
-            </div>
-            <div className="eba-hero-right no-print">
+          {(props.heroStat || props.actions) && (
+            <div className="eba-head-right no-print">
               {props.heroStat && (
-                <div className="eba-herostat">
-                  <span className="lb">{props.heroStat.label}</span>
+                <div className="eba-herostat" title={props.heroStat.caption || undefined}>
                   <b>{props.heroStat.value}</b>
-                  <span className="cap">{props.heroStat.caption}</span>
+                  <span className="lb">{props.heroStat.caption || props.heroStat.label}</span>
                 </div>
               )}
-              <div className="eba-langs" role="group" aria-label="Language">
-                {['en', 'es'].map(function (l) {
-                  return (
-                    <button key={l} className={lang === l ? 'on' : ''} onClick={function () { setLang(l); }}>
-                      {l.toUpperCase()}
-                    </button>
-                  );
-                })}
-              </div>
+              {props.actions}
             </div>
-          </div>
+          )}
+        </header>
 
-          {props.children}
-        </section>
-      </div>
+        {props.children}
+      </section>
+
+      <footer className="eba-foot no-print">
+        <div className="eba-footin">
+          <span className="brand">{t.studio}</span>
+          <a href="/admin/help">{t.help}</a>
+          <a href={SHIP} target="_blank" rel="noopener noreferrer">{t.shippingPortal} {'↗'}</a>
+          <span className="sp" />
+          {langSwitch()}
+          <span>{'©'} {new Date().getFullYear()} Erendira&#8217;s Boutique</span>
+        </div>
+      </footer>
     </main>
   );
 }
