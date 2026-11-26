@@ -99,7 +99,12 @@ function rangeBounds(range, now) {
 const T = {
   en: {
     eyebrow: 'ADMIN STUDIO',
-    title: 'How the Shop Is Doing',
+    title: 'How the shop is doing',
+    goodMorning: 'Good morning', goodAfternoon: 'Good afternoon', goodEvening: 'Good evening',
+    todayChip: 'paid today',
+    allPayments: function (n) { return 'All ' + n + ' payments \u2192'; },
+    hideLedger: 'Hide list',
+    syncHint: 'Clover payments only appear after a sync. Run it once at the end of the day.',
     sub: 'Sales, customers and every payment in one place.',
     todayLabel: 'Today',
     todayCaption: 'payments taken',
@@ -140,7 +145,7 @@ const T = {
     salesCol: 'Sales',
     ordersCol: 'Orders',
     noSales: 'No paid sales in this range yet.',
-    channels: 'WHERE SALES COME FROM',
+    channels: 'Where sales come from',
     byChannel: 'By channel',
     online: 'Online (Stripe)',
     instore: 'In store (Clover)',
@@ -154,7 +159,7 @@ const T = {
     recent: 'Recent payments',
     openLedger: 'Open ledger ↓',
     ledger: 'PAYMENT LEDGER',
-    ledgerTitle: 'Every Payment',
+    ledgerTitle: 'Every payment',
     ledgerSummary: function (n, total) { return n + ' shown · ' + total + ' paid'; },
     search: 'Search name, email, phone, amount...',
     allStatuses: 'All statuses',
@@ -196,7 +201,12 @@ const T = {
   },
   es: {
     eyebrow: 'ADMIN STUDIO',
-    title: 'Cómo Va la Tienda',
+    title: 'Cómo va la tienda',
+    goodMorning: 'Buenos días', goodAfternoon: 'Buenas tardes', goodEvening: 'Buenas noches',
+    todayChip: 'pagados hoy',
+    allPayments: function (n) { return 'Los ' + n + ' pagos \u2192'; },
+    hideLedger: 'Ocultar lista',
+    syncHint: 'Los pagos de Clover aparecen solo después de sincronizar. Corre la sincronización al final del día.',
     sub: 'Ventas, clientas y cada pago en un solo lugar.',
     todayLabel: 'Hoy',
     todayCaption: 'pagos recibidos',
@@ -237,7 +247,7 @@ const T = {
     salesCol: 'Ventas',
     ordersCol: 'Pedidos',
     noSales: 'Aún no hay ventas pagadas en este periodo.',
-    channels: 'DE DÓNDE VIENEN LAS VENTAS',
+    channels: 'De dónde vienen las ventas',
     byChannel: 'Por canal',
     online: 'En línea (Stripe)',
     instore: 'En la tienda (Clover)',
@@ -251,7 +261,7 @@ const T = {
     recent: 'Pagos recientes',
     openLedger: 'Ver todos ↓',
     ledger: 'LIBRO DE PAGOS',
-    ledgerTitle: 'Todos los Pagos',
+    ledgerTitle: 'Todos los pagos',
     ledgerSummary: function (n, total) { return n + ' mostrados · ' + total + ' pagado'; },
     search: 'Buscar nombre, correo, teléfono, monto...',
     allStatuses: 'Todos los estados',
@@ -324,12 +334,20 @@ const pageCss = '' +
 '.ebd-seg button.on { background:var(--accent); color:var(--cream); }' +
 '.ebd-range { font-size:12.5px; color:#8c775f; }' +
 /* KPIs */
-'.ebd-kpis { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; }' +
+'.ebd-kpis { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); background:var(--card); border:1px solid var(--hair); border-radius:24px; overflow:hidden; }' +
+'.ebd-kpis .eba-stat { border:0; border-radius:0; border-left:1px solid var(--hair); padding:20px 22px; }' +
+'.ebd-kpis .eba-stat:first-child { border-left:0; }' +
+'.ebd-kpis .eba-stat b { font-size:34px; }' +
+'.ebd-sync { display:inline-flex; align-items:center; gap:8px; min-height:40px; padding:0 14px; border:1px solid var(--line); border-radius:999px; background:var(--card); color:var(--taupe); font-size:14px; }' +
+'.ebd-sync:hover { background:var(--wash); }' +
+'.ebd-dot { width:8px; height:8px; border-radius:50%; background:var(--ok); }' +
+'.ebd-init { width:36px; height:36px; border-radius:50%; background:var(--soft); color:var(--taupe); display:inline-flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0; }' +
+'.ebd-li .nm .ebd-small { margin-top:2px; }' +
 '.ebd-delta { display:inline-block; margin-top:4px; font-size:11.5px; color:#8c775f; }' +
 '.ebd-delta.up { color:#4f6b45; } .ebd-delta.down { color:#9a3d35; }' +
 /* chart */
-'.ebd-grid2 { display:grid; grid-template-columns:minmax(0,1.6fr) minmax(0,1fr); gap:16px; align-items:stretch; }' +
-'.ebd-grid2b { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.3fr); gap:16px; align-items:start; }' +
+'.ebd-grid2 { display:grid; grid-template-columns:minmax(0,1.6fr) minmax(0,1fr); gap:20px; align-items:stretch; }' +
+'.ebd-grid2b { display:grid; grid-template-columns:minmax(0,1.6fr) minmax(0,1fr); gap:20px; align-items:start; }' +
 '.ebd-chart { position:relative; display:flex; align-items:flex-end; gap:2px; height:220px; margin-top:18px; border-bottom:1px solid var(--line); }' +
 '.ebd-col { flex:1; height:100%; display:flex; align-items:flex-end; padding:0; border:0; background:transparent; cursor:default; min-width:0; }' +
 '.ebd-col:hover .ebd-barfill, .ebd-col:focus-visible .ebd-barfill { opacity:.75; }' +
@@ -358,8 +376,8 @@ const pageCss = '' +
 '.ebd-li .nm { flex:1; min-width:130px; font-size:14px; color:#5f4e3d; overflow-wrap:anywhere; }' +
 '.ebd-li .amt { font-size:14.5px; color:#5f4e3d; min-width:76px; text-align:right; }' +
 '@media (max-width:1180px) { .ebd-grid2, .ebd-grid2b { grid-template-columns:minmax(0,1fr); } }' +
-'@media (max-width:980px) { .ebd-kpis { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; } }' +
-'@media (max-width:560px) { .ebd-bar .eba-actions { width:100%; } .ebd-bar .eba-actions .eba-btn { flex:1 1 calc(50% - 8px); white-space:nowrap; } .ebd-seg { width:100%; justify-content:space-between; } .ebd-seg button { padding:8px 10px; } .ebd-chart { height:170px; } }';
+'@media (max-width:1023px) { .ebd-kpis { grid-template-columns:repeat(2,minmax(0,1fr)); border-radius:20px; } .ebd-kpis .eba-stat { padding:14px 16px; } .ebd-kpis .eba-stat:nth-child(3) { border-left:0; } .ebd-kpis .eba-stat:nth-child(n+3) { border-top:1px solid var(--hair); } .ebd-kpis .eba-stat b { font-size:24px; } .ebd-delta { display:none; } }' +
+'@media (max-width:560px) { .ebd-seg { width:100%; justify-content:space-between; } .ebd-seg button { padding:8px 10px; } .ebd-sync { width:100%; justify-content:center; } .ebd-chart { height:170px; } }';
 
 /* ============================================================ */
 export default function AdminDashboard({ payments, admin, lives, giftCardSales }) {
@@ -377,6 +395,7 @@ export default function AdminDashboard({ payments, admin, lives, giftCardSales }
   const [expandedId, setExpandedId] = useState(null);
   const [notes, setNotes] = useState({});
   const [notice, setNotice] = useState('');
+  const [showLedger, setShowLedger] = useState(false);
 
   useEffect(function () {
     const saved = localStorage.getItem('eb-lang');
@@ -386,6 +405,7 @@ export default function AdminDashboard({ payments, admin, lives, giftCardSales }
       if (r && ['today', 'week', 'month', 'year', 'all'].includes(r)) setRange(r);
     } catch (e) {}
     setNow(new Date());
+    if (window.location.hash === '#ledger') setShowLedger(true);
   }, []);
 
   function pickRange(r) {
@@ -644,12 +664,43 @@ export default function AdminDashboard({ payments, admin, lives, giftCardSales }
   }
 
   function goLedger() {
-    const el = document.getElementById('ledger');
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setShowLedger(true);
+    setTimeout(function () {
+      const el = document.getElementById('ledger');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 30);
   }
 
-  const recent = all.slice(0, 6);
+  const recent = all.slice(0, 5);
   const s = stats;
+
+  const firstName = String(admin?.name || '').trim().split(' ')[0];
+  const eyebrow = !now ? '' : (function () {
+    const h = now.getHours();
+    const hello = h < 12 ? t.goodMorning : h < 18 ? t.goodAfternoon : t.goodEvening;
+    const day = now.toLocaleDateString(dateLocale[lang], { weekday: 'long', month: 'short', day: 'numeric' });
+    return day + ' \u00b7 ' + hello + (firstName ? ', ' + firstName : '');
+  })();
+  function initialsOf(name) {
+    return String(name || '?').split(' ').filter(Boolean).slice(0, 2).map(function (w) { return w[0]; }).join('').toUpperCase();
+  }
+
+  const headerActions = (
+    <>
+      <button className="ebd-sync" type="button" onClick={syncCloverPayments} title={t.syncHint}>
+        <span className="ebd-dot" aria-hidden="true" />{t.actSync}
+      </button>
+      <div className="ebd-seg" role="group" aria-label="Date range">
+        {['today', 'week', 'month', 'year', 'all'].map(function (r) {
+          return (
+            <button key={r} type="button" className={range === r ? 'on' : ''} aria-pressed={range === r} onClick={function () { pickRange(r); }}>
+              {t.ranges[r]}
+            </button>
+          );
+        })}
+      </div>
+    </>
+  );
 
   /* ============================================================ */
   return (
@@ -658,36 +709,15 @@ export default function AdminDashboard({ payments, admin, lives, giftCardSales }
       active="overview"
       lang={lang}
       onLang={setLangState}
-      eyebrow={t.eyebrow}
+      eyebrow={eyebrow}
       title={t.title}
-      subtitle={t.sub}
-      heroStat={{ label: t.todayLabel, value: todayCount, caption: t.todayCaption }}
-      tip={{ label: t.tipLabel, body: t.tipBody }}
+      subtitle={vsText}
+      heroStat={{ label: t.todayLabel, value: todayCount, caption: t.todayChip }}
+      actions={headerActions}
     >
       <style>{pageCss}</style>
 
-      {/* Actions + range */}
-      <section className="eba-panel no-print" style={{ padding: '18px 22px' }}>
-        <div className="ebd-bar">
-          <div className="eba-actions" style={{ marginTop: 0 }}>
-            <button className="eba-btn eba-btn-dark" type="button" onClick={syncCloverPayments}>{t.actSync}</button>
-            <a className="eba-btn" href="/admin/payment-links">{t.actLink}</a>
-            <a className="eba-btn" href="/admin/sezzle">{t.actSezzle}</a>
-            <a className="eba-btn" href="/admin/gift-cards">{t.actGift}</a>
-          </div>
-          <div className="ebd-seg" role="group" aria-label="Date range">
-            {['today', 'week', 'month', 'year', 'all'].map(function (r) {
-              return (
-                <button key={r} type="button" className={range === r ? 'on' : ''} aria-pressed={range === r} onClick={function () { pickRange(r); }}>
-                  {t.ranges[r]}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-        <p className="ebd-range" style={{ margin: '12px 2px 0' }}>{vsText}</p>
-        {notice && <div className="eba-notice">{notice}</div>}
-      </section>
+      {notice && <div className="eba-notice no-print" style={{ marginTop: 0 }}>{notice}</div>}
 
       {/* KPIs */}
       <section className="ebd-kpis no-print" aria-label="Summary">
@@ -723,7 +753,7 @@ export default function AdminDashboard({ payments, admin, lives, giftCardSales }
           <div className="eba-panelhead" style={{ alignItems: 'flex-end' }}>
             <div>
               <p className="eba-eyebrow">{s && s.b.unit === 'month' ? t.salesByMonth : t.salesBy}</p>
-              <h2 style={{ marginBottom: 0 }}>{chartTitle}</h2>
+              <h2 style={{ marginBottom: 0 }}>{t.salesCol} · {chartTitle.charAt(0).toLowerCase() + chartTitle.slice(1)}</h2>
             </div>
             <button className="eba-btn mini" type="button" onClick={function () { setAsTable(!asTable); }}>
               {asTable ? t.showChart : t.showTable}
@@ -794,7 +824,7 @@ export default function AdminDashboard({ payments, admin, lives, giftCardSales }
 
         <div className="eba-panel">
           <p className="eba-eyebrow">{t.channels}</p>
-          <h2>{t.byChannel}</h2>
+          <h2>{t.channels}</h2>
           {s && ['online', 'instore', 'sezzle'].filter(function (k) { return k !== 'sezzle' || s.ch.sezzle > 0 || sourcesSeen.includes('sezzle'); }).map(function (k) {
             const pct = s.chTotal ? Math.round((s.ch[k] / s.chTotal) * 100) : 0;
             return (
@@ -813,8 +843,29 @@ export default function AdminDashboard({ payments, admin, lives, giftCardSales }
         </div>
       </div>
 
-      {/* Top customers + recent */}
+      {/* Recent + top customers */}
       <div className="ebd-grid2b no-print">
+        <div className="eba-panel">
+          <div className="eba-panelhead" style={{ alignItems: 'flex-end' }}>
+            <div>
+              <p className="eba-eyebrow">{t.latest}</p>
+              <h2 style={{ marginBottom: 8 }}>{t.recent}</h2>
+            </div>
+            <button className="eba-btn mini" type="button" onClick={goLedger}>{t.allPayments(all.length)}</button>
+          </div>
+          {recent.map(function (p) {
+            const st = orderStatus(p);
+            const when = new Date(p.created_at).toLocaleString(loc, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+            return (
+              <div className="ebd-li" key={rowKey(p)}>
+                <span className="ebd-init" aria-hidden="true">{initialsOf(displayName(p, t))}</span>
+                <span className="nm">{displayName(p, t)}<span className="ebd-small" style={{ display: 'block' }}>{when} &middot; {t[channelOf(p)]}</span></span>
+                <span className={pillClass(st)}>{statusText(st)}</span>
+                <span className="amt">{money(p.amount_total, p.currency)}</span>
+              </div>
+            );
+          })}
+        </div>
         <div className="eba-panel">
           <p className="eba-eyebrow">{t.loyal}</p>
           <h2>{t.topTitle}</h2>
@@ -836,30 +887,11 @@ export default function AdminDashboard({ payments, admin, lives, giftCardSales }
           )}
         </div>
 
-        <div className="eba-panel">
-          <div className="eba-panelhead" style={{ alignItems: 'flex-end' }}>
-            <div>
-              <p className="eba-eyebrow">{t.latest}</p>
-              <h2 style={{ marginBottom: 8 }}>{t.recent}</h2>
-            </div>
-            <button className="eba-btn mini" type="button" onClick={goLedger}>{t.openLedger}</button>
-          </div>
-          {recent.map(function (p) {
-            const st = orderStatus(p);
-            const when = new Date(p.created_at).toLocaleString(loc, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
-            return (
-              <div className="ebd-li" key={rowKey(p)}>
-                <span className="nm">{displayName(p, t)}<span className="ebd-small" style={{ display: 'block' }}>{when} &middot; {t[channelOf(p)]}</span></span>
-                <span className={pillClass(st)}>{statusText(st)}</span>
-                <span className="amt">{money(p.amount_total, p.currency)}</span>
-              </div>
-            );
-          })}
-        </div>
       </div>
 
-      {/* Full ledger */}
-      <div className="eba-panel" id="ledger" style={{ scrollMarginTop: 18 }}>
+      {/* Full ledger (opens from "All payments") */}
+      {showLedger && (
+      <div className="eba-panel" id="ledger" style={{ scrollMarginTop: 80 }}>
         <div className="eba-panelhead" style={{ alignItems: 'flex-end', flexWrap: 'wrap' }}>
           <div>
             <p className="eba-eyebrow">{t.ledger}</p>
@@ -869,6 +901,7 @@ export default function AdminDashboard({ payments, admin, lives, giftCardSales }
           <div className="eba-actions no-print" style={{ marginTop: 0, marginBottom: 14 }}>
             <button className="eba-btn" onClick={exportCsv}>{t.exportCsv}</button>
             <button className="eba-btn" onClick={function () { window.print(); }}>{t.print}</button>
+            <button className="eba-btn" onClick={function () { setShowLedger(false); }}>{t.hideLedger}</button>
           </div>
         </div>
 
@@ -988,6 +1021,7 @@ export default function AdminDashboard({ payments, admin, lives, giftCardSales }
 
         {filtered.length === 0 && <div className="eba-empty">{t.noPayments}</div>}
       </div>
+      )}
     </AdminShell>
   );
 }
