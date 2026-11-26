@@ -1,18 +1,19 @@
 // app/api/account/shipments/route.js
 
 import { NextResponse } from "next/server";
+import { resolveAccount, exactLike } from "@/lib/account/resolve";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 /* GET /api/account/shipments?t=<portal_token>
-   Returns the shipments for the customer that owns this link.
+   GET /api/account/shipments  with "Authorization: Bearer <access token>"
+   Returns the shipments for the customer that owns this link or session.
    Only safe fields go back to the browser (status, carrier, tracking,
    dates, item count, the packaging photo, ship-to city/state) — never
    street addresses, prices, staff names or other customers. */
 
 const CUSTOMERS_TABLE = "shipping_customers";
-const CUSTOMER_TOKEN_COL = "portal_token";
 const CUSTOMER_ID_COL = "id";
 
 const ORDERS_TABLE = "shipping_orders";
@@ -22,35 +23,6 @@ const ORDER_CUSTOMER_COL = "customer_id";
 
 const MAX_ROWS = 200; // fetched, then the newest 50 are returned
 const MAX_RETURN = 50;
-
-const UUID_RE =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-async function getDatabase() {
-  const supabaseUrl = process.env.SHIPPING_SUPABASE_URL;
-  const serviceRoleKey = process.env.SHIPPING_SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!supabaseUrl || !serviceRoleKey) {
-    throw new Error(
-      "Missing SHIPPING_SUPABASE_URL or SHIPPING_SUPABASE_SERVICE_ROLE_KEY"
-    );
-  }
-
-  const supabasePackage = await import("@supabase/supabase-js");
-  const createClient = supabasePackage.createClient;
-
-  if (typeof createClient !== "function") {
-    throw new Error("@supabase/supabase-js did not provide createClient");
-  }
-
-  return createClient(supabaseUrl, serviceRoleKey, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-      detectSessionInUrl: false,
-    },
-  });
-}
 
 function jsonError(error, status) {
   return NextResponse.json({ error }, { status });
@@ -161,62 +133,62 @@ function toShipment(row) {
 
 export async function GET(request) {
   try {
-    const url = new URL(request.url);
-    const token = url.searchParams.get("t") ?? "";
+    const account = await resolveAccount(request);
+    if (account.error) return jsonError(account.error, account.status);
 
-    if (!UUID_RE.test(token)) {
-      return jsonError("invalid_link", 400);
+    const supabase = account.db;
+    const ids = [];
+
+    if (account.customer) {
+      const customerId = account.customer[CUSTOMER_ID_COL];
+      ids.push(customerId);
+
+      // Include older customer records that were merged into this one,
+      // so their past shipments show up too.
+      const { data: merged, error: mergedError } = await supabase
+        .from(CUSTOMERS_TABLE)
+        .select(CUSTOMER_ID_COL)
+        .eq("merged_into", customerId);
+
+      if (!mergedError && Array.isArray(merged)) {
+        merged.forEach(function (m) {
+          if (m && m[CUSTOMER_ID_COL] != null) ids.push(m[CUSTOMER_ID_COL]);
+        });
+      }
     }
 
-    const supabase = await getDatabase();
+    const found = new Map();
 
-    // 1) Who owns this link (same rules as /api/account).
-    const { data: customer, error: customerError } = await supabase
-      .from(CUSTOMERS_TABLE)
-      .select(CUSTOMER_ID_COL)
-      .eq(CUSTOMER_TOKEN_COL, token)
-      .or("archived.is.null,archived.eq.false")
-      .is("merged_into", null)
-      .maybeSingle();
+    if (ids.length) {
+      const { data: rows, error: ordersError } = await supabase
+        .from(ORDERS_TABLE)
+        .select("*")
+        .in(ORDER_CUSTOMER_COL, ids)
+        .limit(MAX_ROWS);
 
-    if (customerError) {
-      console.error("Shipments customer lookup error:", customerError);
-      return jsonError("server_error", 500);
+      if (ordersError) {
+        console.error("Shipments orders error:", ordersError);
+        return jsonError("server_error", 500);
+      }
+      (rows || []).forEach(function (row) { found.set(String(row.id), row); });
     }
 
-    if (!customer) {
-      return jsonError("not_found", 404);
+    // Signed in: also orders addressed to their (verified) email. Never on a
+    // personal link alone, where the email on file isn't proven.
+    if (account.mode === "session" && account.signedInEmail) {
+      const { data: byEmail, error: emailError } = await supabase
+        .from(ORDERS_TABLE)
+        .select("*")
+        .ilike("to_email", exactLike(account.signedInEmail))
+        .limit(MAX_ROWS);
+      if (emailError) {
+        console.error("Shipments email lookup error:", emailError);
+      } else {
+        (byEmail || []).forEach(function (row) { found.set(String(row.id), row); });
+      }
     }
 
-    const customerId = customer[CUSTOMER_ID_COL];
-
-    // 2) Include older customer records that were merged into this one,
-    //    so their past shipments show up too.
-    const ids = [customerId];
-    const { data: merged, error: mergedError } = await supabase
-      .from(CUSTOMERS_TABLE)
-      .select(CUSTOMER_ID_COL)
-      .eq("merged_into", customerId);
-
-    if (!mergedError && Array.isArray(merged)) {
-      merged.forEach(function (m) {
-        if (m && m[CUSTOMER_ID_COL] != null) ids.push(m[CUSTOMER_ID_COL]);
-      });
-    }
-
-    // 3) Their shipments.
-    const { data: rows, error: ordersError } = await supabase
-      .from(ORDERS_TABLE)
-      .select("*")
-      .in(ORDER_CUSTOMER_COL, ids)
-      .limit(MAX_ROWS);
-
-    if (ordersError) {
-      console.error("Shipments orders error:", ordersError);
-      return jsonError("server_error", 500);
-    }
-
-    const shipments = (rows || [])
+    const shipments = Array.from(found.values())
       .filter(function (row) { return !isHidden(row); })
       .map(toShipment)
       .sort(function (a, b) {
