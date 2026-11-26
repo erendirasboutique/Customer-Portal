@@ -1,9 +1,11 @@
 import CustomerPortal from '@/components/CustomerPortal';
+import AccountApp from '@/components/account/AccountApp';
 import { getSupabaseServer } from '@/lib/supabaseServer';
-import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 
 export const dynamic = 'force-dynamic';
 
+// Signed in (magic link): the same account page customers get from their
+// personal link (/account?t=...). Not signed in: the email sign-in screen.
 export default async function CustomerPage() {
   const supabase = await getSupabaseServer();
 
@@ -15,18 +17,5 @@ export default async function CustomerPage() {
     return <CustomerPortal initialUser={null} initialPayments={[]} />;
   }
 
-  const adminSupabase = getSupabaseAdmin();
-
-  const { data: payments } = await adminSupabase
-    .from('payments')
-    .select('*')
-    .eq('customer_email', user.email.toLowerCase())
-    .order('created_at', { ascending: false });
-
-  return (
-    <CustomerPortal
-      initialUser={user}
-      initialPayments={payments || []}
-    />
-  );
+  return <AccountApp />;
 }

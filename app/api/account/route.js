@@ -1,7 +1,9 @@
 // app/api/account/route.js
+// The customer account, opened by personal link (?t=) or by magic-link sign-in.
 
 import { NextResponse } from "next/server";
 import { sendEmail, emailEnabled } from "@/lib/shop/service";
+import { resolveAccount } from "@/lib/account/resolve";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -20,39 +22,7 @@ const COLS = {
   zip: "zip",
 };
 
-const UUID_RE =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-async function getDatabase() {
-  const supabaseUrl = process.env.SHIPPING_SUPABASE_URL;
-  const serviceRoleKey =
-    process.env.SHIPPING_SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!supabaseUrl || !serviceRoleKey) {
-    throw new Error(
-      "Missing SHIPPING_SUPABASE_URL or SHIPPING_SUPABASE_SERVICE_ROLE_KEY"
-    );
-  }
-
-  const supabasePackage = await import("@supabase/supabase-js");
-  const createClient = supabasePackage.createClient;
-
-  if (typeof createClient !== "function") {
-    throw new Error(
-      "@supabase/supabase-js did not provide createClient"
-    );
-  }
-
-  return createClient(supabaseUrl, serviceRoleKey, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-      detectSessionInUrl: false,
-    },
-  });
-}
 
 function clean(value, maxLength) {
   return String(value ?? "")
@@ -61,65 +31,35 @@ function clean(value, maxLength) {
 }
 
 function jsonError(error, status) {
-  return NextResponse.json(
-    {
-      error,
-    },
-    {
-      status,
-    }
-  );
+  return NextResponse.json({ error }, { status });
 }
 
-// GET /api/account?t=<portal_token>
+function publicProfile(row, account) {
+  const r = row || {};
+  return {
+    mode: account.mode,
+    verified: account.verified,
+    hasRecord: Boolean(row),
+    name: r[COLS.name] ?? "",
+    email: r[COLS.email] || (account.mode === "session" ? account.signedInEmail : ""),
+    phone: r[COLS.phone] ?? "",
+    address1: r[COLS.address1] ?? "",
+    address2: r[COLS.address2] ?? "",
+    city: r[COLS.city] ?? "",
+    state: r[COLS.state] ?? "",
+    zip: r[COLS.zip] ?? "",
+  };
+}
+
+/* GET /api/account?t=<portal_token>
+   GET /api/account  with "Authorization: Bearer <supabase access token>"
+   Same answer either way, so both ways in show the same account. */
 export async function GET(request) {
   try {
-    const url = new URL(request.url);
-    const token = url.searchParams.get("t") ?? "";
-
-    if (!UUID_RE.test(token)) {
-      return jsonError("invalid_link", 400);
-    }
-
-    const supabase = await getDatabase();
-
-    const selectedColumns = [
-      COLS.name,
-      COLS.email,
-      COLS.phone,
-      COLS.address1,
-      COLS.address2,
-      COLS.city,
-      COLS.state,
-      COLS.zip,
-    ].join(",");
-
-    const { data, error } = await supabase
-      .from(TABLE)
-      .select(selectedColumns)
-      .eq(COLS.token, token)
-      .or("archived.is.null,archived.eq.false")
-      .is("merged_into", null)
-      .maybeSingle();
-
-    if (error) {
-      console.error("Account GET Supabase error:", error);
-      return jsonError("server_error", 500);
-    }
-
-    if (!data) {
-      return jsonError("not_found", 404);
-    }
-
-    return NextResponse.json({
-      name: data[COLS.name] ?? "",
-      email: data[COLS.email] ?? "",
-      phone: data[COLS.phone] ?? "",
-      address1: data[COLS.address1] ?? "",
-      address2: data[COLS.address2] ?? "",
-      city: data[COLS.city] ?? "",
-      state: data[COLS.state] ?? "",
-      zip: data[COLS.zip] ?? "",
+    const account = await resolveAccount(request);
+    if (account.error) return jsonError(account.error, account.status);
+    return NextResponse.json(publicProfile(account.customer, account), {
+      headers: { "Cache-Control": "no-store" },
     });
   } catch (error) {
     console.error("Account GET error:", error);
@@ -127,7 +67,11 @@ export async function GET(request) {
   }
 }
 
-// POST /api/account
+/* POST /api/account  { t?, name, email, phone, address1, address2, city, state, zip }
+   Email rule: an email can be ADDED from a personal link, but an email that is
+   already on file can only change by signing in with it (or by the shop).
+   Payments and gift cards are found by email, so this stops anyone with a
+   link from pointing the account at someone else's inbox. */
 export async function POST(request) {
   try {
     let body;
@@ -138,14 +82,11 @@ export async function POST(request) {
       return jsonError("bad_request", 400);
     }
 
-    const token = String(body.t ?? "");
-
-    if (!UUID_RE.test(token)) {
-      return jsonError("invalid_link", 400);
-    }
+    const account = await resolveAccount(request, body.t != null && body.t !== "" ? String(body.t) : null);
+    if (account.error) return jsonError(account.error, account.status);
 
     const name = clean(body.name, 120);
-    const email = clean(body.email, 254).toLowerCase();
+    let email = clean(body.email, 254).toLowerCase();
     const phone = clean(body.phone, 40);
     const address1 = clean(body.address1, 120);
     const address2 = clean(body.address2, 120);
@@ -161,6 +102,16 @@ export async function POST(request) {
       return jsonError("invalid_email", 422);
     }
 
+    const before = account.customer;
+    const emailOnFile = String((before && before[COLS.email]) || "").trim().toLowerCase();
+
+    if (account.mode === "session") {
+      // Signed in: the account's email is the one they signed in with.
+      email = emailOnFile || account.signedInEmail;
+    } else if (emailOnFile && email !== emailOnFile) {
+      return jsonError("email_locked", 403);
+    }
+
     const updateData = {
       [COLS.name]: name,
       [COLS.email]: email,
@@ -172,22 +123,25 @@ export async function POST(request) {
       [COLS.zip]: zip,
     };
 
-    const supabase = await getDatabase();
+    const supabase = account.db;
 
-    // The address before this save, to tell if it changed (see flagAddressChange).
-    const { data: before } = await supabase
-      .from(TABLE)
-      .select("id, " + [COLS.address1, COLS.address2, COLS.city, COLS.state, COLS.zip].join(","))
-      .eq(COLS.token, token)
-      .maybeSingle();
+    // Signed in with no shipping record yet: make one.
+    if (!before) {
+      const { error: insertError } = await supabase
+        .from(TABLE)
+        .insert({ ...updateData, [COLS.token]: crypto.randomUUID() });
+      if (insertError) {
+        console.error("Account POST insert error:", insertError);
+        return jsonError("server_error", 500);
+      }
+      return NextResponse.json({ ok: true });
+    }
 
     const { data, error } = await supabase
       .from(TABLE)
       .update(updateData)
-      .eq(COLS.token, token)
-      .or("archived.is.null,archived.eq.false")
-      .is("merged_into", null)
-      .select(COLS.token)
+      .eq("id", before.id)
+      .select("id")
       .maybeSingle();
 
     if (error) {
