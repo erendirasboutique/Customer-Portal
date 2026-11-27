@@ -22,6 +22,7 @@ import { ImageResponse } from "next/og";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { getReceiptByToken } from "@/lib/receipts";
+import { PALETTE } from './season';
 
 export const runtime = "nodejs";
 export const alt = "Erendira's Boutique — Recibo de pago";
@@ -67,13 +68,14 @@ const BODY_FONT_PATHS = [
   join(process.cwd(), "public/fonts/recoleta.otf"),
 ];
 
+// Colors follow the seasonal look in ./season.js
 const C = {
-  bg: "#F5F3EF",
-  card: "#FFFFFF",
-  brand: "#957f67",
-  dark: "#7f6b55",
-  muted: "#7d6a56",
-  line: "#e6dccf",
+  bg: PALETTE.bg,
+  card: PALETTE.card,
+  brand: PALETTE.brand,
+  dark: PALETTE.dark,
+  muted: PALETTE.muted,
+  line: PALETTE.line,
 };
 
 function money(n, currency) {
