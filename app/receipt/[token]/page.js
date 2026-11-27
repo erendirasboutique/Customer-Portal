@@ -2,14 +2,17 @@
    /receipt/<token> — public, branded receipt for one payment.
    Anyone with the link can view it; the token is long and random,
    so receipts can't be found by guessing. Not indexed by search engines.
-   Design: R6 — brown header with an animated "payment confirmed"
+   Design: R6 — colored header with an animated "payment confirmed"
    moment, then the receipt slides up as a ticket.
+   Seasonal look (colors, falling leaves or snow, greeting) is set in
+   ./season.js — change SEASON there to switch.
    ============================================================ */
 
 import { getReceiptByToken } from '@/lib/receipts';
 import PrintButton from './PrintButton';
 import CardBrand from './CardBrand';
 import ReceiptStage, { HeaderVideo, CountUp } from './ReceiptMotion';
+import { SEASON, PALETTE } from './season';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,7 +27,7 @@ const CLIMATE_ICON = '/stripe-climate.png';
 
 /* ---------- Optional confirmation video ----------
    Leave CONFIRM_VIDEO empty to use the built-in animation (check mark,
-   falling leaves, amount counting up).
+   falling leaves or snow, amount counting up).
    To use your own clip: put it in /public (e.g. public/receipt-confirm.mp4)
    and set the path below.
      VIDEO_MODE 'header' → plays behind the brown header, text on top.
@@ -38,6 +41,7 @@ const INTRO_ONCE = true;                     // intro mode: only the first time 
 const INTRO_MAX_SECONDS = 10;                // intro mode: always moves on after this
 
 const LEAF_COLORS = ['#c0612b', '#d98a2b', '#a8452a', '#cfbda9', '#e3a84a'];
+const WINTER = SEASON === 'winter';
 
 const T = {
   en: {
@@ -47,6 +51,8 @@ const T = {
     refundedTitle: 'Payment refunded',
     thanksName: function (n) { return 'Thank you, ' + n + '!'; },
     thanksNoName: 'Thank you for your purchase!',
+    seasonHello: 'Happy holidays!',
+    seasonWish: 'Wishing you a warm and joyful season.',
     refundNote: 'This payment was returned to you.',
     billedTo: 'Billed to',
     method: 'Paid with',
@@ -78,6 +84,8 @@ const T = {
     refundedTitle: 'Pago reembolsado',
     thanksName: function (n) { return '¡Gracias, ' + n + '!'; },
     thanksNoName: '¡Gracias por tu compra!',
+    seasonHello: '¡Felices fiestas!',
+    seasonWish: 'Te deseamos una temporada cálida y llena de alegría.',
     refundNote: 'Este pago te fue devuelto.',
     billedTo: 'Cliente',
     method: 'Pagado con',
@@ -164,6 +172,49 @@ function Row(props) {
   );
 }
 
+const SPRIG = 'M12 22V3M12 7l-4-3M12 7l4-3M12 11l-5-3M12 11l5-3M12 15l-6-3M12 15l6-3M12 19l-6-3M12 19l6-3';
+const STAR = 'M12 1l2.6 8.4L23 12l-8.4 2.6L12 23l-2.6-8.4L1 12l8.4-2.6z';
+
+// Winter header art: pine sprigs, berries and gold stars (decorative only).
+function WinterDecor() {
+  const sprigs = [
+    { left: '-3%', top: '92px', size: 66, rot: -30 },
+    { left: '84%', top: '196px', size: 76, rot: 35 },
+    { left: '1%', top: '300px', size: 50, rot: -60 },
+  ];
+  const berries = [
+    { left: '11%', top: '118px', size: 9 }, { left: '13%', top: '128px', size: 7 },
+    { left: '86%', top: '202px', size: 9 }, { left: '88%', top: '212px', size: 7 },
+    { left: '12%', top: '312px', size: 8 },
+  ];
+  const stars = [
+    { left: '75%', top: '104px', size: 14 }, { left: '21%', top: '214px', size: 10 }, { left: '72%', top: '300px', size: 12 },
+  ];
+  return (
+    <>
+      {sprigs.map(function (s, i) {
+        return (
+          <svg key={'p' + i} className="rc-deco rc-sprig" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"
+            style={{ left: s.left, top: s.top, width: s.size, height: s.size, transform: 'rotate(' + s.rot + 'deg)' }}>
+            <path d={SPRIG} />
+          </svg>
+        );
+      })}
+      {berries.map(function (b, i) {
+        return <span key={'b' + i} className="rc-deco rc-berry" aria-hidden="true" style={{ left: b.left, top: b.top, width: b.size, height: b.size }} />;
+      })}
+      {stars.map(function (s, i) {
+        return (
+          <svg key={'s' + i} className="rc-deco rc-star" aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"
+            style={{ left: s.left, top: s.top, width: s.size, height: s.size }}>
+            <path d={STAR} />
+          </svg>
+        );
+      })}
+    </>
+  );
+}
+
 export default async function ReceiptPage(props) {
   const params = await props.params;
   const search = (await props.searchParams) || {};
@@ -229,7 +280,24 @@ export default async function ReceiptPage(props) {
   const mailto = 'mailto:' + SHOP_EMAIL + '?subject=' + encodeURIComponent('Receipt ' + r.receipt_number);
 
   const leaves = [];
-  if (!refunded && !headerVideo) {
+  if (!refunded && !headerVideo && WINTER) {
+    for (let i = 0; i < 18; i++) {
+      const size = 4 + (i % 3) * 2;
+      leaves.push(
+        <span
+          key={'s' + i}
+          className="rc-snow"
+          style={{
+            left: (3 + i * 5.4) + '%',
+            width: size + 'px',
+            height: size + 'px',
+            animationDelay: (0.1 + (i % 6) * 0.22) + 's',
+            animationDuration: (2.6 + (i % 4) * 0.45) + 's',
+          }}
+        />
+      );
+    }
+  } else if (!refunded && !headerVideo) {
     for (let i = 0; i < 12; i++) {
       leaves.push(
         <span
@@ -247,7 +315,7 @@ export default async function ReceiptPage(props) {
   }
 
   return (
-    <main className={'rcpt' + (refunded ? ' is-refunded' : '') + (headerVideo ? ' has-video' : '')}>
+    <main className={'rcpt' + (WINTER ? ' is-winter' : '') + (refunded ? ' is-refunded' : '') + (headerVideo ? ' has-video' : '')}>
       <style>{css}</style>
       {introVideo && INTRO_ONCE ? (
         // Hide the intro before it paints if they've already seen it this visit.
@@ -268,6 +336,7 @@ export default async function ReceiptPage(props) {
           <header className="rcpt-head rc-head">
             {headerVideo ? <HeaderVideo src={video} poster={poster} loop={VIDEO_LOOP} /> : null}
             {headerVideo ? <span className="rc-tint" aria-hidden="true" /> : null}
+            {WINTER && !headerVideo ? <WinterDecor /> : null}
             {leaves}
 
             <div className="rcpt-topbar">
@@ -298,6 +367,7 @@ export default async function ReceiptPage(props) {
             </p>
             <p className="rcpt-l3 rc-l3">
               {refunded ? t.refundNote : (firstName ? t.thanksName(firstName) : t.thanksNoName)}
+              {!refunded && WINTER ? ' ' + t.seasonHello : null}
             </p>
           </header>
 
@@ -323,7 +393,7 @@ export default async function ReceiptPage(props) {
               )}
             </section>
 
-            <div className="rcpt-tear" aria-hidden="true"><i /><b /><b /></div>
+            <div className="rcpt-tear" aria-hidden="true"><i /><b /><b />{WINTER ? <em><span /><span /></em> : null}</div>
 
             <section className="rcpt-sec rcpt-ref">
               <p className="rcpt-cap">{t.reference}</p>
@@ -334,6 +404,7 @@ export default async function ReceiptPage(props) {
           </article>
 
           <footer className="rcpt-foot rc-bar">
+            {WINTER && !refunded ? <p className="rcpt-wish">{t.seasonWish}</p> : null}
             <p>{t.questions} <a href={mailto}>{SHOP_EMAIL}</a></p>
             <p className="rcpt-shop">Erendira&#8217;s Boutique &middot; <a href={'https://' + SHOP_SITE}>{SHOP_SITE}</a></p>
           </footer>
@@ -349,9 +420,12 @@ export default async function ReceiptPage(props) {
   );
 }
 
+const P = PALETTE;
+const SH = 'rgba(' + PALETTE.shadow + ',';
 const css = '' +
-'.rcpt { --bg:#F5F3EF; --card:#ffffff; --brand:#957f67; --brand-dark:#7f6b55; --soft:#cfbda9; --line:#e6dccf; --line2:#efe8de;' +
-'  --ink:#5f4e3d; --muted:#7d6a56;' +
+'.rcpt { --bg:' + P.bg + '; --card:' + P.card + '; --brand:' + P.brand + '; --brand-dark:' + P.dark + '; --soft:' + P.soft + ';' +
+'  --line:' + P.line + '; --line2:' + P.line2 + '; --ink:' + P.ink + '; --muted:' + P.muted + '; --accent:' + P.accent + ';' +
+'  --berry:' + (P.berry || P.accent) + '; --gold:' + (P.gold || P.bg) + ';' +
 '  min-height:100vh; background:var(--bg); color:var(--ink); padding:0 0 calc(110px + env(safe-area-inset-bottom));' +
 '  font-family:var(--font-body); -webkit-font-smoothing:antialiased; overflow-x:hidden; overflow-x:clip; }' +
 '.rcpt * { box-sizing:border-box; }' +
@@ -365,7 +439,7 @@ const css = '' +
 '.rcpt-head > * { position:relative; z-index:2; }' +
 '.rcpt-head > .rc-hvideo, .rcpt-head > .rc-tint, .rcpt-head > .rc-leaf { position:absolute; z-index:0; }' +
 '.rc-hvideo { inset:0; width:100%; height:100%; object-fit:cover; }' +
-'.rc-tint { inset:0; z-index:1 !important; background:linear-gradient(180deg, rgba(95,78,61,.35), rgba(149,127,103,.72) 55%, rgba(149,127,103,.92)); }' +
+'.rc-tint { inset:0; z-index:1 !important; background:linear-gradient(180deg, rgba(' + P.shadow + ',.35), ' + SH + '.72) 55%, ' + SH + '.92)); }' +
 '.rcpt-topbar { display:flex; justify-content:space-between; align-items:center; gap:12px; }' +
 '.rcpt-logo-pill { display:inline-flex; background:var(--bg); border-radius:999px; padding:6px 14px; }' +
 '.rcpt-logo { width:92px; height:auto; display:block; }' +
@@ -380,7 +454,7 @@ const css = '' +
 '.rcpt-l3 { margin:0; font-size:14px; opacity:.92; }' +
 
 /* sheet */
-'.rcpt-sheet { position:relative; z-index:3; margin:-60px 14px 0; background:var(--card); border-radius:26px; box-shadow:0 18px 44px rgba(149,127,103,.16); }' +
+'.rcpt-sheet { position:relative; z-index:3; margin:-60px 14px 0; background:var(--card); border-radius:26px; box-shadow:0 18px 44px ' + SH + '.16); }' +
 '.rcpt-sec { padding:16px 18px 8px; }' +
 '.rcpt-ref { padding:0 18px 14px; }' +
 '.rcpt-rows { margin:0; }' +
@@ -395,7 +469,7 @@ const css = '' +
 '.rcpt-brand { height:22px; width:auto; display:block; border-radius:4px; }' +
 '.rcpt-total { display:flex; justify-content:space-between; align-items:center; gap:12px; background:var(--bg); border-radius:18px; padding:14px 16px; margin:10px 0 6px; }' +
 '.rcpt-total span { font-size:11px; letter-spacing:.2em; color:var(--brand-dark); }' +
-'.rcpt-total b { font-size:30px; color:var(--brand); font-weight:400; }' +
+'.rcpt-total b { font-size:30px; color:var(--accent); font-weight:400; }' +
 '.rcpt-pill-row { margin:8px 0 4px; text-align:center; }' +
 '.rcpt-pill { display:inline-block; border-radius:999px; padding:6px 14px; font-size:10px; letter-spacing:.16em; text-transform:uppercase; }' +
 '.rcpt-pill.off { background:var(--card); border:1px solid var(--line); color:var(--brand-dark); }' +
@@ -408,6 +482,20 @@ const css = '' +
 '.rcpt-tear i { position:absolute; left:0; right:0; top:11px; border-top:2px dashed var(--line); }' +
 '.rcpt-tear b { position:absolute; top:0; width:24px; height:24px; border-radius:50%; background:var(--bg); left:-26px; }' +
 '.rcpt-tear b + b { left:auto; right:-26px; }' +
+'.rcpt-tear em { position:absolute; left:50%; top:4px; width:44px; height:16px; margin-left:-22px; background:var(--card);' +
+'  display:flex; align-items:center; justify-content:center; }' +
+'.rcpt-tear em span { width:8px; height:8px; border-radius:50%; background:var(--accent); }' +
+'.rcpt-tear em span + span { margin-left:2px; }' +
+'.rcpt-wish { margin-bottom:4px !important; }' +
+
+/* winter */
+'.is-winter .rcpt-badge { color:var(--gold); background:rgba(226,194,122,.16); }' +
+'.is-winter .rcpt-badge .rc-check { stroke:var(--bg); }' +
+'.rcpt-head > .rc-deco, .rcpt-head > .rc-snow { position:absolute; z-index:0; pointer-events:none; }' +
+'.rc-sprig { color:var(--soft); }' +
+'.rc-berry { border-radius:50%; background:var(--berry); }' +
+'.rc-star { color:var(--gold); }' +
+'.rc-snow { top:0; border-radius:50%; background:#fff; opacity:.85; animation:rcSnow 3s ease-in both; }' +
 '.rcpt-cap { margin:4px 0 2px; font-size:10.5px; letter-spacing:.24em; color:var(--muted); }' +
 '.rcpt-foot { margin:18px 20px 0; text-align:center; font-size:12.5px; line-height:1.6; color:var(--muted); }' +
 '.rcpt-foot p { margin:0; }' +
@@ -415,18 +503,18 @@ const css = '' +
 
 /* sticky actions */
 '.rcpt-actions { position:fixed; z-index:20; left:12px; right:12px; bottom:calc(14px + env(safe-area-inset-bottom)); max-width:456px; margin:0 auto;' +
-'  display:flex; gap:8px; background:var(--card); border-radius:24px; padding:8px; box-shadow:0 10px 30px rgba(149,127,103,.22); }' +
+'  display:flex; gap:8px; background:var(--card); border-radius:24px; padding:8px; box-shadow:0 10px 30px ' + SH + '.22); }' +
 '.rcpt-actions > * { flex:1; min-height:48px; display:inline-flex; align-items:center; justify-content:center; border-radius:18px;' +
 '  font-family:inherit; font-size:14px; text-decoration:none; cursor:pointer; }' +
 '.rcpt .rcpt-actions .rcpt-btn { flex:1.3; border:0; background:var(--brand); color:#fff; padding:0 16px; }' +
 '.rcpt .rcpt-actions .rcpt-btn:hover { background:var(--brand-dark); }' +
 '.rcpt .rcpt-actions .rcpt-act2 { background:var(--bg); color:var(--brand-dark); }' +
-'.rcpt .rcpt-actions .rcpt-act2:hover { background:#ece6dd; }' +
+'.rcpt .rcpt-actions .rcpt-act2:hover { background:var(--line2); }' +
 
 /* not found */
 '.rcpt-nf { padding:40px 16px; }' +
 '.rcpt-missing { max-width:440px; margin:0 auto; background:var(--card); border-radius:28px; padding:34px 24px; text-align:center;' +
-'  box-shadow:0 18px 44px rgba(149,127,103,.12); }' +
+'  box-shadow:0 18px 44px ' + SH + '.12); }' +
 '.rcpt-missing .rcpt-logo { width:130px; margin:0 auto 18px; }' +
 '.rcpt-missing h1 { font-size:34px; margin:0 0 8px; color:var(--brand); }' +
 '.rcpt-muted { color:var(--muted); font-size:14px; }' +
@@ -452,6 +540,7 @@ const css = '' +
 '@keyframes rcPop { 0% { transform:scale(.6); opacity:0; } 60% { transform:scale(1.08); opacity:1; } 100% { transform:scale(1); } }' +
 '@keyframes rcUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }' +
 '@keyframes rcSheet { from { opacity:0; transform:translateY(60px); } to { opacity:1; transform:none; } }' +
+'@keyframes rcSnow { 0% { transform:translate(0,-30px); opacity:0; } 12% { opacity:.9; } 50% { transform:translate(10px,150px); } 100% { transform:translate(-6px,330px); opacity:0; } }' +
 '@keyframes rcLeaf { 0% { transform:translateY(-40px) rotate(0deg); opacity:0; } 10% { opacity:1; } 100% { transform:translateY(330px) rotate(260deg); opacity:0; } }' +
 '@keyframes rcGlow { 0%,100% { box-shadow:0 0 0 0 rgba(245,243,239,0); } 50% { box-shadow:0 0 0 14px rgba(245,243,239,.12); } }' +
 '.rc-head { animation:rcHeader .5s ease-out both; }' +
@@ -469,7 +558,7 @@ const css = '' +
 '@media (prefers-reduced-motion: reduce) {' +
 ' .rc-head,.rc-badge,.rc-ring,.rc-check,.rc-l1,.rc-l2,.rc-l3,.rc-sheet,.rc-bar { animation:none !important; }' +
 ' .rc-ring,.rc-check { stroke-dashoffset:0; }' +
-' .rc-leaf, .rc-intro { display:none !important; }' +
+' .rc-leaf, .rc-snow, .rc-intro { display:none !important; }' +
 '}' +
 
 /* bigger screens: header becomes a rounded card */
@@ -486,12 +575,13 @@ const css = '' +
 
 /* print / save as PDF */
 '@media print {' +
-' .no-print, .rc-leaf, .rc-hvideo, .rc-tint, .rc-intro { display:none !important; }' +
+' .no-print, .rc-leaf, .rc-snow, .rc-deco, .rc-hvideo, .rc-tint, .rc-intro { display:none !important; }' +
 ' .rc-head,.rc-badge,.rc-ring,.rc-check,.rc-l1,.rc-l2,.rc-l3,.rc-sheet,.rc-bar { animation:none !important; }' +
 ' .rc-ring,.rc-check { stroke-dashoffset:0; }' +
 ' .rcpt { background:#fff; padding:0; min-height:0; }' +
 ' .rcpt-head { background:#fff; color:var(--ink); padding:10px 0 16px; border-radius:0; }' +
-' .rcpt-badge { color:var(--brand); background:var(--bg); width:56px; height:56px; margin:12px 0 6px; }' +
+' .rcpt-badge, .is-winter .rcpt-badge { color:var(--brand); background:var(--bg); width:56px; height:56px; margin:12px 0 6px; }' +
+' .is-winter .rcpt-badge .rc-check { stroke:currentColor; }' +
 ' .rcpt-badge svg { width:56px; height:56px; }' +
 ' .rcpt-amount { color:var(--brand); }' +
 ' .rcpt-sheet { margin:0; box-shadow:none; border:1px solid var(--line); }' +
