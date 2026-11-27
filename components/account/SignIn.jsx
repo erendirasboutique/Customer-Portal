@@ -4,6 +4,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { getSupabaseBrowser } from "@/lib/supabaseBrowser";
+import { trackingLast4 } from "@/lib/barcode";
+import LabelScanner from "@/components/account/LabelScanner";
 
 /* ============================================================
    Customer sign-in (my.erendirasboutique.com and /customer).
@@ -13,8 +15,9 @@ import { getSupabaseBrowser } from "@/lib/supabaseBrowser";
      2) 6-digit code by email
      3) 6-digit code by text (only when NEXT_PUBLIC_SMS_SIGNIN=on, after
         a text provider such as Twilio is set up in Supabase)
-   Plus: scan the package label (Android Chrome can read the barcode;
-   elsewhere it opens Find my account), questions, WhatsApp.
+   Plus: scan the package label (same scanner as the Shipping Portal, works
+   on iPhone and Android) -> Find my account with the tracking number's
+   last 4 digits filled in; questions; WhatsApp.
    Background: /landing-gradient.webm (mp4 + poster as fallbacks).
    ============================================================ */
 
@@ -40,7 +43,6 @@ const T = {
     faceId: "Entrar con Face ID",
     lastUsed: "Último usado",
     scan: "Escanear etiqueta del paquete",
-    findWithPackage: "Buscar con mi paquete",
     or: "o",
     idLabel: SMS_ON ? "Correo o celular" : "Correo electrónico",
     idPlaceholder: "tucorreo@ejemplo.com",
@@ -105,7 +107,6 @@ const T = {
     faceId: "Sign in with Face ID",
     lastUsed: "Last used",
     scan: "Scan your package label",
-    findWithPackage: "Find it with my package",
     or: "or",
     idLabel: SMS_ON ? "Email or cell phone" : "Email",
     idPlaceholder: "you@example.com",
@@ -182,11 +183,10 @@ export default function SignIn() {
   const [note, setNote] = useState("");
   const [resendIn, setResendIn] = useState(0);
   const [canPasskey, setCanPasskey] = useState(false);
-  const [canScan, setCanScan] = useState(false);
+  const [scanning, setScanning] = useState(false);
   const [last, setLast] = useState("");
   const [openFaq, setOpenFaq] = useState(-1);
   const [reduceMotion, setReduceMotion] = useState(false);
-  const fileRef = useRef(null);
   const codeRef = useRef(null);
   const videoRef = useRef(null);
   const t = T[lang];
@@ -202,7 +202,6 @@ export default function SignIn() {
       typeof window.PublicKeyCredential !== "undefined" &&
       typeof supabase.auth.signInWithPasskey === "function"
     );
-    setCanScan(typeof window.BarcodeDetector !== "undefined");
     try { setReduceMotion(window.matchMedia("(prefers-reduced-motion: reduce)").matches); } catch (e) { /* old browser */ }
   }, [supabase]);
 
@@ -372,23 +371,13 @@ export default function SignIn() {
     goToAccount();
   }
 
-  // Label scan: read the barcode, keep the tracking number's last 4 digits,
-  // and open Find my account with them filled in.
-  async function onScanFile(event) {
-    const file = event.target.files && event.target.files[0];
-    event.target.value = "";
-    if (!file) return;
-    try {
-      const detector = new window.BarcodeDetector({ formats: ["code_128", "pdf417", "data_matrix", "qr_code"] });
-      const bitmap = await createImageBitmap(file);
-      const found = await detector.detect(bitmap);
-      const nums = (found || []).map(function (b) { return digitsOf(b.rawValue); }).filter(function (d) { return d.length >= 12; });
-      if (!nums.length) return setMsg(t.errScan);
-      const longest = nums.sort(function (a, b) { return b.length - a.length; })[0];
-      window.location.assign("/find-account?lang=" + lang + "&last4=" + longest.slice(-4));
-    } catch (e) {
-      setMsg(t.errScan);
-    }
+  // Label scan: keep the tracking number's last 4 digits and open Find my
+  // account with them filled in (it still asks for last name + ZIP).
+  function onScanned(raw) {
+    setScanning(false);
+    const last4 = trackingLast4(raw);
+    if (!last4) return setMsg(t.errScan);
+    window.location.assign("/find-account?lang=" + lang + "&last4=" + last4);
   }
 
   const lastIsPasskey = last === "passkey";
@@ -438,16 +427,9 @@ export default function SignIn() {
               </div>
             ) : null}
 
-            {canScan ? (
-              <>
-                <button type="button" className="sg-btn" onClick={function () { if (fileRef.current) fileRef.current.click(); }}>
-                  <CamIcon /> {t.scan}
-                </button>
-                <input ref={fileRef} type="file" accept="image/*" capture="environment" hidden onChange={onScanFile} />
-              </>
-            ) : (
-              <a className="sg-btn" href={"/find-account?lang=" + lang}><BoxIcon /> {t.findWithPackage}</a>
-            )}
+            <button type="button" className="sg-btn" onClick={function () { setMsg(""); setScanning(true); }}>
+              <CamIcon /> {t.scan}
+            </button>
 
             <div className="sg-or"><span />{t.or}<span /></div>
 
@@ -570,6 +552,8 @@ export default function SignIn() {
 
         <p className="sg-copy">{t.rights}</p>
       </div>
+
+      {scanning ? <LabelScanner lang={lang} onCode={onScanned} onClose={function () { setScanning(false); }} /> : null}
     </main>
   );
 }
@@ -585,9 +569,6 @@ function FaceIcon(props) {
 }
 function CamIcon() {
   return <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z" /><circle cx="12" cy="13" r="3.5" /></svg>;
-}
-function BoxIcon() {
-  return <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"><path d="M3 7.5L12 3l9 4.5v9L12 21l-9-4.5z" /><path d="M3 7.5L12 12l9-4.5M12 12v9" /></svg>;
 }
 
 const css = `
