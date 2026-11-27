@@ -48,7 +48,7 @@ export default function Page() {
         <div className="ebcVideoWrap">
           <video
             className="ebcVideo"
-            src="/confirmation-video.mp4"
+            src="/christmas vid.mp4"
             autoPlay
             muted
             loop
