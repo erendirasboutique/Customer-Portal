@@ -5,7 +5,8 @@
 //
 // The customer's payments and gift cards (BILLING Supabase), found by email.
 //
-// On a personal link alone we can't be sure the email on file is theirs, so
+// On a personal link alone (or a text-code sign-in, which proves the phone,
+// not the email) we can't be sure the email on file is theirs, so
 // gift card codes come back masked and receipt links are left out. Signing in
 // with that email (one tap: we email them a link) shows everything.
 
@@ -42,7 +43,7 @@ export async function GET(request) {
     if (account.error) return jsonError(account.error, account.status);
 
     const email = walletEmail(account);
-    const full = account.mode === "session" || account.verified;
+    const full = account.verified;
     const result = { full, emailHint: full ? "" : maskEmail(email), payments: [], giftCards: [] };
 
     if (!email) {
