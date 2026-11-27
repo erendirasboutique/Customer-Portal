@@ -91,8 +91,12 @@ export default function FindAccountPage() {
   const t = T[lang];
 
   useEffect(function () {
-    const l = new URLSearchParams(window.location.search).get("lang");
+    const q = new URLSearchParams(window.location.search);
+    const l = q.get("lang");
     if (l === "en" || l === "es") setLang(l);
+    // From the sign-in page's label scan: the tracking number's last 4 digits.
+    const last4 = (q.get("last4") || "").replace(/\D/g, "").slice(0, 4);
+    if (last4.length === 4) setDigits(last4);
   }, []);
 
   function pick(next) {

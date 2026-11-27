@@ -151,6 +151,8 @@ const T = {
     signedInAs: function (e) { return "Signed in as " + e; },
     viaLink: "Opened from your personal link",
     logOut: "Log out",
+    passkeyTurnOn: "Use Face ID to sign in on this phone",
+    passkeyOn: "Face ID is on for this phone",
     emailLocked: "To change your email, sign in with it or message us.",
     emailLockedErr: "Your email can’t be changed from this link. Message us and we’ll update it.",
     signInEmail: "Sign in with email",
@@ -275,6 +277,8 @@ const T = {
     signedInAs: function (e) { return "Sesión iniciada como " + e; },
     viaLink: "Abierto desde tu enlace personal",
     logOut: "Cerrar sesión",
+    passkeyTurnOn: "Usar Face ID para entrar en este teléfono",
+    passkeyOn: "Face ID activado en este teléfono",
     emailLocked: "Para cambiar tu correo, inicia sesión con él o escríbenos.",
     emailLockedErr: "Tu correo no se puede cambiar desde este enlace. Escríbenos y lo actualizamos.",
     signInEmail: "Iniciar sesión con correo",
@@ -308,6 +312,8 @@ export default function AccountApp() {
   const [tab, setTab] = useState("orders"); // orders | pay | gift | me
   const [wallet, setWallet] = useState(null); // { full, emailHint, payments, giftCards }
   const [linkState, setLinkState] = useState(""); // "" | sending | sent | error
+  const [canPasskey, setCanPasskey] = useState(false);
+  const [passkeyState, setPasskeyState] = useState(""); // "" | busy | on
   const [lang, setLang] = useState(DEFAULT_LANG);
   const [form, setForm] = useState(null);
   const [savedForm, setSavedForm] = useState(null);
@@ -350,12 +356,19 @@ export default function AccountApp() {
         const { data } = await getSupabaseBrowser().auth.getSession();
         if (data && data.session) {
           bearer = data.session.access_token || "";
-          setSignedInEmail((data.session.user && data.session.user.email) || "");
+          const u = data.session.user || {};
+          setSignedInEmail(u.email || (u.phone ? "+" + String(u.phone).replace(/^\+/, "") : ""));
         }
       } catch (e) {
         // no session
       }
       if (cancelled) return;
+
+      try {
+        const sb = getSupabaseBrowser();
+        setCanPasskey(Boolean(bearer) && typeof window.PublicKeyCredential !== "undefined" && typeof sb.auth.registerPasskey === "function" && process.env.NEXT_PUBLIC_PASSKEYS !== "off");
+        if (localStorage.getItem("ebtq_has_passkey")) setPasskeyState("on");
+      } catch (e) { /* no passkeys */ }
 
       if (!portalToken && !bearer) {
         setStatus("load_error");
@@ -458,6 +471,23 @@ export default function AccountApp() {
     } catch (e) {
       setLinkState("error");
     }
+  }
+
+  // Me tab: turn on Face ID / fingerprint sign-in for this phone.
+  async function turnOnPasskey() {
+    if (passkeyState) return;
+    setPasskeyState("busy");
+    try {
+      const { error } = await getSupabaseBrowser().auth.registerPasskey();
+      if (!error || /credential_exists/i.test(String(error.code || error.message || ""))) {
+        try { localStorage.setItem("ebtq_has_passkey", "1"); } catch (e) { /* private mode */ }
+        setPasskeyState("on");
+        return;
+      }
+    } catch (e) {
+      // closed the prompt
+    }
+    setPasskeyState("");
   }
 
   async function logOut() {
@@ -987,7 +1017,12 @@ export default function AccountApp() {
                   {savedForm.phone ? <span className="ac-det-act">{t.edit}</span> : <span className="ac-plus" aria-hidden="true">+</span>}
                 </button>
               </div>
-              {signedInEmail ? (
+              {accessToken && canPasskey ? (
+                <button type="button" className="ac-btn ac-btn-ghost" onClick={turnOnPasskey} disabled={passkeyState === "busy"}>
+                  {passkeyState === "on" ? t.passkeyOn : t.passkeyTurnOn}
+                </button>
+              ) : null}
+              {accessToken ? (
                 <button type="button" className="ac-btn ac-btn-ghost" onClick={logOut}>{t.logOut}</button>
               ) : null}
             </section>

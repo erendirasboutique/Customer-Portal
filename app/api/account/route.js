@@ -42,7 +42,7 @@ function publicProfile(row, account) {
     hasRecord: Boolean(row),
     name: r[COLS.name] ?? "",
     email: r[COLS.email] || (account.mode === "session" ? account.signedInEmail : ""),
-    phone: r[COLS.phone] ?? "",
+    phone: r[COLS.phone] || (account.mode === "session" && account.signedInPhone ? account.signedInPhone : ""),
     address1: r[COLS.address1] ?? "",
     address2: r[COLS.address2] ?? "",
     city: r[COLS.city] ?? "",
@@ -105,8 +105,8 @@ export async function POST(request) {
     const before = account.customer;
     const emailOnFile = String((before && before[COLS.email]) || "").trim().toLowerCase();
 
-    if (account.mode === "session") {
-      // Signed in: the account's email is the one they signed in with.
+    if (account.mode === "session" && account.signedInEmail) {
+      // Signed in with email: the account's email is the one they signed in with.
       email = emailOnFile || account.signedInEmail;
     } else if (emailOnFile && email !== emailOnFile) {
       return jsonError("email_locked", 403);
