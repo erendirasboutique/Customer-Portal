@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="supported-color-schemes" content="light">
+<title>Tu código: {{ .Token }}</title>
+<style>
+  @font-face { font-family: 'Charman Serif'; src: url('https://my.erendirasboutique.com/brand/fonts/CharmanSerif-Regular.otf') format('opentype'); font-weight: 400; }
+  @font-face { font-family: 'Ltt Recoleta'; src: url('https://my.erendirasboutique.com/brand/fonts/LttRecoleta-CondensedMedium.otf') format('opentype'); font-weight: 400; }
+  @media (max-width: 480px) {
+    .pad { padding: 30px 22px 28px !important; }
+    .code { font-size: 38px !important; letter-spacing: 8px !important; }
+  }
+</style>
+</head>
+<body style="margin:0;padding:0;background:#F5F3EF;">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;">Tu código para entrar por primera vez a Erendira’s Boutique.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F5F3EF;"><tr><td align="center" style="padding:24px 12px;">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:100%;max-width:600px;background:#ffffff;border-radius:14px;">
+<tr><td class="pad" style="padding:40px 40px 36px;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+
+    <tr><td style="padding:0 0 28px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+      <td><img src="https://ship.erendirasboutique.com/logo2.png" alt="Erendira's Boutique" width="170" style="display:block;width:170px;height:auto;border:0;"></td>
+      <td align="right" style="font-family:'Ltt Recoleta', 'Avenir Next', Avenir, 'Segoe UI', Helvetica, Arial, sans-serif;font-size:13px;letter-spacing:1px;color:#6b5f53;">PORTAL DE CLIENTES</td>
+    </tr></table></td></tr>
+
+    <tr><td style="padding:0 0 24px;">
+      <h1 style="margin:0 0 10px;font-family:'Charman Serif', Palatino, 'Palatino Linotype', 'Book Antiqua', Georgia, serif;font-weight:normal;font-size:30px;line-height:1.2;color:#332b23;">¡Bienvenida! Este es tu código</h1>
+      <p style="margin:0;font-family:'Ltt Recoleta', 'Avenir Next', Avenir, 'Segoe UI', Helvetica, Arial, sans-serif;font-size:16px;line-height:1.55;color:#6b5f53;">Escribe este código en la página de Erendira’s Boutique para entrar por primera vez. Tu cuenta ya tiene tus pedidos, envíos y tarjetas de regalo.</p>
+    </td></tr>
+
+    <tr><td style="padding:0 0 24px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F5F3EF;border-radius:12px;"><tr>
+        <td align="center" style="padding:26px 12px 22px;">
+          <div style="font-family:'Ltt Recoleta', 'Avenir Next', Avenir, 'Segoe UI', Helvetica, Arial, sans-serif;font-size:13px;letter-spacing:1.5px;color:#6b5f53;padding-bottom:10px;">TU CÓDIGO · YOUR CODE</div>
+          <div class="code" style="font-family:'Charman Serif', Palatino, 'Palatino Linotype', 'Book Antiqua', Georgia, serif;font-size:46px;line-height:1;letter-spacing:12px;color:#332b23;padding-left:12px;">{{ .Token }}</div>
+          <div style="font-family:'Ltt Recoleta', 'Avenir Next', Avenir, 'Segoe UI', Helvetica, Arial, sans-serif;font-size:14px;color:#6b5f53;padding-top:14px;">Vence en 10 minutos · Expires in 10 minutes</div>
+        </td>
+      </tr></table>
+    </td></tr>
+
+    <tr><td style="padding:0 0 26px;">
+      <div style="background:#F5F3EF;border-radius:8px;padding:14px 16px;font-family:'Ltt Recoleta', 'Avenir Next', Avenir, 'Segoe UI', Helvetica, Arial, sans-serif;font-size:14px;line-height:1.55;color:#6b5f53;">
+        ¿No fuiste tú? Ignora este correo. Nadie puede entrar a tu cuenta sin este código.
+      </div>
+    </td></tr>
+
+    <tr><td style="padding:0 0 26px;font-family:'Ltt Recoleta', 'Avenir Next', Avenir, 'Segoe UI', Helvetica, Arial, sans-serif;font-size:14px;line-height:1.6;color:#6b5f53;">
+      ¿Abriste este correo en otro teléfono? <a href="{{ .ConfirmationURL }}" style="color:#957f67;text-decoration:none;">Toca aquí para entrar</a>.
+    </td></tr>
+
+    <tr><td style="padding:24px 0 0;border-top:1px solid #EAE4DC;">
+      <div style="font-family:'Charman Serif', Palatino, 'Palatino Linotype', 'Book Antiqua', Georgia, serif;font-size:19px;color:#332b23;margin-bottom:6px;">Welcome! Here’s your code</div>
+      <div style="font-family:'Ltt Recoleta', 'Avenir Next', Avenir, 'Segoe UI', Helvetica, Arial, sans-serif;font-size:14px;line-height:1.55;color:#6b5f53;">Type this code on the Erendira’s Boutique page to sign in for the first time. Code: <strong style="color:#332b23;font-weight:normal;">{{ .Token }}</strong>. Didn’t ask for it? Just ignore this email.</div>
+    </td></tr>
+
+    <tr><td style="padding:28px 0 0;">
+      <div style="border-top:1px solid #EAE4DC;padding-top:24px;font-family:'Ltt Recoleta', 'Avenir Next', Avenir, 'Segoe UI', Helvetica, Arial, sans-serif;font-size:13px;line-height:1.6;color:#6b5f53;">
+        ¿Preguntas? Responde a este correo, escríbenos a <a href="mailto:hello@erendirasboutique.com" style="color:#957f67;">hello@erendirasboutique.com</a> o por <a href="https://wa.me/19094017221" style="color:#957f67;">WhatsApp</a>.
+        <div style="font-family:'Charman Serif', Palatino, 'Palatino Linotype', 'Book Antiqua', Georgia, serif;font-size:16px;color:#957f67;padding-top:10px;">¡Envíos cada Sábado!</div>
+        <div style="font-size:12px;padding-top:10px;"><a href="https://erendirasboutique.com" style="color:#957f67;">erendirasboutique.com</a> · <a href="https://erendirasboutique.com/return-policy" style="color:#957f67;">Política de devoluciones</a></div>
+      </div>
+    </td></tr>
+
+  </table>
+</td></tr>
+</table>
+</td></tr></table>
+</body>
+</html>
